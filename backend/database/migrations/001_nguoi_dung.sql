@@ -1,0 +1,101 @@
+BEGIN;
+
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+
+/*
+ * ============================================================
+ * HÀM CẬP NHẬT updated_at
+ * ============================================================
+ */
+
+CREATE OR REPLACE FUNCTION fn_cap_nhat_updated_at()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    NEW.updated_at = NOW();
+
+    RETURN NEW;
+END;
+$$;
+
+
+/*
+ * ============================================================
+ * NGƯỜI DÙNG
+ * ============================================================
+ */
+
+CREATE TABLE nguoi_dung (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    email VARCHAR(320) NOT NULL,
+    ten_dang_nhap VARCHAR(100),
+    ho_ten VARCHAR(255) NOT NULL,
+
+    mat_khau_hash VARCHAR(255),
+
+    loai_tai_khoan VARCHAR(30) NOT NULL DEFAULT 'NGUOI_DUNG',
+    trang_thai VARCHAR(30) NOT NULL DEFAULT 'HOAT_DONG',
+
+    email_xac_thuc_luc TIMESTAMPTZ,
+    lan_dang_nhap_cuoi_luc TIMESTAMPTZ,
+
+    cai_dat JSONB NOT NULL DEFAULT '{}'::JSONB,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    xoa_luc TIMESTAMPTZ,
+
+    CONSTRAINT chk_nguoi_dung_loai_tai_khoan
+        CHECK (
+            loai_tai_khoan IN (
+                'NGUOI_DUNG',
+                'QUAN_TRI',
+                'HE_THONG'
+            )
+        ),
+
+    CONSTRAINT chk_nguoi_dung_trang_thai
+        CHECK (
+            trang_thai IN (
+                'HOAT_DONG',
+                'TAM_KHOA',
+                'VO_HIEU_HOA'
+            )
+        )
+);
+
+
+CREATE UNIQUE INDEX uq_nguoi_dung_email
+ON nguoi_dung (
+    LOWER(email)
+)
+WHERE xoa_luc IS NULL;
+
+
+CREATE UNIQUE INDEX uq_nguoi_dung_ten_dang_nhap
+ON nguoi_dung (
+    LOWER(ten_dang_nhap)
+)
+WHERE ten_dang_nhap IS NOT NULL
+AND xoa_luc IS NULL;
+
+
+CREATE INDEX idx_nguoi_dung_trang_thai
+ON nguoi_dung (
+    trang_thai
+)
+WHERE xoa_luc IS NULL;
+
+
+CREATE TRIGGER trg_nguoi_dung_updated_at
+BEFORE UPDATE
+ON nguoi_dung
+FOR EACH ROW
+EXECUTE FUNCTION fn_cap_nhat_updated_at();
+
+
+COMMIT;

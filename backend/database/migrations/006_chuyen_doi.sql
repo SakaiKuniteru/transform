@@ -1,0 +1,162 @@
+BEGIN;
+
+
+/*
+ * ============================================================
+ * CHUYỂN ĐỔI
+ * ============================================================
+ */
+
+CREATE TABLE chuyen_doi (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    cong_viec_id UUID NOT NULL,
+    buoc_cong_viec_id UUID,
+
+    thu_tu INTEGER NOT NULL DEFAULT 1,
+    lan_thu INTEGER NOT NULL DEFAULT 1,
+
+    phien_ban_nguon_id UUID,
+    phien_ban_ket_qua_id UUID,
+
+    dinh_dang_nguon VARCHAR(50) NOT NULL,
+    dinh_dang_dich VARCHAR(50) NOT NULL,
+
+    converter_key VARCHAR(255) NOT NULL,
+
+    engine VARCHAR(100),
+    phien_ban_engine VARCHAR(100),
+
+    trang_thai VARCHAR(30) NOT NULL DEFAULT 'CHO_XU_LY',
+
+    tuy_chon JSONB NOT NULL DEFAULT '{}'::JSONB,
+    metadata JSONB NOT NULL DEFAULT '{}'::JSONB,
+    thong_ke JSONB NOT NULL DEFAULT '{}'::JSONB,
+
+    ma_loi VARCHAR(100),
+    thong_bao_loi TEXT,
+    chi_tiet_loi JSONB,
+
+    bat_dau_luc TIMESTAMPTZ,
+    hoan_thanh_luc TIMESTAMPTZ,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT fk_chuyen_doi_cong_viec
+        FOREIGN KEY (
+            cong_viec_id
+        )
+        REFERENCES cong_viec (
+            id
+        )
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_chuyen_doi_buoc
+        FOREIGN KEY (
+            buoc_cong_viec_id
+        )
+        REFERENCES buoc_cong_viec (
+            id
+        )
+        ON DELETE SET NULL,
+
+    CONSTRAINT fk_chuyen_doi_phien_ban_nguon
+        FOREIGN KEY (
+            phien_ban_nguon_id
+        )
+        REFERENCES phien_ban_tep (
+            id
+        )
+        ON DELETE SET NULL,
+
+    CONSTRAINT fk_chuyen_doi_phien_ban_ket_qua
+        FOREIGN KEY (
+            phien_ban_ket_qua_id
+        )
+        REFERENCES phien_ban_tep (
+            id
+        )
+        ON DELETE SET NULL,
+
+    CONSTRAINT chk_chuyen_doi_thu_tu
+        CHECK (
+            thu_tu > 0
+        ),
+
+    CONSTRAINT chk_chuyen_doi_lan_thu
+        CHECK (
+            lan_thu > 0
+        ),
+
+    CONSTRAINT chk_chuyen_doi_trang_thai
+        CHECK (
+            trang_thai IN (
+                'CHO_XU_LY',
+                'DANG_XU_LY',
+                'HOAN_THANH',
+                'THAT_BAI',
+                'DA_HUY'
+            )
+        ),
+
+    CONSTRAINT uq_chuyen_doi_lan_thu
+        UNIQUE (
+            cong_viec_id,
+            thu_tu,
+            lan_thu
+        )
+);
+
+
+CREATE INDEX idx_chuyen_doi_cong_viec
+ON chuyen_doi (
+    cong_viec_id,
+    thu_tu,
+    lan_thu
+);
+
+
+CREATE INDEX idx_chuyen_doi_buoc
+ON chuyen_doi (
+    buoc_cong_viec_id
+)
+WHERE buoc_cong_viec_id IS NOT NULL;
+
+
+CREATE INDEX idx_chuyen_doi_phien_ban_nguon
+ON chuyen_doi (
+    phien_ban_nguon_id
+)
+WHERE phien_ban_nguon_id IS NOT NULL;
+
+
+CREATE INDEX idx_chuyen_doi_phien_ban_ket_qua
+ON chuyen_doi (
+    phien_ban_ket_qua_id
+)
+WHERE phien_ban_ket_qua_id IS NOT NULL;
+
+
+CREATE INDEX idx_chuyen_doi_converter
+ON chuyen_doi (
+    converter_key,
+    created_at DESC
+);
+
+
+CREATE INDEX idx_chuyen_doi_trang_thai
+ON chuyen_doi (
+    trang_thai,
+    created_at DESC
+);
+
+
+CREATE TRIGGER trg_chuyen_doi_updated_at
+BEFORE UPDATE
+ON chuyen_doi
+FOR EACH ROW
+EXECUTE FUNCTION fn_cap_nhat_updated_at();
+
+
+COMMIT;

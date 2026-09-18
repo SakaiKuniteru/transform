@@ -1,0 +1,161 @@
+BEGIN;
+
+
+/*
+ * ============================================================
+ * NHẬT KÝ HỆ THỐNG
+ * ============================================================
+ */
+
+CREATE TABLE nhat_ky (
+    id BIGSERIAL PRIMARY KEY,
+
+    muc_do VARCHAR(20) NOT NULL DEFAULT 'INFO',
+
+    nguon VARCHAR(100) NOT NULL,
+    ma_su_kien VARCHAR(100),
+
+    request_id UUID,
+    trace_id VARCHAR(100),
+
+    nguoi_dung_id UUID,
+    phien_khach_id UUID,
+
+    cong_viec_id UUID,
+    buoc_cong_viec_id UUID,
+
+    tep_id UUID,
+
+    phuong_thuc_http VARCHAR(10),
+    duong_dan_http TEXT,
+    http_status INTEGER,
+
+    dia_chi_ip INET,
+    user_agent TEXT,
+
+    thong_diep TEXT NOT NULL,
+
+    du_lieu JSONB NOT NULL DEFAULT '{}'::JSONB,
+
+    stack_trace TEXT,
+
+    het_han_luc TIMESTAMPTZ,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT fk_nhat_ky_nguoi_dung
+        FOREIGN KEY (
+            nguoi_dung_id
+        )
+        REFERENCES nguoi_dung (
+            id
+        )
+        ON DELETE SET NULL,
+
+    CONSTRAINT fk_nhat_ky_cong_viec
+        FOREIGN KEY (
+            cong_viec_id
+        )
+        REFERENCES cong_viec (
+            id
+        )
+        ON DELETE SET NULL,
+
+    CONSTRAINT fk_nhat_ky_buoc_cong_viec
+        FOREIGN KEY (
+            buoc_cong_viec_id
+        )
+        REFERENCES buoc_cong_viec (
+            id
+        )
+        ON DELETE SET NULL,
+
+    CONSTRAINT fk_nhat_ky_tep
+        FOREIGN KEY (
+            tep_id
+        )
+        REFERENCES tep (
+            id
+        )
+        ON DELETE SET NULL,
+
+    CONSTRAINT chk_nhat_ky_muc_do
+        CHECK (
+            muc_do IN (
+                'DEBUG',
+                'INFO',
+                'WARN',
+                'ERROR',
+                'SECURITY',
+                'AUDIT'
+            )
+        ),
+
+    CONSTRAINT chk_nhat_ky_http_status
+        CHECK (
+            http_status IS NULL
+            OR http_status BETWEEN 100 AND 599
+        )
+);
+
+
+CREATE INDEX idx_nhat_ky_created_brin
+ON nhat_ky
+USING BRIN (
+    created_at
+);
+
+
+CREATE INDEX idx_nhat_ky_muc_do
+ON nhat_ky (
+    muc_do,
+    created_at DESC
+);
+
+
+CREATE INDEX idx_nhat_ky_request
+ON nhat_ky (
+    request_id
+)
+WHERE request_id IS NOT NULL;
+
+
+CREATE INDEX idx_nhat_ky_trace
+ON nhat_ky (
+    trace_id
+)
+WHERE trace_id IS NOT NULL;
+
+
+CREATE INDEX idx_nhat_ky_cong_viec
+ON nhat_ky (
+    cong_viec_id,
+    created_at DESC
+)
+WHERE cong_viec_id IS NOT NULL;
+
+
+CREATE INDEX idx_nhat_ky_nguoi_dung
+ON nhat_ky (
+    nguoi_dung_id,
+    created_at DESC
+)
+WHERE nguoi_dung_id IS NOT NULL;
+
+
+CREATE INDEX idx_nhat_ky_ma_su_kien
+ON nhat_ky (
+    ma_su_kien,
+    created_at DESC
+)
+WHERE ma_su_kien IS NOT NULL;
+
+
+CREATE INDEX idx_nhat_ky_het_han
+ON nhat_ky (
+    het_han_luc
+)
+WHERE het_han_luc IS NOT NULL;
+
+
+COMMIT;
