@@ -1,0 +1,289 @@
+'use strict';
+
+const MA_LOI = Object.freeze({
+
+    /*
+     * ========================================================
+     * CHUNG
+     * ========================================================
+     */
+
+    LOI_KHONG_XAC_DINH: 'LOI_KHONG_XAC_DINH',
+    LOI_HE_THONG: 'LOI_HE_THONG',
+    YEU_CAU_KHONG_HOP_LE: 'YEU_CAU_KHONG_HOP_LE',
+    DU_LIEU_KHONG_HOP_LE: 'DU_LIEU_KHONG_HOP_LE',
+    THIEU_DU_LIEU: 'THIEU_DU_LIEU',
+    KHONG_TIM_THAY: 'KHONG_TIM_THAY',
+    DU_LIEU_DA_TON_TAI: 'DU_LIEU_DA_TON_TAI',
+    XUNG_DOT_DU_LIEU: 'XUNG_DOT_DU_LIEU',
+    KHONG_DUOC_HO_TRO: 'KHONG_DUOC_HO_TRO',
+    VUOT_GIOI_HAN: 'VUOT_GIOI_HAN',
+    QUA_NHIEU_YEU_CAU: 'QUA_NHIEU_YEU_CAU',
+
+
+    /*
+     * ========================================================
+     * XÁC THỰC
+     * ========================================================
+     */
+
+    CHUA_XAC_THUC: 'CHUA_XAC_THUC',
+    THONG_TIN_DANG_NHAP_KHONG_DUNG: 'THONG_TIN_DANG_NHAP_KHONG_DUNG',
+    TOKEN_KHONG_HOP_LE: 'TOKEN_KHONG_HOP_LE',
+    TOKEN_HET_HAN: 'TOKEN_HET_HAN',
+    TOKEN_CHUA_CO_HIEU_LUC: 'TOKEN_CHUA_CO_HIEU_LUC',
+    REFRESH_TOKEN_KHONG_HOP_LE: 'REFRESH_TOKEN_KHONG_HOP_LE',
+    REFRESH_TOKEN_HET_HAN: 'REFRESH_TOKEN_HET_HAN',
+    KHONG_CO_QUYEN: 'KHONG_CO_QUYEN',
+    TAI_KHOAN_BI_KHOA: 'TAI_KHOAN_BI_KHOA',
+    TAI_KHOAN_BI_VO_HIEU_HOA: 'TAI_KHOAN_BI_VO_HIEU_HOA',
+
+
+    /*
+     * ========================================================
+     * OTP
+     * ========================================================
+     */
+
+    OTP_KHONG_HOP_LE: 'OTP_KHONG_HOP_LE',
+    OTP_HET_HAN: 'OTP_HET_HAN',
+    OTP_DA_SU_DUNG: 'OTP_DA_SU_DUNG',
+    OTP_DA_VO_HIEU_HOA: 'OTP_DA_VO_HIEU_HOA',
+    OTP_VUOT_SO_LAN_THU: 'OTP_VUOT_SO_LAN_THU',
+    OTP_GUI_QUA_NHANH: 'OTP_GUI_QUA_NHANH',
+    OTP_VUOT_SO_LAN_GUI: 'OTP_VUOT_SO_LAN_GUI',
+    OTP_KHONG_TIM_THAY: 'OTP_KHONG_TIM_THAY',
+
+
+    /*
+     * ========================================================
+     * NGƯỜI DÙNG
+     * ========================================================
+     */
+
+    NGUOI_DUNG_KHONG_TIM_THAY: 'NGUOI_DUNG_KHONG_TIM_THAY',
+    EMAIL_DA_TON_TAI: 'EMAIL_DA_TON_TAI',
+    TEN_DANG_NHAP_DA_TON_TAI: 'TEN_DANG_NHAP_DA_TON_TAI',
+    EMAIL_CHUA_XAC_THUC: 'EMAIL_CHUA_XAC_THUC',
+    MAT_KHAU_KHONG_DUNG: 'MAT_KHAU_KHONG_DUNG',
+    MAT_KHAU_KHONG_HOP_LE: 'MAT_KHAU_KHONG_HOP_LE',
+
+
+    /*
+     * ========================================================
+     * PHIÊN KHÁCH
+     * ========================================================
+     */
+
+    PHIEN_KHACH_KHONG_HOP_LE: 'PHIEN_KHACH_KHONG_HOP_LE',
+    PHIEN_KHACH_HET_HAN: 'PHIEN_KHACH_HET_HAN',
+    PHIEN_KHACH_BI_VO_HIEU_HOA: 'PHIEN_KHACH_BI_VO_HIEU_HOA',
+
+
+    /*
+     * ========================================================
+     * HẠN MỨC
+     * ========================================================
+     */
+
+    HAN_MUC_KHONG_TIM_THAY: 'HAN_MUC_KHONG_TIM_THAY',
+    HAN_MUC_DA_HET: 'HAN_MUC_DA_HET',
+    HAN_MUC_KHONG_HOP_LE: 'HAN_MUC_KHONG_HOP_LE',
+    HAN_MUC_VUOT_QUA: 'HAN_MUC_VUOT_QUA',
+    YEU_CAU_DANG_NHAP: 'YEU_CAU_DANG_NHAP',
+    YEU_CAU_NANG_CAP: 'YEU_CAU_NANG_CAP',
+
+
+    /*
+     * ========================================================
+     * GÓI DỊCH VỤ
+     * ========================================================
+     */
+
+    GOI_DICH_VU_KHONG_TIM_THAY: 'GOI_DICH_VU_KHONG_TIM_THAY',
+    GOI_DICH_VU_KHONG_HOAT_DONG: 'GOI_DICH_VU_KHONG_HOAT_DONG',
+    GOI_DICH_VU_DA_HET_HAN: 'GOI_DICH_VU_DA_HET_HAN',
+    GOI_DICH_VU_DA_DANG_KY: 'GOI_DICH_VU_DA_DANG_KY',
+    DANG_KY_GOI_KHONG_TIM_THAY: 'DANG_KY_GOI_KHONG_TIM_THAY',
+
+
+    /*
+     * ========================================================
+     * THANH TOÁN
+     * ========================================================
+     */
+
+    THANH_TOAN_KHONG_TIM_THAY: 'THANH_TOAN_KHONG_TIM_THAY',
+    THANH_TOAN_KHONG_HOP_LE: 'THANH_TOAN_KHONG_HOP_LE',
+    THANH_TOAN_THAT_BAI: 'THANH_TOAN_THAT_BAI',
+    THANH_TOAN_DA_XU_LY: 'THANH_TOAN_DA_XU_LY',
+    THANH_TOAN_HET_HAN: 'THANH_TOAN_HET_HAN',
+    HOAN_TIEN_THAT_BAI: 'HOAN_TIEN_THAT_BAI',
+
+
+    /*
+     * ========================================================
+     * UPLOAD
+     * ========================================================
+     */
+
+    UPLOAD_KHONG_CO_TEP: 'UPLOAD_KHONG_CO_TEP',
+    UPLOAD_VUOT_SO_TEP: 'UPLOAD_VUOT_SO_TEP',
+    UPLOAD_VUOT_SO_TRUONG: 'UPLOAD_VUOT_SO_TRUONG',
+    UPLOAD_TRUONG_QUA_LON: 'UPLOAD_TRUONG_QUA_LON',
+    UPLOAD_TRUONG_KHONG_HOP_LE: 'UPLOAD_TRUONG_KHONG_HOP_LE',
+
+
+    /*
+     * ========================================================
+     * TỆP
+     * ========================================================
+     */
+
+    TEP_KHONG_TIM_THAY: 'TEP_KHONG_TIM_THAY',
+    TEP_KHONG_HOP_LE: 'TEP_KHONG_HOP_LE',
+    TEP_VUOT_KICH_THUOC: 'TEP_VUOT_KICH_THUOC',
+    TEP_DINH_DANG_KHONG_HO_TRO: 'TEP_DINH_DANG_KHONG_HO_TRO',
+    TEP_MIME_KHONG_HOP_LE: 'TEP_MIME_KHONG_HOP_LE',
+    TEP_BI_HONG: 'TEP_BI_HONG',
+    TEP_HET_HAN: 'TEP_HET_HAN',
+    TEP_DA_XOA: 'TEP_DA_XOA',
+    TEP_KHONG_THE_DOC: 'TEP_KHONG_THE_DOC',
+    TEP_KHONG_THE_GHI: 'TEP_KHONG_THE_GHI',
+    PHIEN_BAN_TEP_KHONG_TIM_THAY: 'PHIEN_BAN_TEP_KHONG_TIM_THAY',
+
+
+    /*
+     * ========================================================
+     * STORAGE
+     * ========================================================
+     */
+
+    STORAGE_KHONG_KHA_DUNG: 'STORAGE_KHONG_KHA_DUNG',
+    STORAGE_KHONG_TIM_THAY_TEP: 'STORAGE_KHONG_TIM_THAY_TEP',
+    STORAGE_DOC_THAT_BAI: 'STORAGE_DOC_THAT_BAI',
+    STORAGE_GHI_THAT_BAI: 'STORAGE_GHI_THAT_BAI',
+    STORAGE_XOA_THAT_BAI: 'STORAGE_XOA_THAT_BAI',
+    STORAGE_SAO_CHEP_THAT_BAI: 'STORAGE_SAO_CHEP_THAT_BAI',
+    STORAGE_CAU_HINH_KHONG_HOP_LE: 'STORAGE_CAU_HINH_KHONG_HOP_LE',
+
+
+    /*
+     * ========================================================
+     * CÔNG VIỆC
+     * ========================================================
+     */
+
+    CONG_VIEC_KHONG_TIM_THAY: 'CONG_VIEC_KHONG_TIM_THAY',
+    CONG_VIEC_KHONG_HOP_LE: 'CONG_VIEC_KHONG_HOP_LE',
+    CONG_VIEC_DA_HOAN_THANH: 'CONG_VIEC_DA_HOAN_THANH',
+    CONG_VIEC_DA_HUY: 'CONG_VIEC_DA_HUY',
+    CONG_VIEC_KHONG_THE_HUY: 'CONG_VIEC_KHONG_THE_HUY',
+    CONG_VIEC_THAT_BAI: 'CONG_VIEC_THAT_BAI',
+    CONG_VIEC_VUOT_SO_LAN_THU: 'CONG_VIEC_VUOT_SO_LAN_THU',
+
+
+    /*
+     * ========================================================
+     * CHUYỂN ĐỔI
+     * ========================================================
+     */
+
+    CHUYEN_DOI_KHONG_HO_TRO: 'CHUYEN_DOI_KHONG_HO_TRO',
+    CHUYEN_DOI_KHONG_TIM_THAY_CONVERTER: 'CHUYEN_DOI_KHONG_TIM_THAY_CONVERTER',
+    CHUYEN_DOI_KHONG_TIM_THAY_DUONG_DI: 'CHUYEN_DOI_KHONG_TIM_THAY_DUONG_DI',
+    CHUYEN_DOI_THAT_BAI: 'CHUYEN_DOI_THAT_BAI',
+    CHUYEN_DOI_TIMEOUT: 'CHUYEN_DOI_TIMEOUT',
+    CHUYEN_DOI_KET_QUA_KHONG_HOP_LE: 'CHUYEN_DOI_KET_QUA_KHONG_HOP_LE',
+    CONG_CU_KHONG_TIM_THAY: 'CONG_CU_KHONG_TIM_THAY',
+    CONG_CU_THUC_THI_THAT_BAI: 'CONG_CU_THUC_THI_THAT_BAI',
+
+
+    /*
+     * ========================================================
+     * OCR
+     * ========================================================
+     */
+
+    OCR_KHONG_HO_TRO: 'OCR_KHONG_HO_TRO',
+    OCR_THAT_BAI: 'OCR_THAT_BAI',
+    OCR_TIMEOUT: 'OCR_TIMEOUT',
+
+
+    /*
+     * ========================================================
+     * DỊCH
+     * ========================================================
+     */
+
+    DICH_KHONG_HO_TRO: 'DICH_KHONG_HO_TRO',
+    DICH_THAT_BAI: 'DICH_THAT_BAI',
+    DICH_TIMEOUT: 'DICH_TIMEOUT',
+    NGON_NGU_KHONG_HO_TRO: 'NGON_NGU_KHONG_HO_TRO',
+
+
+    /*
+     * ========================================================
+     * AI
+     * ========================================================
+     */
+
+    AI_KHONG_KHA_DUNG: 'AI_KHONG_KHA_DUNG',
+    AI_THAT_BAI: 'AI_THAT_BAI',
+    AI_TIMEOUT: 'AI_TIMEOUT',
+    AI_PHAN_HOI_KHONG_HOP_LE: 'AI_PHAN_HOI_KHONG_HOP_LE',
+
+
+    /*
+     * ========================================================
+     * QUEUE
+     * ========================================================
+     */
+
+    QUEUE_KHONG_KHA_DUNG: 'QUEUE_KHONG_KHA_DUNG',
+    QUEUE_THEM_CONG_VIEC_THAT_BAI: 'QUEUE_THEM_CONG_VIEC_THAT_BAI',
+    QUEUE_CONG_VIEC_KHONG_TIM_THAY: 'QUEUE_CONG_VIEC_KHONG_TIM_THAY',
+    QUEUE_WORKER_THAT_BAI: 'QUEUE_WORKER_THAT_BAI',
+
+
+    /*
+     * ========================================================
+     * REDIS
+     * ========================================================
+     */
+
+    REDIS_KHONG_KHA_DUNG: 'REDIS_KHONG_KHA_DUNG',
+    REDIS_DOC_THAT_BAI: 'REDIS_DOC_THAT_BAI',
+    REDIS_GHI_THAT_BAI: 'REDIS_GHI_THAT_BAI',
+
+
+    /*
+     * ========================================================
+     * DATABASE
+     * ========================================================
+     */
+
+    DATABASE_KHONG_KHA_DUNG: 'DATABASE_KHONG_KHA_DUNG',
+    DATABASE_TRUY_VAN_THAT_BAI: 'DATABASE_TRUY_VAN_THAT_BAI',
+    DATABASE_DU_LIEU_TRUNG: 'DATABASE_DU_LIEU_TRUNG',
+    DATABASE_KHOA_NGOAI_KHONG_HOP_LE: 'DATABASE_KHOA_NGOAI_KHONG_HOP_LE',
+    DATABASE_THIEU_DU_LIEU: 'DATABASE_THIEU_DU_LIEU',
+    DATABASE_DU_LIEU_KHONG_HOP_LE: 'DATABASE_DU_LIEU_KHONG_HOP_LE',
+    DATABASE_GIAO_DICH_XUNG_DOT: 'DATABASE_GIAO_DICH_XUNG_DOT',
+    DATABASE_DEADLOCK: 'DATABASE_DEADLOCK',
+    DATABASE_TIMEOUT: 'DATABASE_TIMEOUT',
+
+
+    /*
+     * ========================================================
+     * TÍCH HỢP NGOÀI
+     * ========================================================
+     */
+
+    DICH_VU_NGOAI_KHONG_KHA_DUNG: 'DICH_VU_NGOAI_KHONG_KHA_DUNG',
+    DICH_VU_NGOAI_TIMEOUT: 'DICH_VU_NGOAI_TIMEOUT',
+    DICH_VU_NGOAI_PHAN_HOI_KHONG_HOP_LE: 'DICH_VU_NGOAI_PHAN_HOI_KHONG_HOP_LE'
+});
+
+
+module.exports = MA_LOI;
