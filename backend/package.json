@@ -1,0 +1,53 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "worker": "node src/workers/worker.js",
+    "worker:tai-lieu": "node src/workers/tai-lieu.worker.js",
+    "worker:du-lieu": "node src/workers/du-lieu.worker.js",
+    "worker:nen": "node src/workers/nen.worker.js",
+    "worker:hinh-anh": "node src/workers/hinh-anh.worker.js",
+    "worker:ocr": "node src/workers/ocr.worker.js",
+    "worker:dich": "node src/workers/dich.worker.js",
+    "worker:ai": "node src/workers/ai.worker.js",
+    "test": "node --test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@transform/shared": "file:../shared",
+    "adm-zip": "^0.6.1",
+    "bcrypt": "^6.0.0",
+    "bullmq": "^6.3.7",
+    "compression": "^1.8.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "csv-parse": "^7.0.2",
+    "csv-stringify": "^6.8.3",
+    "dotenv": "^18.0.0",
+    "express": "^5.2.1",
+    "fast-xml-parser": "^5.11.1",
+    "helmet": "^8.3.0",
+    "ioredis": "^6.0.0",
+    "joi": "^18.2.9",
+    "jsonwebtoken": "^9.0.3",
+    "mime-types": "^3.0.2",
+    "multer": "^2.4.0",
+    "pdf-lib": "^1.17.1",
+    "pg": "^8.23.0",
+    "sharp": "^0.35.4",
+    "tar": "^7.5.22",
+    "uuid": "^14.0.2",
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "eslint": "^10.10.0",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2"
+  }
+}

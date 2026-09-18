@@ -1,0 +1,26 @@
+{
+    "name": "@transform/shared",
+    "version": "1.0.0",
+    "description": "Cac hang so, schema va contract dung chung cho Transform Platform",
+    "main": "index.js",
+    "type": "commonjs",
+    "private": true,
+    "files": [
+        "index.js",
+        "constants",
+        "schemas"
+    ],
+    "engines": {
+        "node": ">=20.9.0"
+    },
+    "scripts": {
+        "check": "node -e \"require('./index.js'); console.log('Shared OK')\""
+    },
+    "keywords": [
+        "transform",
+        "shared",
+        "constants",
+        "schemas"
+    ],
+    "license": "UNLICENSED"
+}
