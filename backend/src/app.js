@@ -12,7 +12,7 @@ const routes = require('./routes');
 const khongTimThay = require('./middlewares/khong-tim-thay');
 const xuLyLoi = require('./middlewares/xu-ly-loi');
 const app = express();
-
+const { chuanHoaNgayGioJson } = require('./utils/ngay-gio');
 app.disable('x-powered-by');
 app.set('trust proxy', env.ungDung.trustProxy);
 app.set('json escape', true);

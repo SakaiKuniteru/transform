@@ -184,6 +184,19 @@ const schema = Joi.object({
 
     /*
      * =========================================================
+     * OTP
+     * =========================================================
+     */
+
+    OTP_SECRET: Joi.string().min(32).required(),
+    OTP_LENGTH: Joi.number().integer().min(4).max(10).default(6),
+    OTP_TTL_SECONDS: Joi.number().integer().min(60).default(600),
+    OTP_MAX_ATTEMPTS: Joi.number().integer().min(1).default(5),
+    OTP_RESEND_COOLDOWN_SECONDS: Joi.number().integer().min(0).default(60),
+    OTP_MAX_SENDS_PER_HOUR: Joi.number().integer().min(1).default(5),
+
+    /*
+     * =========================================================
      * COOKIE
      * =========================================================
      */
@@ -466,6 +479,15 @@ const config = {
         uploadMaxFieldSizeMb: value.UPLOAD_MAX_FIELD_SIZE_MB
     },
 
+    otp: {
+        secret: value.OTP_SECRET,
+        length: value.OTP_LENGTH,
+        ttlSeconds: value.OTP_TTL_SECONDS,
+        maxAttempts: value.OTP_MAX_ATTEMPTS,
+        resendCooldownSeconds: value.OTP_RESEND_COOLDOWN_SECONDS,
+        maxSendsPerHour: value.OTP_MAX_SENDS_PER_HOUR
+    },
+
     congCu: {
         defaultTimeoutMs: value.PROCESS_DEFAULT_TIMEOUT_MS,
         maxBufferBytes: value.PROCESS_MAX_BUFFER_BYTES,
@@ -519,7 +541,8 @@ function kiemTraProduction() {
     const secretMau = [
         config.baoMat.jwtAccessSecret,
         config.baoMat.jwtRefreshSecret,
-        config.baoMat.cookieSecret
+        config.baoMat.cookieSecret,
+        config.otp.secret
     ].some((secret) => secret.startsWith('change-me-'));
 
     if (secretMau) {
