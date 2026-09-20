@@ -40,6 +40,22 @@ const ROUTE_MODULES = Object.freeze([
     {
         path: '/chuyen-doi',
         modulePath: '../modules/chuyen-doi/chuyen-doi.route'
+    },
+    {
+        path: '/goi-dich-vu',
+        modulePath: '../modules/goi-dich-vu/goi-dich-vu.route'
+    },
+    {
+        path: '/dang-ky-goi',
+        modulePath: '../modules/dang-ky-goi/dang-ky-goi.route'
+    },
+    {
+        path: '/chinh-sach-han-muc',
+        modulePath: '../modules/chinh-sach-han-muc/chinh-sach-han-muc.route'
+    },
+    {
+        path: '/han-muc',
+        modulePath: '../modules/han-muc/han-muc.route'
     }
 ]);
 
