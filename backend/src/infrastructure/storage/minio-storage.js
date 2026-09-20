@@ -5,14 +5,14 @@ const { Client } = require('minio');
 const StorageInterface = require('./storage.interface');
 
 function chuanHoaKhoa(khoa) {
-    if (typeof khoa !== 'string' || !khoa.trim()) {
-        throw new TypeError('Khóa lưu trữ không hợp lệ.');
-    }
+    if (typeof khoa !== 'string' || !khoa.trim()) { throw new TypeError('Khóa lưu trữ không hợp lệ.'); }
     const ketQua = khoa.trim().replaceAll('\\', '/').replace(/^\/+/, '');
-    if (!ketQua || ketQua.includes('../') || ketQua === '..') {
-        throw new TypeError('Khóa lưu trữ không hợp lệ.');
-    }
+    if (!ketQua || ketQua.includes('../') || ketQua === '..') { throw new TypeError('Khóa lưu trữ không hợp lệ.'); }
     return ketQua;
+}
+
+function laKhongTimThay(error) {
+    return ['NotFound', 'NoSuchKey', 'NoSuchObject'].includes(error?.code);
 }
 
 class MinioStorage extends StorageInterface {
@@ -23,6 +23,9 @@ class MinioStorage extends StorageInterface {
         this.bucket = config.bucket;
         this.region = config.region || 'us-east-1';
         this.prefix = String(config.prefix || '').replace(/^\/+|\/+$/g, '');
+        this.autoCreateBucket = config.autoCreateBucket === true;
+        this.daSanSang = false;
+        this.dangDamBaoSanSang = null;
         this.client = new Client({
             endPoint: config.endpoint,
             port: Number(config.port || 9000),
@@ -37,10 +40,31 @@ class MinioStorage extends StorageInterface {
         return this.prefix ? `${this.prefix}/${khoaHopLe}` : khoaHopLe;
     }
 
-    async damBaoSanSang() {
+    async kiemTraKetNoi() {
         const tonTai = await this.client.bucketExists(this.bucket);
-        if (!tonTai) { await this.client.makeBucket(this.bucket, this.region); }
-        return true;
+        return {
+            driver: 'minio',
+            ready: tonTai,
+            bucket: this.bucket,
+            region: this.region
+        };
+    }
+
+    async damBaoSanSang() {
+        if (this.daSanSang) { return true; }
+        if (this.dangDamBaoSanSang) { return this.dangDamBaoSanSang; }
+        this.dangDamBaoSanSang = (async () => {
+            const tonTai = await this.client.bucketExists(this.bucket);
+            if (!tonTai) {
+                if (!this.autoCreateBucket) { throw new Error(`MinIO bucket "${this.bucket}" không tồn tại.`); }
+                await this.client.makeBucket(this.bucket, this.region);
+            }
+            this.daSanSang = true;
+            return true;
+        })();
+        try {
+            return await this.dangDamBaoSanSang;
+        } finally { this.dangDamBaoSanSang = null; }
     }
 
     taoMetadata(options = {}) {
@@ -53,38 +77,29 @@ class MinioStorage extends StorageInterface {
         if (!Buffer.isBuffer(buffer)) { throw new TypeError('Dữ liệu lưu trữ phải là Buffer.'); }
         await this.damBaoSanSang();
         const objectName = this.layKhoa(khoa);
-        await this.client.putObject(
-            this.bucket,
-            objectName,
-            buffer,
-            buffer.length,
-            this.taoMetadata(options)
-        );
+        const ketQua = await this.client.putObject(this.bucket, objectName, buffer, buffer.length, this.taoMetadata(options));
         return {
             khoa: chuanHoaKhoa(khoa),
             objectName,
-            kichThuoc: buffer.length
+            kichThuoc: buffer.length,
+            etag: ketQua?.etag || null,
+            versionId: ketQua?.versionId || null
         };
     }
 
     async luuTuTep(khoa, duongDanNguon, options = {}) {
-        if (typeof duongDanNguon !== 'string' || !duongDanNguon.trim()) {
-            throw new TypeError('Đường dẫn tệp nguồn không hợp lệ.');
-        }
+        if (typeof duongDanNguon !== 'string' || !duongDanNguon.trim()) { throw new TypeError('Đường dẫn tệp nguồn không hợp lệ.'); }
         await fs.promises.access(duongDanNguon, fs.constants.R_OK);
         await this.damBaoSanSang();
         const objectName = this.layKhoa(khoa);
-        await this.client.fPutObject(
-            this.bucket,
-            objectName,
-            duongDanNguon,
-            this.taoMetadata(options)
-        );
+        const ketQua = await this.client.fPutObject(this.bucket, objectName, duongDanNguon, this.taoMetadata(options));
         const thongTin = await fs.promises.stat(duongDanNguon);
         return {
             khoa: chuanHoaKhoa(khoa),
             objectName,
-            kichThuoc: thongTin.size
+            kichThuoc: thongTin.size,
+            etag: ketQua?.etag || null,
+            versionId: ketQua?.versionId || null
         };
     }
 
@@ -101,22 +116,18 @@ class MinioStorage extends StorageInterface {
     }
 
     async tonTai(khoa) {
+        await this.damBaoSanSang();
         try {
             await this.client.statObject(this.bucket, this.layKhoa(khoa));
             return true;
         } catch (error) {
-            if (
-                error.code === 'NotFound' ||
-                error.code === 'NoSuchKey' ||
-                error.code === 'NoSuchObject'
-            ) {
-                return false;
-            }
+            if (laKhongTimThay(error)) { return false; }
             throw error;
         }
     }
 
     async layThongTin(khoa) {
+        await this.damBaoSanSang();
         try {
             const thongTin = await this.client.statObject(this.bucket, this.layKhoa(khoa));
             return {
@@ -127,48 +138,36 @@ class MinioStorage extends StorageInterface {
                 metadata: thongTin.metaData || {}
             };
         } catch (error) {
-            if (
-                error.code === 'NotFound' ||
-                error.code === 'NoSuchKey' ||
-                error.code === 'NoSuchObject'
-            ) {
-                return null;
-            }
+            if (laKhongTimThay(error)) { return null; }
             throw error;
         }
     }
 
     async xoa(khoa) {
+        await this.damBaoSanSang();
         await this.client.removeObject(this.bucket, this.layKhoa(khoa));
         return true;
     }
 
     async diChuyen(khoaNguon, khoaDich) {
+        await this.damBaoSanSang();
         const objectNguon = this.layKhoa(khoaNguon);
         const objectDich = this.layKhoa(khoaDich);
-        await this.client.copyObject(
-            this.bucket,
-            objectDich,
-            `/${this.bucket}/${objectNguon}`
-        );
+        const ketQua = await this.client.copyObject(this.bucket, objectDich, `/${this.bucket}/${objectNguon}`);
         await this.client.removeObject(this.bucket, objectNguon);
         return {
             khoa: chuanHoaKhoa(khoaDich),
-            objectName: objectDich
+            objectName: objectDich,
+            etag: ketQua?.etag || null,
+            versionId: ketQua?.versionId || null
         };
     }
 
     async taoUrlTamThoi(khoa, expiresSeconds = 900) {
-        if (!Number.isSafeInteger(expiresSeconds) || expiresSeconds <= 0) {
-            throw new TypeError('Thời gian hết hạn URL không hợp lệ.');
-        }
-        return this.client.presignedGetObject(
-            this.bucket,
-            this.layKhoa(khoa),
-            expiresSeconds
-        );
+        if (!Number.isSafeInteger(expiresSeconds) || expiresSeconds <= 0) { throw new TypeError('Thời gian hết hạn URL không hợp lệ.'); }
+        await this.damBaoSanSang();
+        return this.client.presignedGetObject(this.bucket, this.layKhoa(khoa), expiresSeconds);
     }
-
 }
 
 module.exports = MinioStorage;

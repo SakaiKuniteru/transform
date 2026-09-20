@@ -1,6 +1,8 @@
 'use strict';
 
 const service = require('./cong-viec.service');
+const MA_LOI = require('../../constants/ma-loi');
+const { loiChuaXacThuc } = require('../../utils/loi');
 
 function thanhCong(res, { statusCode = 200, message = null, data = null } = {}) {
     return res.status(statusCode).json({
@@ -22,10 +24,7 @@ function layChuThe(req) {
             phienKhachId: req.phienKhach?.id || req.phienKhachId
         };
     }
-    const error = new Error('Không xác định được chủ sở hữu công việc.');
-    error.statusCode = 401;
-    error.code = 'KHONG_XAC_DINH_DUOC_CHU_SO_HUU_CONG_VIEC';
-    throw error;
+    throw loiChuaXacThuc('Không xác định được chủ sở hữu công việc.', MA_LOI.KHONG_XAC_DINH_DUOC_CHU_SO_HUU_CONG_VIEC);
 }
 
 async function getCuaToi(req, res, next) {

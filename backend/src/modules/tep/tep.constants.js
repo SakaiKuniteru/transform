@@ -14,8 +14,10 @@ const TRANG_THAI_TEP = Object.freeze({
 
 const LOAI_PHIEN_BAN_TEP = Object.freeze({
     GOC: 'GOC',
+    LAM_VIEC: 'LAM_VIEC',
     KET_QUA: 'KET_QUA',
-    TAM: 'TAM'
+    TRUNG_GIAN: 'TRUNG_GIAN',
+    XEM_TRUOC: 'XEM_TRUOC'
 });
 
 const TRANG_THAI_PHIEN_BAN_TEP = Object.freeze({

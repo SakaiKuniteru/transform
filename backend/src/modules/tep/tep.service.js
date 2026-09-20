@@ -3,31 +3,25 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
-const env = require('../../config/env');
 const repository = require('./tep.repository');
+const MA_LOI = require('../../constants/ma-loi');
+const { taoLoiTheoStatus: taoLoi } = require('../../utils/loi');
 const storageService = require('../../infrastructure/storage/storage.service');
 const {
     giaoDich,
     ISOLATION_LEVEL
 } = require('../../infrastructure/database/transaction');
 
-function taoLoi(statusCode, message, code = 'LOI_TEP') {
-    const error = new Error(message);
-    error.statusCode = statusCode;
-    error.code = code;
-    return error;
-}
-
 function parseId(value) {
     const id = Number(value);
-    if (!Number.isSafeInteger(id) || id <= 0) { throw taoLoi(400, 'ID tệp không hợp lệ.', 'ID_TEP_KHONG_HOP_LE'); }
+    if (!Number.isSafeInteger(id) || id <= 0) { throw taoLoi(400, 'ID tệp không hợp lệ.', MA_LOI.ID_TEP_KHONG_HOP_LE); }
     return id;
 }
 
 function chuanHoaChuThe(chuThe = {}) {
     const coNguoiDung = chuThe.nguoiDungId !== undefined && chuThe.nguoiDungId !== null;
     const coPhienKhach = chuThe.phienKhachId !== undefined && chuThe.phienKhachId !== null;
-    if (coNguoiDung === coPhienKhach) { throw taoLoi(400, 'Chủ sở hữu tệp không hợp lệ.', 'CHU_SO_HUU_TEP_KHONG_HOP_LE'); }
+    if (coNguoiDung === coPhienKhach) { throw taoLoi(400, 'Chủ sở hữu tệp không hợp lệ.', MA_LOI.CHU_SO_HUU_TEP_KHONG_HOP_LE); }
     return {
         nguoiDungId: coNguoiDung ? parseId(chuThe.nguoiDungId) : null,
         phienKhachId: coPhienKhach ? parseId(chuThe.phienKhachId) : null
@@ -36,8 +30,8 @@ function chuanHoaChuThe(chuThe = {}) {
 
 function chuanHoaTenTep(value) {
     const ten = path.basename(String(value || '').replaceAll('\\', '/')).trim();
-    if (!ten) { throw taoLoi(400, 'Tên tệp không hợp lệ.', 'TEN_TEP_KHONG_HOP_LE'); }
-    if (ten.length > 255) { throw taoLoi(400, 'Tên tệp không được vượt quá 255 ký tự.', 'TEN_TEP_QUA_DAI'); }
+    if (!ten) { throw taoLoi(400, 'Tên tệp không hợp lệ.', MA_LOI.TEN_TEP_KHONG_HOP_LE); }
+    if (ten.length > 255) { throw taoLoi(400, 'Tên tệp không được vượt quá 255 ký tự.', MA_LOI.TEN_TEP_QUA_DAI); }
     return ten;
 }
 
@@ -45,10 +39,6 @@ function layPhanMoRong(tenTep) {
     const extension = path.extname(tenTep).toLowerCase().replace(/^\./, '');
     if (!extension || extension.length > 32) { return null; }
     return extension;
-}
-
-function layStorageBucket() {
-    return env.storage.driver === 'minio' ? env.storage.minio.bucket : null;
 }
 
 async function tinhSha256(duongDan) {
@@ -62,10 +52,10 @@ async function tinhSha256(duongDan) {
 }
 
 async function taoThongTinUpload(file) {
-    if (!file?.path) { throw taoLoi(400, 'Tệp upload không có đường dẫn tạm.', 'TEP_UPLOAD_KHONG_HOP_LE'); }
+    if (!file?.path) { throw taoLoi(400, 'Tệp upload không có đường dẫn tạm.', MA_LOI.TEP_UPLOAD_KHONG_HOP_LE); }
     const tenTep = chuanHoaTenTep(file.originalname);
     const stat = await fs.promises.stat(file.path);
-    if (!stat.isFile()) { throw taoLoi(400, 'Dữ liệu upload không phải là tệp hợp lệ.', 'TEP_UPLOAD_KHONG_HOP_LE'); }
+    if (!stat.isFile()) { throw taoLoi(400, 'Dữ liệu upload không phải là tệp hợp lệ.', MA_LOI.TEP_UPLOAD_KHONG_HOP_LE); }
     const phanMoRong = layPhanMoRong(tenTep);
     return {
         file,
@@ -89,7 +79,7 @@ async function xoaStorageDaTao(danhSach) {
 
 async function upload(danhSachFile, chuThe) {
     const owner = chuanHoaChuThe(chuThe);
-    if (!Array.isArray(danhSachFile) || danhSachFile.length === 0) { throw taoLoi(400, 'Không có tệp nào được tải lên.', 'UPLOAD_KHONG_CO_TEP'); }
+    if (!Array.isArray(danhSachFile) || danhSachFile.length === 0) { throw taoLoi(400, 'Không có tệp nào được tải lên.', MA_LOI.UPLOAD_KHONG_CO_TEP); }
     await storageService.damBaoSanSang();
     const danhSachThongTin = [];
     const danhSachDaLuuStorage = [];
@@ -97,7 +87,7 @@ async function upload(danhSachFile, chuThe) {
         for (const file of danhSachFile) {
             const thongTin = await taoThongTinUpload(file);
             danhSachThongTin.push(thongTin);
-            await storageService.luuTepUpload(file, {
+            const storage = await storageService.luuTepUpload(file, {
                 khoa: thongTin.storageKey,
                 loai: storageService.LOAI_THU_MUC.ORIGINAL,
                 metadata: {
@@ -105,6 +95,7 @@ async function upload(danhSachFile, chuThe) {
                     hashSha256: thongTin.hashSha256
                 }
             });
+            thongTin.storage = storage;
             danhSachDaLuuStorage.push(thongTin);
         }
         return await giaoDich(async (db) => {
@@ -131,10 +122,10 @@ async function upload(danhSachFile, chuThe) {
                     mimeType: thongTin.mimeType,
                     kichThuocBytes: thongTin.kichThuocBytes,
                     hashSha256: thongTin.hashSha256,
-                    storageDriver: env.storage.driver,
-                    storageBucket: layStorageBucket(),
-                    storageKey: thongTin.storageKey,
-                    storageEtag: null,
+                    storageDriver: thongTin.storage.driver,
+                    storageBucket: thongTin.storage.bucket,
+                    storageKey: thongTin.storage.khoa,
+                    storageEtag: thongTin.storage.etag,
                     metadata: {
                         fieldName: thongTin.file.fieldname || null,
                         encoding: thongTin.file.encoding || null
@@ -187,7 +178,7 @@ async function getChiTiet(id, chuThe) {
     const tepId = parseId(id);
     const owner = chuanHoaChuThe(chuThe);
     const tep = await repository.getChiTiet(tepId, owner);
-    if (!tep) { throw taoLoi(404, 'Tệp không tồn tại hoặc không thuộc quyền sở hữu của bạn.', 'TEP_KHONG_TON_TAI'); }
+    if (!tep) { throw taoLoi(404, 'Tệp không tồn tại hoặc không thuộc quyền sở hữu của bạn.', MA_LOI.TEP_KHONG_TIM_THAY); }
     return tep;
 }
 
@@ -202,16 +193,16 @@ async function capNhat(id, chuThe, data = {}) {
         thuocTinh: data.thuocTinh
     };
     const row = await repository.capNhat(tepId, owner, duLieu);
-    if (!row) { throw taoLoi(404, 'Tệp không tồn tại.', 'TEP_KHONG_TON_TAI'); }
+    if (!row) { throw taoLoi(404, 'Tệp không tồn tại.', MA_LOI.TEP_KHONG_TIM_THAY); }
     return getChiTiet(tepId, owner);
 }
 
 async function getTaiXuong(id, chuThe) {
     const tep = await getChiTiet(id, chuThe);
     const phienBan = tep.phienBanHienTai;
-    if (!phienBan || phienBan.trangThai !== 'SAN_SANG') { throw taoLoi(409, 'Tệp chưa sẵn sàng để tải xuống.', 'TEP_CHUA_SAN_SANG'); }
+    if (!phienBan || phienBan.trangThai !== 'SAN_SANG') { throw taoLoi(409, 'Tệp chưa sẵn sàng để tải xuống.', MA_LOI.TEP_CHUA_SAN_SANG); }
     const tonTai = await storageService.tonTai(phienBan.storageKey);
-    if (!tonTai) { throw taoLoi(404, 'Dữ liệu vật lý của tệp không còn tồn tại.', 'STORAGE_TEP_KHONG_TON_TAI'); }
+    if (!tonTai) { throw taoLoi(404, 'Dữ liệu vật lý của tệp không còn tồn tại.', MA_LOI.STORAGE_KHONG_TIM_THAY_TEP); }
     return {
         tep,
         phienBan,
@@ -227,7 +218,7 @@ async function xoa(id, chuThe) {
     const daXoa = await giaoDich(async (db) => repository.xoaMem(tepId, owner, db), {
         isolationLevel: ISOLATION_LEVEL.READ_COMMITTED
     });
-    if (!daXoa) { throw taoLoi(404, 'Tệp không tồn tại.', 'TEP_KHONG_TON_TAI'); }
+    if (!daXoa) { throw taoLoi(404, 'Tệp không tồn tại.', MA_LOI.TEP_KHONG_TIM_THAY); }
     const ketQuaXoaStorage = await Promise.allSettled(danhSachStorage.map((item) => storageService.xoa(item.storageKey)));
     return {
         id: tepId,

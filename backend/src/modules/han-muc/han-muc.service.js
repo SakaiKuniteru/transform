@@ -1,7 +1,9 @@
 'use strict';
 
 const repository = require('./han-muc.repository');
-
+const MA_LOI = require('../../constants/ma-loi');
+const { taoLoiTheoStatus: taoLoi } = require('../../utils/loi');
+const { LOAI_TAI_KHOAN } = require('../../constants/loai-tai-khoan');
 const {
     taoKyHanMuc,
     chuyenBigInt,
@@ -10,44 +12,25 @@ const {
     taoLoiVuotHanMuc,
     batBuocDate
 } = require('./han-muc.util');
-
-const {
-    CHU_KY_HAN_MUC,
-    DANH_SACH_MA_HAN_MUC
-} = require('../../constants/han-muc');
-
-const {
-    giaoDich,
-    ISOLATION_LEVEL
-} = require('../../infrastructure/database/transaction');
-
-const TAI_KHOAN_KHONG_GIOI_HAN = new Set([
-    'QUAN_TRI',
-    'HE_THONG'
-]);
-
-function taoLoi(statusCode, message, code = 'LOI_HAN_MUC') {
-    const error = new Error(message);
-    error.statusCode = statusCode;
-    error.code = code;
-    return error;
-}
+const { CHU_KY_HAN_MUC, DANH_SACH_MA_HAN_MUC } = require('../../constants/han-muc');
+const { giaoDich, ISOLATION_LEVEL } = require('../../infrastructure/database/transaction');
+const TAI_KHOAN_KHONG_GIOI_HAN = new Set([ LOAI_TAI_KHOAN.QUAN_TRI, LOAI_TAI_KHOAN.HE_THONG ]);
 
 function parseId(value, ten) {
     const id = Number(value);
-    if (!Number.isSafeInteger(id) || id <= 0) { throw taoLoi(400, `${ten} không hợp lệ.`, 'ID_KHONG_HOP_LE'); }
+    if (!Number.isSafeInteger(id) || id <= 0) { throw taoLoi(400, `${ten} không hợp lệ.`, MA_LOI.ID_KHONG_HOP_LE); }
     return id;
 }
 
 function parseSoLuong(value) {
     const soLuong = Number(value);
-    if (!Number.isSafeInteger(soLuong) || soLuong <= 0) { throw taoLoi(400, 'Số lượng sử dụng hạn mức không hợp lệ.', 'SO_LUONG_KHONG_HOP_LE'); }
+    if (!Number.isSafeInteger(soLuong) || soLuong <= 0) { throw taoLoi(400, 'Số lượng sử dụng hạn mức không hợp lệ.', MA_LOI.SO_LUONG_KHONG_HOP_LE); }
     return soLuong;
 }
 
 function chuanHoaMaHanhDong(value) {
     const ma = String(value || '').trim().toUpperCase();
-    if (!ma || ma.length > 50) { throw taoLoi(400, 'Mã hành động hạn mức không hợp lệ.', 'MA_HANH_DONG_KHONG_HOP_LE'); }
+    if (!ma || ma.length > 50) { throw taoLoi(400, 'Mã hành động hạn mức không hợp lệ.', MA_LOI.MA_HANH_DONG_KHONG_HOP_LE); }
     return ma;
 }
 
@@ -56,14 +39,14 @@ function chuanHoaThoiDiem(value) {
     try {
         return batBuocDate(value);
     } catch {
-        throw taoLoi(400, 'Thời điểm kiểm tra hạn mức không hợp lệ.', 'THOI_DIEM_KHONG_HOP_LE');
+        throw taoLoi(400, 'Thời điểm kiểm tra hạn mức không hợp lệ.', MA_LOI.THOI_DIEM_KHONG_HOP_LE);
     }
 }
 
 function chuanHoaChuThe(input = {}) {
     const coNguoiDung = input.nguoiDungId !== undefined && input.nguoiDungId !== null;
     const coPhienKhach = input.phienKhachId !== undefined && input.phienKhachId !== null;
-    if (coNguoiDung === coPhienKhach) { throw taoLoi(400, 'Phải xác định duy nhất người dùng hoặc phiên khách.', 'CHU_THE_HAN_MUC_KHONG_HOP_LE'); }
+    if (coNguoiDung === coPhienKhach) { throw taoLoi(400, 'Phải xác định duy nhất người dùng hoặc phiên khách.', MA_LOI.CHU_THE_HAN_MUC_KHONG_HOP_LE); }
     return {
         nguoiDungId: coNguoiDung ? parseId(input.nguoiDungId, 'ID người dùng') : null,
         phienKhachId: coPhienKhach ? parseId(input.phienKhachId, 'ID phiên khách') : null
@@ -74,8 +57,8 @@ async function resolveChuThe(input, thoiDiem, db = null) {
     const chuThe = chuanHoaChuThe(input);
     if (chuThe.nguoiDungId) {
         const nguoiDung = await repository.getNguoiDungContext(chuThe.nguoiDungId, thoiDiem, db);
-        if (!nguoiDung) { throw taoLoi(404, 'Người dùng không tồn tại.', 'NGUOI_DUNG_KHONG_TON_TAI'); }
-        if (nguoiDung.trangThai !== 'HOAT_DONG') { throw taoLoi(403, 'Tài khoản hiện không hoạt động.', 'TAI_KHOAN_KHONG_HOAT_DONG'); }
+        if (!nguoiDung) { throw taoLoi(404, 'Người dùng không tồn tại.', MA_LOI.NGUOI_DUNG_KHONG_TIM_THAY); }
+        if (nguoiDung.trangThai !== 'HOAT_DONG') { throw taoLoi(403, 'Tài khoản hiện không hoạt động.', MA_LOI.TAI_KHOAN_KHONG_HOAT_DONG); }
         return {
             ...chuThe,
             laKhach: false,
@@ -86,7 +69,7 @@ async function resolveChuThe(input, thoiDiem, db = null) {
         };
     }
     const phienKhach = await repository.getPhienKhachContext(chuThe.phienKhachId, thoiDiem, db);
-    if (!phienKhach) { throw taoLoi(401, 'Phiên khách không tồn tại hoặc đã hết hiệu lực.', 'PHIEN_KHACH_KHONG_HOP_LE'); }
+    if (!phienKhach) { throw taoLoi(401, 'Phiên khách không tồn tại hoặc đã hết hiệu lực.', MA_LOI.PHIEN_KHACH_KHONG_HOP_LE); }
     return {
         ...chuThe,
         laKhach: true,
@@ -135,7 +118,7 @@ async function resolveChinhSach(input, db = null) {
         goiDichVuId: chuThe.goiDichVuId,
         thoiDiem
     }, db);
-    if (!chinhSach) { throw taoLoi(500, `Chưa cấu hình chính sách hạn mức cho hành động "${maHanhDong}".`, 'CHINH_SACH_HAN_MUC_CHUA_CAU_HINH'); }
+    if (!chinhSach) { throw taoLoi(500, `Chưa cấu hình chính sách hạn mức cho hành động "${maHanhDong}".`, MA_LOI.CHINH_SACH_HAN_MUC_CHUA_CAU_HINH); }
     return {
         chinhSach,
         chuThe,
@@ -382,7 +365,7 @@ async function layTinhTrangTraCuu(nguoiDungId, maHanhDong) {
         });
         return mapTinhTrangTraCuu(tinhTrang);
     } catch (error) {
-        if (error.code !== 'CHINH_SACH_HAN_MUC_CHUA_CAU_HINH') { throw error; }
+        if (error.code !== MA_LOI.CHINH_SACH_HAN_MUC_CHUA_CAU_HINH) { throw error; }
         return {
             maHanhDong: chuanHoaMaHanhDong(maHanhDong),
             trangThai: 'CHUA_CAU_HINH',
@@ -408,8 +391,8 @@ async function layTinhTrangTraCuu(nguoiDungId, maHanhDong) {
 async function getTongQuanNguoiDung(nguoiDungId) {
     const userId = parseId(nguoiDungId, 'ID người dùng');
     const context = await repository.getNguoiDungContext(userId);
-    if (!context) { throw taoLoi(404, 'Người dùng không tồn tại.', 'NGUOI_DUNG_KHONG_TON_TAI'); }
-    if (context.trangThai !== 'HOAT_DONG') { throw taoLoi(403, 'Tài khoản hiện không hoạt động.', 'TAI_KHOAN_KHONG_HOAT_DONG'); }
+    if (!context) { throw taoLoi(404, 'Người dùng không tồn tại.', MA_LOI.NGUOI_DUNG_KHONG_TIM_THAY); }
+    if (context.trangThai !== 'HOAT_DONG') { throw taoLoi(403, 'Tài khoản hiện không hoạt động.', MA_LOI.TAI_KHOAN_KHONG_HOAT_DONG); }
     const hanMuc = {};
     for (const maHanhDong of DANH_SACH_MA_HAN_MUC) {
         hanMuc[maHanhDong] = await layTinhTrangTraCuu(userId, maHanhDong);
@@ -426,8 +409,8 @@ async function getChiTietHanMucNguoiDung(nguoiDungId, maHanhDong) {
     const userId = parseId(nguoiDungId, 'ID người dùng');
     const ma = chuanHoaMaHanhDong(maHanhDong);
     const context = await repository.getNguoiDungContext(userId);
-    if (!context) { throw taoLoi(404, 'Người dùng không tồn tại.', 'NGUOI_DUNG_KHONG_TON_TAI'); }
-    if (context.trangThai !== 'HOAT_DONG') { throw taoLoi(403, 'Tài khoản hiện không hoạt động.', 'TAI_KHOAN_KHONG_HOAT_DONG'); }
+    if (!context) { throw taoLoi(404, 'Người dùng không tồn tại.', MA_LOI.NGUOI_DUNG_KHONG_TIM_THAY); }
+    if (context.trangThai !== 'HOAT_DONG') { throw taoLoi(403, 'Tài khoản hiện không hoạt động.', MA_LOI.TAI_KHOAN_KHONG_HOAT_DONG); }
     return {
         nguoiDung: mapNguoiDungTraCuu(context),
         dangKyGoi: mapDangKyGoiTraCuu(context),

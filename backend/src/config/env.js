@@ -118,6 +118,9 @@ const schema = Joi.object({
     STORAGE_OUTPUT_DIR: Joi.string().trim().min(1).default('output'),
     STORAGE_TEMP_DIR: Joi.string().trim().min(1).default('working/tmp'),
     STORAGE_SIGNED_URL_EXPIRES_SECONDS: Joi.number().integer().min(1).default(900),
+    STORAGE_TEMP_CLEANER_ENABLED: Joi.boolean().truthy('true').falsy('false').default(true),
+    STORAGE_TEMP_MAX_AGE_MS: Joi.number().integer().min(60000).default(86400000),
+    STORAGE_TEMP_CLEAN_INTERVAL_MS: Joi.number().integer().min(60000).default(3600000),
 
     /*
      * =========================================================
@@ -204,6 +207,8 @@ const schema = Joi.object({
     COOKIE_SECRET: Joi.string().min(32).required(),
     AUTH_REFRESH_COOKIE_NAME: Joi.string().trim().min(1).default('transform_refresh_token'),
     AUTH_REFRESH_COOKIE_MAX_AGE_MS: Joi.number().integer().min(60000).default(2592000000),
+    GUEST_SESSION_COOKIE_NAME: Joi.string().trim().min(1).default('transform_guest_token'),
+    GUEST_SESSION_TTL_MS: Joi.number().integer().min(60000).default(2592000000),
     COOKIE_SECURE: Joi.boolean().truthy('true').falsy('false').default(false),
     COOKIE_SAME_SITE: Joi.string().lowercase().valid('lax', 'strict', 'none').default('lax'),
     COOKIE_DOMAIN: Joi.string().allow('').default(''),
@@ -436,6 +441,9 @@ const config = {
         outputDir: value.STORAGE_OUTPUT_DIR,
         tempDir: value.STORAGE_TEMP_DIR,
         signedUrlExpiresSeconds: value.STORAGE_SIGNED_URL_EXPIRES_SECONDS,
+        tempCleanerEnabled: value.STORAGE_TEMP_CLEANER_ENABLED,
+        tempMaxAgeMs: value.STORAGE_TEMP_MAX_AGE_MS,
+        tempCleanIntervalMs: value.STORAGE_TEMP_CLEAN_INTERVAL_MS,
 
         minio: {
             endpoint: value.MINIO_ENDPOINT,
@@ -460,6 +468,8 @@ const config = {
         cookieSecret: value.COOKIE_SECRET,
         refreshCookieName: value.AUTH_REFRESH_COOKIE_NAME,
         refreshCookieMaxAgeMs: value.AUTH_REFRESH_COOKIE_MAX_AGE_MS,
+        guestSessionCookieName: value.GUEST_SESSION_COOKIE_NAME,
+        guestSessionTtlMs: value.GUEST_SESSION_TTL_MS,
         cookieSecure: value.COOKIE_SECURE,
         cookieSameSite: value.COOKIE_SAME_SITE,
         cookieDomain: value.COOKIE_DOMAIN || null,

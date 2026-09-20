@@ -4,15 +4,6 @@ const fs = require('node:fs');
 const path = require('node:path');
 const env = require('../../config/env');
 
-const MAC_DINH_QUA_HAN_MS = 24 * 60 * 60 * 1000;
-const MAC_DINH_CHU_KY_DON_MS = 60 * 60 * 1000;
-
-function taoLoi(message) {
-    const error = new Error(message);
-    error.code = 'LOI_DON_TEP_TAM';
-    return error;
-}
-
 function layTempDir() {
     const root = path.isAbsolute(env.storage.root) ? env.storage.root : path.resolve(env.backendRoot, env.storage.root);
     return path.resolve(root, env.storage.tempDir);
@@ -20,8 +11,7 @@ function layTempDir() {
 
 const TEMP_DIR = layTempDir();
 
-function parseSoNguyenDuong(value, macDinh, ten) {
-    if (value === undefined || value === null) { return macDinh; }
+function parseSoNguyenDuong(value, ten) {
     const number = Number(value);
     if (!Number.isSafeInteger(number) || number <= 0) { throw new TypeError(`${ten} phải là số nguyên dương.`); }
     return number;
@@ -35,26 +25,18 @@ function namTrongTempDir(duongDan) {
 }
 
 async function layDanhSachTepTam() {
-    try {
-        await fs.promises.mkdir(TEMP_DIR, { recursive: true });
-        return await fs.promises.readdir(TEMP_DIR, { withFileTypes: true });
-    } catch (error) {
-        throw taoLoi(`Không thể đọc thư mục tạm: ${error.message}`);
-    }
+    await fs.promises.mkdir(TEMP_DIR, { recursive: true });
+    return fs.promises.readdir(TEMP_DIR, { withFileTypes: true });
 }
 
 async function xoaDuongDanTam(duongDan) {
     if (!namTrongTempDir(duongDan)) { return false; }
-    try {
-        await fs.promises.rm(duongDan, { recursive: true, force: true });
-        return true;
-    } catch {
-        return false;
-    }
+    await fs.promises.rm(duongDan, { recursive: true, force: true });
+    return true;
 }
 
 async function donTepTamQuaHan(options = {}) {
-    const quaHanMs = parseSoNguyenDuong(options.quaHanMs, MAC_DINH_QUA_HAN_MS, 'Thời gian quá hạn');
+    const quaHanMs = parseSoNguyenDuong(options.quaHanMs ?? env.storage.tempMaxAgeMs, 'Thời gian quá hạn');
     const thoiDiem = options.thoiDiem instanceof Date ? options.thoiDiem : new Date();
     if (Number.isNaN(thoiDiem.getTime())) { throw new TypeError('Thời điểm dọn tệp tạm không hợp lệ.'); }
     const danhSach = await layDanhSachTepTam();
@@ -75,21 +57,19 @@ async function donTepTamQuaHan(options = {}) {
                 continue;
             }
             const daXoa = await xoaDuongDanTam(duongDan);
-            if (daXoa) {
-                ketQua.daXoa += 1;
-            } else {
-                ketQua.loi += 1;
-            }
-        } catch {
+            if (daXoa) { ketQua.daXoa += 1; }
+        } catch (error) {
             ketQua.loi += 1;
+            console.error(`[TempCleaner] Không thể xử lý "${duongDan}":`, error);
         }
     }
     return ketQua;
 }
 
 function taoTempCleaner(options = {}) {
-    const quaHanMs = parseSoNguyenDuong(options.quaHanMs, MAC_DINH_QUA_HAN_MS, 'Thời gian quá hạn');
-    const chuKyMs = parseSoNguyenDuong(options.chuKyMs, MAC_DINH_CHU_KY_DON_MS, 'Chu kỳ dọn');
+    const enabled = options.enabled ?? env.storage.tempCleanerEnabled;
+    const quaHanMs = parseSoNguyenDuong(options.quaHanMs ?? env.storage.tempMaxAgeMs, 'Thời gian quá hạn');
+    const chuKyMs = parseSoNguyenDuong(options.chuKyMs ?? env.storage.tempCleanIntervalMs, 'Chu kỳ dọn');
     let timer = null;
     let dangChay = false;
     async function chay() {
@@ -100,9 +80,13 @@ function taoTempCleaner(options = {}) {
         } finally { dangChay = false; }
     }
     function bat() {
-        if (timer) { return timer; }
+        if (!enabled || timer) { return timer; }
         timer = setInterval(() => {
-            void chay().catch(() => {});
+            void chay().then((ketQua) => {
+                if (ketQua?.daXoa || ketQua?.loi) { console.log('[TempCleaner]', ketQua); }
+            }).catch((error) => {
+                console.error('[TempCleaner] Dọn tệp tạm thất bại:', error);
+            });
         }, chuKyMs);
         timer.unref?.();
         return timer;
@@ -123,8 +107,6 @@ function taoTempCleaner(options = {}) {
 
 module.exports = {
     TEMP_DIR,
-    MAC_DINH_QUA_HAN_MS,
-    MAC_DINH_CHU_KY_DON_MS,
     namTrongTempDir,
     xoaDuongDanTam,
     donTepTamQuaHan,

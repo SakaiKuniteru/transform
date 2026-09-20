@@ -28,6 +28,15 @@ class LocalStorage extends StorageInterface {
         return true;
     }
 
+    async kiemTraKetNoi() {
+        await this.damBaoSanSang();
+        await fs.promises.access(this.root, fs.constants.R_OK | fs.constants.W_OK);
+        return {
+            driver: 'local',
+            ready: true,
+            root: this.root
+        };
+    }
     layDuongDanTuyetDoi(khoa) {
         const khoaHopLe = chuanHoaKhoa(khoa);
         const duongDan = path.resolve(this.root, ...khoaHopLe.split('/'));

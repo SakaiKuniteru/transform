@@ -14,14 +14,9 @@ function layRefreshToken(req) {
 }
 
 function taoTuyChonCookie() {
-    const options = {
-        httpOnly: true,
-        secure: Boolean(COOKIE_CONFIG?.secure),
-        sameSite: COOKIE_CONFIG?.sameSite || 'lax',
-        path: COOKIE_CONFIG?.refreshPath || '/api/v1/xac-thuc'
+    return {
+        ...COOKIE_CONFIG.refreshTokenOptions
     };
-    if (COOKIE_CONFIG?.domain) { options.domain = COOKIE_CONFIG.domain; }
-    return options;
 }
 
 function ganRefreshToken(res, refreshToken, hetHanLuc) {

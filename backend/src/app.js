@@ -13,6 +13,8 @@ const khongTimThay = require('./middlewares/khong-tim-thay');
 const xuLyLoi = require('./middlewares/xu-ly-loi');
 const app = express();
 const { chuanHoaNgayGioJson } = require('./utils/ngay-gio');
+const { rateLimitChung } = require('./middlewares/rate-limit');
+
 app.disable('x-powered-by');
 app.set('trust proxy', env.ungDung.trustProxy);
 app.set('json escape', true);
@@ -28,6 +30,7 @@ function requestIdMiddleware(req, res, next) {
 app.use(requestIdMiddleware);
 app.use(helmet(HELMET_OPTIONS));
 app.use(cors(CORS_OPTIONS));
+app.use(rateLimitChung);
 app.use(compression());
 app.use(express.json({ limit: env.ungDung.jsonLimit }));
 app.use(express.urlencoded({ extended: true, limit: env.ungDung.urlencodedLimit }));

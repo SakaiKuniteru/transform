@@ -2,32 +2,27 @@
 
 const hanMucService = require('../modules/han-muc/han-muc.service');
 const { MA_HAN_MUC } = require('../constants/han-muc');
+const MA_LOI = require('../constants/ma-loi');
+const { taoLoiTheoStatus: taoLoi } = require('../utils/loi');
 const {
     layDanhSachTep,
     xoaTepTamTrongRequest
 } = require('./upload');
 
-function taoLoi(statusCode, message, code = 'LOI_HAN_MUC_UPLOAD') {
-    const error = new Error(message);
-    error.statusCode = statusCode;
-    error.code = code;
-    return error;
-}
-
 function layUploadPolicy(req) {
-    if (!req.uploadPolicy?.daResolve) { throw taoLoi(500, 'Chính sách upload chưa được resolve.', 'UPLOAD_POLICY_CHUA_RESOLVE'); }
-    if (!req.uploadPolicy.chuThe) { throw taoLoi(500, 'Không xác định được chủ thể của chính sách upload.', 'UPLOAD_POLICY_THIEU_CHU_THE'); }
+    if (!req.uploadPolicy?.daResolve) { throw taoLoi(500, 'Chính sách upload chưa được resolve.', MA_LOI.UPLOAD_POLICY_CHUA_RESOLVE); }
+    if (!req.uploadPolicy.chuThe) { throw taoLoi(500, 'Không xác định được chủ thể của chính sách upload.', MA_LOI.UPLOAD_POLICY_THIEU_CHU_THE); }
     return req.uploadPolicy;
 }
 
 function kiemTraTepDaNhan(policy, danhSachTep) {
-    if (!Array.isArray(danhSachTep) || danhSachTep.length === 0) { throw taoLoi(400, 'Không có tệp nào được tải lên.', 'UPLOAD_KHONG_CO_TEP'); }
+    if (!Array.isArray(danhSachTep) || danhSachTep.length === 0) { throw taoLoi(400, 'Không có tệp nào được tải lên.', MA_LOI.UPLOAD_KHONG_CO_TEP); }
     if (!policy.khongGioiHanSoTepMoiLan && danhSachTep.length > policy.soTepToiDaMoiLan) {
-        throw taoLoi(413, `Mỗi lần chỉ được tải tối đa ${policy.soTepToiDaMoiLan} tệp.`, 'UPLOAD_VUOT_SO_TEP_MOI_LAN');
+        throw taoLoi(413, `Mỗi lần chỉ được tải tối đa ${policy.soTepToiDaMoiLan} tệp.`, MA_LOI.UPLOAD_VUOT_SO_TEP_MOI_LAN);
     }
     if (!policy.khongGioiHanKichThuocMoiTep) {
         const tepVuot = danhSachTep.find((file) => Number(file.size) > policy.kichThuocToiDaMoiTepBytes);
-        if (tepVuot) { throw taoLoi(413, `Tệp "${tepVuot.originalname}" vượt quá kích thước cho phép.`, 'UPLOAD_VUOT_KICH_THUOC_TEP'); }
+        if (tepVuot) { throw taoLoi(413, `Tệp "${tepVuot.originalname}" vượt quá kích thước cho phép.`, MA_LOI.UPLOAD_VUOT_KICH_THUOC_TEP); }
     }
 }
 

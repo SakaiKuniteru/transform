@@ -2,6 +2,8 @@
 
 const { pipeline } = require('node:stream/promises');
 const service = require('./tep.service');
+const MA_LOI = require('../../constants/ma-loi');
+const { loiChuaXacThuc } = require('../../utils/loi');
 const {
     layDanhSachTep,
     xoaTepTamTrongRequest
@@ -40,10 +42,7 @@ function layChuThe(req) {
             phienKhachId: req.phienKhach?.id || req.phienKhachId
         };
     }
-    const error = new Error('Không xác định được chủ sở hữu tệp.');
-    error.statusCode = 401;
-    error.code = 'KHONG_XAC_DINH_DUOC_CHU_SO_HUU_TEP';
-    throw error;
+    throw loiChuaXacThuc('Không xác định được chủ sở hữu tệp.', MA_LOI.KHONG_XAC_DINH_DUOC_CHU_SO_HUU_TEP);
 }
 
 async function upload(req, res, next) {

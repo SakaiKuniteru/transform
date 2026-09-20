@@ -3,17 +3,12 @@
 const hanMucService = require('../modules/han-muc/han-muc.service');
 const { taoLoiVuotHanMuc } = require('../modules/han-muc/han-muc.util');
 const { MA_HAN_MUC } = require('../constants/han-muc');
-
-function taoLoi(statusCode, message, code = 'LOI_CHINH_SACH_UPLOAD') {
-    const error = new Error(message);
-    error.statusCode = statusCode;
-    error.code = code;
-    return error;
-}
+const MA_LOI = require('../constants/ma-loi');
+const { taoLoiTheoStatus: taoLoi } = require('../utils/loi');
 
 function parseId(value, ten) {
     const id = Number(value);
-    if (!Number.isSafeInteger(id) || id <= 0) { throw taoLoi(400, `${ten} không hợp lệ.`, 'ID_KHONG_HOP_LE'); }
+    if (!Number.isSafeInteger(id) || id <= 0) { throw taoLoi(400, `${ten} không hợp lệ.`, MA_LOI.ID_KHONG_HOP_LE); }
     return id;
 }
 
@@ -29,13 +24,13 @@ function layChuThe(req) {
             phienKhachId: parseId(phienKhachId, 'ID phiên khách')
         };
     }
-    throw taoLoi(401, 'Không xác định được người dùng hoặc phiên khách.', 'KHONG_XAC_DINH_DUOC_CHU_THE_UPLOAD');
+    throw taoLoi(401, 'Không xác định được người dùng hoặc phiên khách.', MA_LOI.KHONG_XAC_DINH_DUOC_CHU_THE_UPLOAD);
 }
 
 function layGioiHanHuuHan(tinhTrang, ten) {
     if (tinhTrang.chinhSach.khongGioiHan) { return null; }
     const value = Number(tinhTrang.gioiHan);
-    if (!Number.isSafeInteger(value) || value <= 0) { throw taoLoi(500, `${ten} chưa được cấu hình hợp lệ.`, 'CHINH_SACH_UPLOAD_KHONG_HOP_LE'); }
+    if (!Number.isSafeInteger(value) || value <= 0) { throw taoLoi(500, `${ten} chưa được cấu hình hợp lệ.`, MA_LOI.CHINH_SACH_UPLOAD_KHONG_HOP_LE); }
     return value;
 }
 

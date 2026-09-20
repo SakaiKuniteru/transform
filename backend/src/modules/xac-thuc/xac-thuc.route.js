@@ -4,7 +4,7 @@ const express = require('express');
 
 const { validateBody } = require('../../middlewares/validate');
 const { yeuCauXacThuc } = require('../../middlewares/xac-thuc');
-
+const { rateLimitXacThuc } = require('../../middlewares/rate-limit');
 const controller = require('./xac-thuc.controller');
 
 const {
@@ -30,6 +30,7 @@ const router = express.Router();
 
 router.post(
     '/dang-ky',
+    rateLimitXacThuc,
     validateBody(dangKySchema),
     controller.dangKy
 );
@@ -37,6 +38,7 @@ router.post(
 
 router.post(
     '/xac-thuc-email',
+    rateLimitXacThuc,
     validateBody(xacThucEmailSchema),
     controller.xacThucEmail
 );
@@ -44,6 +46,7 @@ router.post(
 
 router.post(
     '/gui-lai-otp',
+    rateLimitXacThuc,
     validateBody(guiLaiOtpSchema),
     controller.guiLaiOtp
 );
@@ -57,6 +60,7 @@ router.post(
 
 router.post(
     '/dang-nhap',
+    rateLimitXacThuc,
     validateBody(dangNhapSchema),
     controller.dangNhap
 );
@@ -89,6 +93,7 @@ router.post(
 
 router.post(
     '/quen-mat-khau',
+    rateLimitXacThuc,
     validateBody(quenMatKhauSchema),
     controller.quenMatKhau
 );
@@ -96,6 +101,7 @@ router.post(
 
 router.post(
     '/xac-thuc-otp-dat-lai-mat-khau',
+    rateLimitXacThuc,
     validateBody(xacThucOtpDatLaiMatKhauSchema),
     controller.xacThucOtpDatLaiMatKhau
 );
@@ -103,6 +109,7 @@ router.post(
 
 router.post(
     '/dat-lai-mat-khau',
+    rateLimitXacThuc,
     validateBody(datLaiMatKhauSchema),
     controller.datLaiMatKhau
 );

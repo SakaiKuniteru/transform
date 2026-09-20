@@ -6,15 +6,10 @@ const env = require('../config/env');
 const MA_LOI = require('../constants/ma-loi');
 const { taoLoi } = require('../utils/loi');
 const { kiemTraKetNoi } = require('../infrastructure/database/pool');
-
+const { kiemTraRedis } = require('../config/redis');
+const storageService = require('../infrastructure/storage/storage.service');
+const { loiDichVuKhongKhaDung } = require('../utils/loi');
 const router = express.Router();
-
-
-/*
- * ============================================================
- * DANH SÁCH ROUTE MODULE
- * ============================================================
- */
 
 const ROUTE_MODULES = Object.freeze([
     {
@@ -56,23 +51,8 @@ const ROUTE_MODULES = Object.freeze([
     {
         path: '/han-muc',
         modulePath: '../modules/han-muc/han-muc.route'
-    },
-    {
-        path: '/tep',
-        modulePath: '../modules/tep/tep.route'
-    },
-    {
-        path: '/cong-viec',
-        modulePath: '../modules/cong-viec/cong-viec.route'
     }
 ]);
-
-
-/*
- * ============================================================
- * THÔNG TIN API
- * ============================================================
- */
 
 router.get('/', (req, res) => {
     return res.json(
@@ -89,13 +69,6 @@ router.get('/', (req, res) => {
         )
     );
 });
-
-
-/*
- * ============================================================
- * HEALTH CHECK
- * ============================================================
- */
 
 router.get('/health', (req, res) => {
     return res.json(
@@ -114,12 +87,30 @@ router.get('/health', (req, res) => {
     );
 });
 
+async function kiemTraDatabaseReady() {
+    try {
+        return await kiemTraKetNoi();
+    } catch (error) {
+        throw loiDichVuKhongKhaDung('Database hiện không khả dụng.', MA_LOI.DATABASE_KHONG_KHA_DUNG, error);
+    }
+}
 
-/*
- * ============================================================
- * READINESS CHECK
- * ============================================================
- */
+async function kiemTraRedisReady() {
+    try {
+        return await kiemTraRedis();
+    } catch (error) {
+        throw loiDichVuKhongKhaDung('Redis hiện không khả dụng.', MA_LOI.REDIS_KHONG_KHA_DUNG, error);
+    }
+}
+
+async function kiemTraStorageReady() {
+    try {
+        return await storageService.kiemTraKetNoi();
+    } catch (error) {
+        if (error?.statusCode) { throw error; }
+        throw loiDichVuKhongKhaDung('Storage hiện không khả dụng.', MA_LOI.STORAGE_KHONG_KHA_DUNG, error);
+    }
+}
 
 router.get('/health/ready', async (req, res, next) => {
     try {
@@ -150,26 +141,21 @@ router.get('/health/ready', async (req, res, next) => {
     }
 });
 
-
-/*
- * ============================================================
- * NẠP ROUTE MODULE
- * ============================================================
- */
-
-function napRouteModule(modulePath) {
-    let resolvedPath;
+router.get('/health/ready', async (req, res, next) => {
     try {
-        resolvedPath = require.resolve(modulePath);
+        const [database, redis, storage] = await Promise.all([
+            kiemTraDatabaseReady(),
+            kiemTraRedisReady(),
+            kiemTraStorageReady()
+        ]);
+        return res.json(apiResponse.taoThanhCong(
+            { service: env.ungDung.ten, version: env.ungDung.phienBan, status: 'READY', database, redis, storage },
+            { message: 'Backend đã sẵn sàng.' }
+        ));
     } catch (error) {
-        if (error?.code === 'MODULE_NOT_FOUND') { return null; }
-        throw error;
+        return next(error);
     }
-    const moduleRouter = require(resolvedPath);
-    if (typeof moduleRouter === 'function') { return moduleRouter; }
-    if (moduleRouter && typeof moduleRouter === 'object' && Object.keys(moduleRouter).length === 0) { return null; }
-    throw new TypeError(`Route module "${modulePath}" phải export Express Router.`);
-}
+});
 
 function dangKyRouteModules() {
     for (const routeConfig of ROUTE_MODULES) {

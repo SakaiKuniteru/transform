@@ -9,6 +9,7 @@ const {
     loiXungDot
 } = require('../../utils/loi');
 const repository = require('./nguoi-dung.repository');
+const { LOAI_TAI_KHOAN } = require('../../constants/loai-tai-khoan');
 
 function chuanHoaEmail(value) {
     return String(value).trim().toLowerCase();
@@ -31,7 +32,7 @@ async function batBuocTonTai(id) {
 }
 
 function kiemTraTaiKhoanHeThong(nguoiDung) {
-    if (nguoiDung.loaiTaiKhoan === 'HE_THONG') {
+    if (nguoiDung.loaiTaiKhoan === LOAI_TAI_KHOAN.HE_THONG) {
         throw loiKhongCoQuyen(
             'Không thể thay đổi tài khoản hệ thống bằng chức năng quản trị người dùng.',
             MA_LOI.KHONG_CO_QUYEN
@@ -40,7 +41,7 @@ function kiemTraTaiKhoanHeThong(nguoiDung) {
 }
 
 async function kiemTraQuanTriCuoiCung(nguoiDung) {
-    if (nguoiDung.loaiTaiKhoan !== 'QUAN_TRI' || nguoiDung.trangThai !== 'HOAT_DONG') { return; }
+    if (nguoiDung.loaiTaiKhoan !== LOAI_TAI_KHOAN.QUAN_TRI || nguoiDung.trangThai !== 'HOAT_DONG') { return; }
     const tongQuanTri = await repository.demQuanTriHoatDong();
     if (tongQuanTri <= 1) {
         throw loiXungDot(
@@ -112,7 +113,7 @@ async function taoMoi({
     tenDangNhap = null,
     hoTen,
     matKhau,
-    loaiTaiKhoan = 'NGUOI_DUNG',
+    loaiTaiKhoan = LOAI_TAI_KHOAN.NGUOI_DUNG,
     trangThai = 'HOAT_DONG',
     emailDaXacThuc = false,
     caiDat = {}
@@ -164,7 +165,7 @@ async function capNhat(id, duLieu, nguoiThucHienId = null) {
                 MA_LOI.KHONG_CO_QUYEN
             );
         }
-        if (nguoiDung.loaiTaiKhoan === 'QUAN_TRI') { await kiemTraQuanTriCuoiCung(nguoiDung); }
+        if (nguoiDung.loaiTaiKhoan === LOAI_TAI_KHOAN.QUAN_TRI) { await kiemTraQuanTriCuoiCung(nguoiDung); }
         duLieuCapNhat.loaiTaiKhoan = duLieu.loaiTaiKhoan;
     }
     if (!Object.keys(duLieuCapNhat).length) { return nguoiDung; }
@@ -204,7 +205,7 @@ async function capNhatTrangThai(id, trangThai, nguoiThucHienId = null) {
             MA_LOI.KHONG_CO_QUYEN
         );
     }
-    if (nguoiDung.loaiTaiKhoan === 'QUAN_TRI' && nguoiDung.trangThai === 'HOAT_DONG' && trangThai !== 'HOAT_DONG') {
+    if (nguoiDung.loaiTaiKhoan === LOAI_TAI_KHOAN.QUAN_TRI && nguoiDung.trangThai === 'HOAT_DONG' && trangThai !== 'HOAT_DONG') {
         await kiemTraQuanTriCuoiCung(nguoiDung);
     }
     const ketQua = await repository.capNhatTrangThai(id, trangThai);
@@ -226,7 +227,7 @@ async function xoa(id, nguoiThucHienId = null) {
             MA_LOI.KHONG_CO_QUYEN
         );
     }
-    if (nguoiDung.loaiTaiKhoan === 'QUAN_TRI' && nguoiDung.trangThai === 'HOAT_DONG') {
+    if (nguoiDung.loaiTaiKhoan === LOAI_TAI_KHOAN.QUAN_TRI && nguoiDung.trangThai === 'HOAT_DONG') {
         await kiemTraQuanTriCuoiCung(nguoiDung);
     }
     const ketQua = await repository.xoaMem(id);

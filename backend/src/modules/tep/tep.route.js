@@ -12,14 +12,18 @@ const {
     validateParams,
     validateQuery
 } = require('../../middlewares/validate');
-const { yeuCauXacThuc } = require('../../middlewares/xac-thuc');
+const { xacThucTuyChon } = require('../../middlewares/xac-thuc');
+const { damBaoPhienKhach } = require('../../middlewares/phien-khach');
 const { chinhSachUpload } = require('../../middlewares/chinh-sach-upload');
 const { kiemTraHanMucUpload } = require('../../middlewares/kiem-tra-han-muc-upload');
 const { uploadNhieuTep } = require('../../middlewares/upload');
 
 const router = express.Router();
 
-router.use(yeuCauXacThuc);
+router.use(
+    xacThucTuyChon,
+    damBaoPhienKhach
+);
 
 router.post(
     '/upload',

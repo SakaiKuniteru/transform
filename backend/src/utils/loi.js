@@ -161,6 +161,19 @@ function loiDichVuKhongKhaDung(thongBao = 'Dịch vụ hiện không khả dụn
     return taoLoi({ maLoi, thongBao, statusCode: 503, metadata, expose: false, cause });
 }
 
+function taoLoiTheoStatus(statusCode, thongBao, maLoi = MA_LOI.LOI_KHONG_XAC_DINH, chiTiet = null, metadata = null) {
+    const status = Number(statusCode);
+    if (!Number.isInteger(status) || status < 400 || status > 599) { throw new TypeError('Status code lỗi không hợp lệ.'); }
+    return taoLoi({
+        maLoi,
+        thongBao,
+        statusCode: status,
+        chiTiet,
+        metadata,
+        expose: status < 500
+    });
+}
+
 /*
  * ============================================================
  * CHUẨN HÓA JOI
@@ -206,6 +219,8 @@ function chuanHoaLoiUpload(error) {
         case 'LIMIT_FILE_COUNT': return loiQuaLon('Số lượng tệp tải lên vượt quá giới hạn cho phép.', MA_LOI.UPLOAD_VUOT_SO_TEP);
         case 'LIMIT_FIELD_COUNT': return loiYeuCau('Số lượng trường dữ liệu vượt quá giới hạn cho phép.', MA_LOI.UPLOAD_VUOT_SO_TRUONG);
         case 'LIMIT_FIELD_VALUE': return loiQuaLon('Dữ liệu của trường tải lên vượt quá giới hạn cho phép.', MA_LOI.UPLOAD_TRUONG_QUA_LON);
+        case 'LIMIT_FIELD_KEY': return loiYeuCau('Tên trường tải lên vượt quá giới hạn cho phép.', MA_LOI.UPLOAD_TRUONG_KHONG_HOP_LE);
+        case 'LIMIT_PART_COUNT': return loiQuaLon('Số phần multipart vượt quá giới hạn cho phép.', MA_LOI.UPLOAD_VUOT_SO_PHAN);
         case 'LIMIT_UNEXPECTED_FILE': return loiYeuCau('Trường tệp tải lên không hợp lệ.', MA_LOI.UPLOAD_TRUONG_KHONG_HOP_LE);
         default: return null;
     }
@@ -283,6 +298,7 @@ module.exports = {
     loiQuaNhieuYeuCau,
     loiHeThong,
     loiDichVuKhongKhaDung,
+    taoLoiTheoStatus,
     chuanHoaLoiJoi,
     chuanHoaLoiJwt,
     chuanHoaLoiUpload,

@@ -1,6 +1,8 @@
 'use strict';
 
 const repository = require('./cong-viec.repository');
+const MA_LOI = require('../../constants/ma-loi');
+const { taoLoiTheoStatus: taoLoi } = require('../../utils/loi');
 const {
     giaoDich,
     ISOLATION_LEVEL
@@ -11,23 +13,16 @@ const {
     laTrangThaiKetThuc
 } = require('../../constants/trang-thai-cong-viec');
 
-function taoLoi(statusCode, message, code = 'LOI_CONG_VIEC') {
-    const error = new Error(message);
-    error.statusCode = statusCode;
-    error.code = code;
-    return error;
-}
-
 function parseId(value, ten = 'ID công việc') {
     const id = Number(value);
-    if (!Number.isSafeInteger(id) || id <= 0) { throw taoLoi(400, `${ten} không hợp lệ.`, 'ID_KHONG_HOP_LE'); }
+    if (!Number.isSafeInteger(id) || id <= 0) { throw taoLoi(400, `${ten} không hợp lệ.`, MA_LOI.ID_KHONG_HOP_LE); }
     return id;
 }
 
 function chuanHoaChuThe(chuThe = {}) {
     const coNguoiDung = chuThe.nguoiDungId !== undefined && chuThe.nguoiDungId !== null;
     const coPhienKhach = chuThe.phienKhachId !== undefined && chuThe.phienKhachId !== null;
-    if (coNguoiDung === coPhienKhach) { throw taoLoi(401, 'Không xác định được chủ sở hữu công việc.', 'CHU_SO_HUU_CONG_VIEC_KHONG_HOP_LE'); }
+    if (coNguoiDung === coPhienKhach) { throw taoLoi(401, 'Không xác định được chủ sở hữu công việc.', MA_LOI.CHU_SO_HUU_CONG_VIEC_KHONG_HOP_LE); }
     return {
         nguoiDungId: coNguoiDung ? parseId(chuThe.nguoiDungId, 'ID người dùng') : null,
         phienKhachId: coPhienKhach ? parseId(chuThe.phienKhachId, 'ID phiên khách') : null
@@ -37,45 +32,45 @@ function chuanHoaChuThe(chuThe = {}) {
 function chuanHoaChuoi(value, ten, maxLength, batBuoc = false) {
     const text = String(value ?? '').trim();
     if (!text) {
-        if (batBuoc) { throw taoLoi(400, `${ten} không được để trống.`, 'DU_LIEU_KHONG_HOP_LE'); }
+        if (batBuoc) { throw taoLoi(400, `${ten} không được để trống.`, MA_LOI.DU_LIEU_KHONG_HOP_LE); }
         return null;
     }
-    if (text.length > maxLength) { throw taoLoi(400, `${ten} không được vượt quá ${maxLength} ký tự.`, 'DU_LIEU_KHONG_HOP_LE'); }
+    if (text.length > maxLength) { throw taoLoi(400, `${ten} không được vượt quá ${maxLength} ký tự.`, MA_LOI.DU_LIEU_KHONG_HOP_LE); }
     return text;
 }
 
 function chuanHoaObject(value, ten) {
     if (value === undefined || value === null) { return {}; }
-    if (!value || typeof value !== 'object' || Array.isArray(value)) { throw taoLoi(400, `${ten} phải là object.`, 'DU_LIEU_KHONG_HOP_LE'); }
+    if (!value || typeof value !== 'object' || Array.isArray(value)) { throw taoLoi(400, `${ten} phải là object.`, MA_LOI.DU_LIEU_KHONG_HOP_LE); }
     return value;
 }
 
 function chuanHoaMucDoUuTien(value = 5) {
     const number = Number(value);
-    if (!Number.isSafeInteger(number) || number < 1 || number > 10) { throw taoLoi(400, 'Mức độ ưu tiên phải từ 1 đến 10.', 'MUC_DO_UU_TIEN_KHONG_HOP_LE'); }
+    if (!Number.isSafeInteger(number) || number < 1 || number > 10) { throw taoLoi(400, 'Mức độ ưu tiên phải từ 1 đến 10.', MA_LOI.MUC_DO_UU_TIEN_KHONG_HOP_LE); }
     return number;
 }
 
 function chuanHoaSoLanThuToiDa(value = 3) {
     const number = Number(value);
-    if (!Number.isSafeInteger(number) || number < 0) { throw taoLoi(400, 'Số lần thử tối đa không hợp lệ.', 'SO_LAN_THU_KHONG_HOP_LE'); }
+    if (!Number.isSafeInteger(number) || number < 0) { throw taoLoi(400, 'Số lần thử tối đa không hợp lệ.', MA_LOI.SO_LAN_THU_KHONG_HOP_LE); }
     return number;
 }
 
 function chuanHoaTienTrinh(value) {
     const number = Number(value);
-    if (!Number.isFinite(number) || number < 0 || number > 100) { throw taoLoi(400, 'Tiến trình phải nằm trong khoảng từ 0 đến 100.', 'TIEN_TRINH_KHONG_HOP_LE'); }
+    if (!Number.isFinite(number) || number < 0 || number > 100) { throw taoLoi(400, 'Tiến trình phải nằm trong khoảng từ 0 đến 100.', MA_LOI.TIEN_TRINH_KHONG_HOP_LE); }
     return Math.round(number * 100) / 100;
 }
 
 function chuanHoaTrangThai(value) {
     const trangThai = String(value || '').trim().toUpperCase();
-    if (!DANH_SACH_TRANG_THAI_CONG_VIEC.includes(trangThai)) { throw taoLoi(400, 'Trạng thái công việc không hợp lệ.', 'TRANG_THAI_CONG_VIEC_KHONG_HOP_LE'); }
+    if (!DANH_SACH_TRANG_THAI_CONG_VIEC.includes(trangThai)) { throw taoLoi(400, 'Trạng thái công việc không hợp lệ.', MA_LOI.TRANG_THAI_CONG_VIEC_KHONG_HOP_LE); }
     return trangThai;
 }
 
 function chuanHoaBuoc(item, index) {
-    if (!item || typeof item !== 'object' || Array.isArray(item)) { throw taoLoi(400, 'Bước công việc không hợp lệ.', 'BUOC_CONG_VIEC_KHONG_HOP_LE'); }
+    if (!item || typeof item !== 'object' || Array.isArray(item)) { throw taoLoi(400, 'Bước công việc không hợp lệ.', MA_LOI.BUOC_CONG_VIEC_KHONG_HOP_LE); }
     return {
         thuTu: index + 1,
         maBuoc: chuanHoaChuoi(item.maBuoc, 'Mã bước', 100, true),
@@ -107,9 +102,9 @@ async function taoCongViec(data = {}, chuThe) {
         const tepNguonId = parseId(data.tepNguonId, 'ID tệp nguồn');
         const phienBanNguonId = data.phienBanNguonId === undefined || data.phienBanNguonId === null ? null : parseId(data.phienBanNguonId, 'ID phiên bản nguồn');
         nguon = await repository.getNguonHopLe(tepNguonId, phienBanNguonId, owner);
-        if (!nguon) { throw taoLoi(404, 'Tệp nguồn hoặc phiên bản nguồn không tồn tại hoặc không thuộc quyền sở hữu của bạn.', 'TEP_NGUON_KHONG_HOP_LE'); }
+        if (!nguon) { throw taoLoi(404, 'Tệp nguồn hoặc phiên bản nguồn không tồn tại hoặc không thuộc quyền sở hữu của bạn.', MA_LOI.TEP_NGUON_KHONG_HOP_LE); }
     } else if (data.phienBanNguonId !== undefined && data.phienBanNguonId !== null) {
-        throw taoLoi(400, 'Có phiên bản nguồn thì phải truyền tệp nguồn.', 'TEP_NGUON_KHONG_HOP_LE');
+        throw taoLoi(400, 'Có phiên bản nguồn thì phải truyền tệp nguồn.', MA_LOI.TEP_NGUON_KHONG_HOP_LE);
     }
     const cacBuoc = Array.isArray(data.cacBuoc) ? data.cacBuoc.map(chuanHoaBuoc) : [];
     try {
@@ -196,7 +191,7 @@ async function getChiTiet(id, chuThe) {
     const congViecId = parseId(id);
     const owner = chuanHoaChuThe(chuThe);
     const congViec = await repository.getChiTiet(congViecId, owner);
-    if (!congViec) { throw taoLoi(404, 'Công việc không tồn tại hoặc không thuộc quyền sở hữu của bạn.', 'CONG_VIEC_KHONG_TON_TAI'); }
+    if (!congViec) { throw taoLoi(404, 'Công việc không tồn tại hoặc không thuộc quyền sở hữu của bạn.', MA_LOI.CONG_VIEC_KHONG_TIM_THAY); }
     return {
         ...congViec,
         cacBuoc: await repository.getDanhSachBuoc(congViecId)
@@ -207,12 +202,12 @@ async function huy(id, chuThe) {
     const congViecId = parseId(id);
     const owner = chuanHoaChuThe(chuThe);
     const hienTai = await repository.getChiTiet(congViecId, owner);
-    if (!hienTai) { throw taoLoi(404, 'Công việc không tồn tại hoặc không thuộc quyền sở hữu của bạn.', 'CONG_VIEC_KHONG_TON_TAI'); }
+    if (!hienTai) { throw taoLoi(404, 'Công việc không tồn tại hoặc không thuộc quyền sở hữu của bạn.', MA_LOI.CONG_VIEC_KHONG_TIM_THAY); }
     if (hienTai.trangThai === TRANG_THAI_CONG_VIEC.DA_HUY || hienTai.trangThai === TRANG_THAI_CONG_VIEC.DANG_HUY) { return getChiTiet(congViecId, owner); }
-    if (laTrangThaiKetThuc(hienTai.trangThai)) { throw taoLoi(409, 'Công việc đã kết thúc nên không thể hủy.', 'CONG_VIEC_KHONG_THE_HUY'); }
+    if (laTrangThaiKetThuc(hienTai.trangThai)) { throw taoLoi(409, 'Công việc đã kết thúc nên không thể hủy.', MA_LOI.CONG_VIEC_KHONG_THE_HUY); }
     await giaoDich(async (db) => {
         const ketQua = await repository.yeuCauHuy(congViecId, owner, db);
-        if (!ketQua) { throw taoLoi(409, 'Trạng thái công việc đã thay đổi nên không thể hủy.', 'CONG_VIEC_KHONG_THE_HUY'); }
+        if (!ketQua) { throw taoLoi(409, 'Trạng thái công việc đã thay đổi nên không thể hủy.', MA_LOI.CONG_VIEC_KHONG_THE_HUY); }
         if (ketQua.trangThai === TRANG_THAI_CONG_VIEC.DA_HUY) { await repository.huyBuocChuaXuLy(congViecId, db); }
     }, {
         isolationLevel: ISOLATION_LEVEL.READ_COMMITTED
@@ -225,7 +220,7 @@ async function ganQueue(id, queueName, queueJobId) {
     const tenQueue = chuanHoaChuoi(queueName, 'Tên queue', 100, true);
     const jobId = chuanHoaChuoi(queueJobId, 'Queue job ID', 255, true);
     const congViec = await repository.ganQueue(congViecId, tenQueue, jobId);
-    if (!congViec) { throw taoLoi(404, 'Công việc không tồn tại.', 'CONG_VIEC_KHONG_TON_TAI'); }
+    if (!congViec) { throw taoLoi(404, 'Công việc không tồn tại.', MA_LOI.CONG_VIEC_KHONG_TIM_THAY); }
     return congViec;
 }
 
@@ -239,7 +234,7 @@ async function capNhatTrangThai(id, data = {}) {
         buocHienTai: data.buocHienTai === null ? null : chuanHoaChuoi(data.buocHienTai, 'Bước hiện tại', 255),
         danhDauBatDau: data.danhDauBatDau === true
     });
-    if (!congViec) { throw taoLoi(404, 'Công việc không tồn tại.', 'CONG_VIEC_KHONG_TON_TAI'); }
+    if (!congViec) { throw taoLoi(404, 'Công việc không tồn tại.', MA_LOI.CONG_VIEC_KHONG_TIM_THAY); }
     return congViec;
 }
 
@@ -250,7 +245,7 @@ async function capNhatTienTrinh(id, tienTrinh, buocHienTai = null) {
         chuanHoaTienTrinh(tienTrinh),
         chuanHoaChuoi(buocHienTai, 'Bước hiện tại', 255)
     );
-    if (!congViec) { throw taoLoi(409, 'Không thể cập nhật tiến trình của công việc.', 'KHONG_THE_CAP_NHAT_TIEN_TRINH'); }
+    if (!congViec) { throw taoLoi(409, 'Không thể cập nhật tiến trình của công việc.', MA_LOI.KHONG_THE_CAP_NHAT_TIEN_TRINH); }
     return congViec;
 }
 
@@ -261,7 +256,7 @@ async function hoanThanh(id, data = {}) {
         phienBanKetQuaId: data.phienBanKetQuaId ? parseId(data.phienBanKetQuaId, 'ID phiên bản kết quả') : null,
         dauRa: chuanHoaObject(data.dauRa, 'Đầu ra')
     });
-    if (!congViec) { throw taoLoi(409, 'Không thể hoàn thành công việc ở trạng thái hiện tại.', 'KHONG_THE_HOAN_THANH_CONG_VIEC'); }
+    if (!congViec) { throw taoLoi(409, 'Không thể hoàn thành công việc ở trạng thái hiện tại.', MA_LOI.KHONG_THE_HOAN_THANH_CONG_VIEC); }
     return congViec;
 }
 
@@ -272,14 +267,14 @@ async function thatBai(id, error = {}) {
         thongBaoLoi: chuanHoaChuoi(error.thongBaoLoi || error.message, 'Thông báo lỗi', 10000),
         chiTietLoi: error.chiTietLoi && typeof error.chiTietLoi === 'object' ? error.chiTietLoi : null
     });
-    if (!congViec) { throw taoLoi(409, 'Không thể đánh dấu công việc thất bại.', 'KHONG_THE_DANH_DAU_THAT_BAI'); }
+    if (!congViec) { throw taoLoi(409, 'Không thể đánh dấu công việc thất bại.', MA_LOI.KHONG_THE_DANH_DAU_THAT_BAI); }
     return congViec;
 }
 
 async function danhDauDaHuy(id) {
     const congViecId = parseId(id);
     const congViec = await repository.danhDauDaHuy(congViecId);
-    if (!congViec) { throw taoLoi(409, 'Công việc không ở trạng thái đang hủy.', 'CONG_VIEC_KHONG_DANG_HUY'); }
+    if (!congViec) { throw taoLoi(409, 'Công việc không ở trạng thái đang hủy.', MA_LOI.CONG_VIEC_KHONG_DANG_HUY); }
     return congViec;
 }
 
@@ -294,13 +289,13 @@ async function capNhatBuoc(id, data = {}) {
             'BO_QUA',
             'DA_HUY'
         ].includes(data.trangThai);
-        if (!hopLe) { throw taoLoi(400, 'Trạng thái bước công việc không hợp lệ.', 'TRANG_THAI_BUOC_KHONG_HOP_LE'); }
+        if (!hopLe) { throw taoLoi(400, 'Trạng thái bước công việc không hợp lệ.', MA_LOI.TRANG_THAI_BUOC_KHONG_HOP_LE); }
     }
     const buoc = await repository.capNhatBuoc(buocId, {
         ...data,
         tienTrinh: data.tienTrinh === undefined ? undefined : chuanHoaTienTrinh(data.tienTrinh)
     });
-    if (!buoc) { throw taoLoi(404, 'Bước công việc không tồn tại.', 'BUOC_CONG_VIEC_KHONG_TON_TAI'); }
+    if (!buoc) { throw taoLoi(404, 'Bước công việc không tồn tại.', MA_LOI.BUOC_CONG_VIEC_KHONG_TIM_THAY); }
     return buoc;
 }
 

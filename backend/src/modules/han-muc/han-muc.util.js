@@ -1,13 +1,15 @@
 'use strict';
 
+const MA_LOI = require('../../constants/ma-loi');
 const {
-    CHU_KY_HAN_MUC,
-    HANH_DONG_KHI_VUOT
-} = require('../../constants/han-muc');
-
+    loiChuaXacThuc,
+    loiKhongCoQuyen,
+    loiQuaNhieuYeuCau,
+    loiHeThong
+} = require('../../utils/loi');
+const { CHU_KY_HAN_MUC, HANH_DONG_KHI_VUOT } = require('../../constants/han-muc');
 const BAT_DAU_TOAN_THOI_GIAN = new Date('1970-01-01T00:00:00.000Z');
 const KET_THUC_TOAN_THOI_GIAN = new Date('9999-12-31T23:59:59.999Z');
-
 const formatterCache = new Map();
 
 function batBuocDate(value, ten = 'Thời gian') {
@@ -134,13 +136,13 @@ function layKyThang(value, muiGio) {
 }
 
 function layKyTheoGoi(dangKyGoi) {
-    if (!dangKyGoi?.id) { throw new Error('Không xác định được đăng ký gói để tính kỳ hạn mức.'); }
-    if (!dangKyGoi.batDauLuc) { throw new Error('Đăng ký gói chưa có thời gian bắt đầu.'); }
+    if (!dangKyGoi?.id) { throw loiHeThong('Không xác định được đăng ký gói để tính kỳ hạn mức.', MA_LOI.HAN_MUC_KHONG_HOP_LE); }
+    if (!dangKyGoi.batDauLuc) { throw loiHeThong('Đăng ký gói chưa có thời gian bắt đầu.', MA_LOI.HAN_MUC_KHONG_HOP_LE); }
     const kyBatDau = batBuocDate(dangKyGoi.batDauLuc, 'Thời gian bắt đầu gói');
     const kyKetThuc = dangKyGoi.hetHanLuc
         ? batBuocDate(dangKyGoi.hetHanLuc, 'Thời gian hết hạn gói')
         : KET_THUC_TOAN_THOI_GIAN;
-    if (kyBatDau >= kyKetThuc) { throw new Error('Khoảng thời gian đăng ký gói không hợp lệ.'); }
+    if (kyBatDau >= kyKetThuc) { throw loiHeThong('Khoảng thời gian đăng ký gói không hợp lệ.', MA_LOI.HAN_MUC_KHONG_HOP_LE); }
     return {
         kyBatDau,
         kyKetThuc,
@@ -178,7 +180,7 @@ function taoKyHanMuc(chinhSach, context = {}, thoiDiem = new Date()) {
                 dangKyGoiId: context.dangKyGoi?.id || null
             };
         default:
-            throw new Error(`Chu kỳ hạn mức "${chinhSach.chuKy}" chưa được hỗ trợ.`);
+            throw loiHeThong(`Chu kỳ hạn mức "${chinhSach.chuKy}" chưa được hỗ trợ.`, MA_LOI.HAN_MUC_KHONG_HOP_LE);
     }
 }
 
@@ -207,24 +209,13 @@ function tinhConLai(gioiHan, daSuDung) {
 
 function taoLoiVuotHanMuc(chinhSach, thongTin = {}) {
     const hanhDong = chinhSach?.hanhDongKhiVuot || HANH_DONG_KHI_VUOT.TU_CHOI;
-    let statusCode = 429;
-    let message = 'Đã vượt quá hạn mức cho phép.';
-    let code = 'VUOT_HAN_MUC';
-    if (hanhDong === HANH_DONG_KHI_VUOT.YEU_CAU_DANG_NHAP) {
-        statusCode = 401;
-        message = 'Vui lòng đăng nhập để tiếp tục.';
-        code = 'YEU_CAU_DANG_NHAP';
+    if (hanhDong === HANH_DONG_KHI_VUOT.YEU_CAU_DANG_NHAP) { 
+        return loiChuaXacThuc('Vui lòng đăng nhập để tiếp tục.', MA_LOI.YEU_CAU_DANG_NHAP, thongTin); 
     }
-    if (hanhDong === HANH_DONG_KHI_VUOT.YEU_CAU_NANG_CAP) {
-        statusCode = 403;
-        message = 'Hạn mức hiện tại không đủ. Vui lòng nâng cấp gói dịch vụ.';
-        code = 'YEU_CAU_NANG_CAP';
+    if (hanhDong === HANH_DONG_KHI_VUOT.YEU_CAU_NANG_CAP) { 
+        return loiKhongCoQuyen('Hạn mức hiện tại không đủ. Vui lòng nâng cấp gói dịch vụ.', MA_LOI.YEU_CAU_NANG_CAP, thongTin); 
     }
-    const error = new Error(message);
-    error.statusCode = statusCode;
-    error.code = code;
-    error.data = thongTin;
-    return error;
+    return loiQuaNhieuYeuCau('Đã vượt quá hạn mức cho phép.', MA_LOI.HAN_MUC_VUOT_QUA, thongTin);
 }
 
 module.exports = {

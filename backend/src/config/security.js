@@ -47,7 +47,7 @@ const PASSWORD_CONFIG = Object.freeze({
 const COOKIE_CONFIG = Object.freeze({
     secret: env.baoMat.cookieSecret,
     refreshTokenName: env.baoMat.refreshCookieName,
-
+    guestTokenName: env.baoMat.guestSessionCookieName,
     refreshTokenOptions: Object.freeze({
         httpOnly: true,
         secure: env.baoMat.cookieSecure,
@@ -55,6 +55,15 @@ const COOKIE_CONFIG = Object.freeze({
         domain: env.baoMat.cookieDomain || undefined,
         path: `${env.ungDung.apiPrefix}/xac-thuc`,
         maxAge: env.baoMat.refreshCookieMaxAgeMs
+    }),
+    guestTokenOptions: Object.freeze({
+        httpOnly: true,
+        secure: env.baoMat.cookieSecure,
+        sameSite: env.baoMat.cookieSameSite,
+        domain: env.baoMat.cookieDomain || undefined,
+        path: env.ungDung.apiPrefix,
+        maxAge: env.baoMat.guestSessionTtlMs,
+        signed: true
     })
 });
 
@@ -125,7 +134,11 @@ const CORS_OPTIONS = Object.freeze({
         'Content-Range',
         'ETag',
         'Last-Modified',
-        'X-Request-Id'
+        'X-Request-Id',
+        'RateLimit-Limit',
+        'RateLimit-Remaining',
+        'RateLimit-Reset',
+        'Retry-After'
     ]),
 
     maxAge: CORS_CONFIG.maxAge,

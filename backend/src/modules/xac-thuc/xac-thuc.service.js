@@ -3,12 +3,9 @@
 const crypto = require('node:crypto');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-
 const env = require('../../config/env');
 const { JWT_CONFIG } = require('../../config/security');
-
 const MA_LOI = require('../../constants/ma-loi');
-
 const {
     loiYeuCau,
     loiChuaXacThuc,
@@ -16,18 +13,13 @@ const {
     loiXungDot,
     loiQuaNhieuYeuCau
 } = require('../../utils/loi');
-
 const { giaoDich } = require('../../infrastructure/database/transaction');
-
 const nguoiDungRepository = require('../nguoi-dung/nguoi-dung.repository');
 const repository = require('./xac-thuc.repository');
-
-
 const MUC_DICH_OTP = Object.freeze({
     XAC_THUC_EMAIL: 'XAC_THUC_EMAIL',
     DAT_LAI_MAT_KHAU: 'DAT_LAI_MAT_KHAU'
 });
-
 
 function batBuocCauHinh(value, ten) {
     if (!value) { throw new Error(`Thiếu cấu hình ${ten}.`); }
@@ -57,74 +49,46 @@ function layOtpConfig() {
     };
 }
 
-
 function chuanHoaEmail(value) {
     return String(value).trim().toLowerCase();
 }
-
 
 function chuanHoaTenDangNhap(value) {
     if (value === null || value === undefined || value === '') { return null; }
     return String(value).trim().toLowerCase();
 }
 
-
 function taoNguoiDungAnToan(nguoiDung) {
     if (!nguoiDung) { return null; }
-
-    const {
-        matKhauHash,
-        ...anToan
-    } = nguoiDung;
-
+    const { matKhauHash, ...anToan } = nguoiDung;
     return anToan;
 }
 
-
 function kiemTraTrangThaiTaiKhoan(nguoiDung, { yeuCauXacThucEmail = true } = {}) {
     if (nguoiDung.trangThai === 'TAM_KHOA') {
-        throw loiKhongCoQuyen(
-            'Tài khoản đang bị tạm khóa.',
-            MA_LOI.TAI_KHOAN_BI_KHOA
-        );
+        throw loiKhongCoQuyen('Tài khoản đang bị tạm khóa.', MA_LOI.TAI_KHOAN_BI_KHOA);
     }
-
     if (nguoiDung.trangThai === 'VO_HIEU_HOA') {
-        throw loiKhongCoQuyen(
-            'Tài khoản đã bị vô hiệu hóa.',
-            MA_LOI.TAI_KHOAN_BI_VO_HIEU_HOA
-        );
+        throw loiKhongCoQuyen('Tài khoản đã bị vô hiệu hóa.', MA_LOI.TAI_KHOAN_BI_VO_HIEU_HOA);
     }
-
     if (yeuCauXacThucEmail && !nguoiDung.emailXacThucLuc) {
-        throw loiKhongCoQuyen(
-            'Email chưa được xác thực.',
-            MA_LOI.EMAIL_CHUA_XAC_THUC
-        );
+        throw loiKhongCoQuyen('Email chưa được xác thực.', MA_LOI.EMAIL_CHUA_XAC_THUC);
     }
 }
-
 
 function taoOtpSo(length) {
     let ma = '';
-
-    for (let i = 0; i < length; i += 1) {
-        ma += crypto.randomInt(0, 10).toString();
-    }
-
+    for (let i = 0; i < length; i += 1) { ma += crypto.randomInt(0, 10).toString(); }
     return ma;
 }
 
-
 function bamOtp(diaChi, mucDich, maOtp) {
     const config = layOtpConfig();
-
     return crypto
         .createHmac('sha256', config.secret)
         .update(`${mucDich}:${diaChi.toLowerCase()}:${maOtp}`)
         .digest('hex');
 }
-
 
 function bamToken(token) {
     return crypto
@@ -133,29 +97,22 @@ function bamToken(token) {
         .digest('hex');
 }
 
-
 function soSanhHash(hashA, hashB) {
     if (!hashA || !hashB || hashA.length !== hashB.length) { return false; }
-
     return crypto.timingSafeEqual(
         Buffer.from(hashA, 'utf8'),
         Buffer.from(hashB, 'utf8')
     );
 }
 
-
 function layNgayHetHanToken(token) {
     const payload = jwt.decode(token);
-
     if (!payload?.exp) { throw new Error('Token không có thời gian hết hạn.'); }
-
     return new Date(payload.exp * 1000);
 }
 
-
 function taoAccessToken(nguoiDung, phienId) {
     const config = layJwtConfig();
-
     return jwt.sign(
         {
             typ: 'access',
@@ -174,14 +131,10 @@ function taoAccessToken(nguoiDung, phienId) {
     );
 }
 
-
 function taoRefreshToken(nguoiDungId, jti) {
     const config = layJwtConfig();
-
     return jwt.sign(
-        {
-            typ: 'refresh'
-        },
+        { typ: 'refresh' },
         config.refreshSecret,
         {
             algorithm: 'HS256',
@@ -194,15 +147,10 @@ function taoRefreshToken(nguoiDungId, jti) {
     );
 }
 
-
 function taoResetToken(nguoiDungId, otpId) {
     const config = layJwtConfig();
-
     return jwt.sign(
-        {
-            typ: 'password-reset',
-            otpId
-        },
+        { typ: 'password-reset', otpId },
         config.accessSecret,
         {
             algorithm: 'HS256',
@@ -215,10 +163,8 @@ function taoResetToken(nguoiDungId, otpId) {
     );
 }
 
-
 function xacThucJwt(token, secret) {
     const config = layJwtConfig();
-
     return jwt.verify(
         token,
         secret,
@@ -233,17 +179,14 @@ function xacThucJwt(token, secret) {
 
 function xacThucRefreshToken(token) {
     const config = layJwtConfig();
-
     try {
         const payload = xacThucJwt(token, config.refreshSecret);
-
         if (payload.typ !== 'refresh' || !payload.sub || !payload.jti) {
             throw loiChuaXacThuc(
                 'Refresh token không hợp lệ.',
                 MA_LOI.REFRESH_TOKEN_KHONG_HOP_LE
             );
         }
-
         return payload;
     } catch (error) {
         if (error?.name === 'TokenExpiredError') {
@@ -252,9 +195,7 @@ function xacThucRefreshToken(token) {
                 MA_LOI.REFRESH_TOKEN_HET_HAN
             );
         }
-
         if (error?.maLoi) { throw error; }
-
         throw loiChuaXacThuc(
             'Refresh token không hợp lệ.',
             MA_LOI.REFRESH_TOKEN_KHONG_HOP_LE
@@ -537,7 +478,7 @@ async function dangKy({
                 tenDangNhap: tenDangNhapChuan,
                 hoTen: hoTen.trim(),
                 matKhauHash,
-                loaiTaiKhoan: 'NGUOI_DUNG',
+                loaiTaiKhoan: LOAI_TAI_KHOAN.NGUOI_DUNG,
                 trangThai: 'HOAT_DONG',
                 emailXacThucLuc: null,
                 caiDat: {
