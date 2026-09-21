@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const repository = require('./tep.repository');
+const lichSuService = require('../lich-su/lich-su.service');
 const MA_LOI = require('../../constants/ma-loi');
 const { taoLoiTheoStatus: taoLoi } = require('../../utils/loi');
 const storageService = require('../../infrastructure/storage/storage.service');
@@ -132,6 +133,23 @@ async function upload(danhSachFile, chuThe) {
                     },
                     trangThai: 'SAN_SANG',
                     hetHanLuc: null
+                }, db);
+                await lichSuService.ghiNhan({
+                    ...owner,
+                    tepId: tep.id,
+                    phienBanTepId: phienBan.id,
+                    loaiSuKien: lichSuService.LOAI_SU_KIEN.TEP_DA_TAI_LEN,
+                    nguon: lichSuService.NGUON_LICH_SU.UPLOAD,
+                    tieuDe: 'Tệp đã tải lên',
+                    moTa: `Đã tải lên tệp "${thongTin.tenTep}".`,
+                    duLieu: {
+                        tenTep: thongTin.tenTep,
+                        phanMoRong: thongTin.phanMoRong,
+                        dinhDang: thongTin.dinhDang,
+                        mimeType: thongTin.mimeType,
+                        kichThuocBytes: thongTin.kichThuocBytes,
+                        storageDriver: thongTin.storage.driver
+                    }
                 }, db);
                 ketQua.push({
                     ...tep,

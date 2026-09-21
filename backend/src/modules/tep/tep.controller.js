@@ -2,6 +2,7 @@
 
 const { pipeline } = require('node:stream/promises');
 const service = require('./tep.service');
+const nhatKyService = require('../nhat-ky/nhat-ky.service');
 const MA_LOI = require('../../constants/ma-loi');
 const { loiChuaXacThuc } = require('../../utils/loi');
 const {
@@ -51,18 +52,30 @@ async function upload(req, res, next) {
         const data = await service.upload(danhSachFile, layChuThe(req));
         await xoaTepTamTrongRequest(req);
         req.uploadHanMuc = null;
+        await nhatKyService.ghiTuRequestAnToan(req, {
+            mucDo: nhatKyService.MUC_DO_NHAT_KY.AUDIT,
+            nguon: 'TEP',
+            maSuKien: 'TEP_DA_TAI_LEN',
+            thongDiep: 'Tải tệp lên thành công.',
+            duLieu: {
+                soTep: data.length,
+                tepIds: data.map((item) => item.id),
+                phienBanIds: data.map((item) => item.phienBanHienTai?.id).filter(Boolean)
+            }
+        });
         return thanhCong(res, {
             statusCode: 201,
             message: 'Tải tệp lên thành công.',
             data
         });
     } catch (error) {
-        try {
-            await hoanTraHanMucUpload(req);
-        } catch (hoanTraError) {
-            error.hoanTraHanMucError = hoanTraError;
-        }
+        try { await hoanTraHanMucUpload(req); } catch (hoanTraError) { error.hoanTraHanMucError = hoanTraError; }
         await xoaTepTamTrongRequest(req);
+        await nhatKyService.ghiLoiTuRequestAnToan(req, error, {
+            nguon: 'TEP',
+            maSuKien: 'TEP_UPLOAD_THAT_BAI',
+            thongDiep: 'Tải tệp lên thất bại.'
+        });
         return next(error);
     }
 }

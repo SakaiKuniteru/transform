@@ -1,6 +1,7 @@
 'use strict';
 
 const service = require('./chuyen-doi.service');
+const nhatKyService = require('../nhat-ky/nhat-ky.service');
 const MA_LOI = require('../../constants/ma-loi');
 const { loiChuaXacThuc } = require('../../utils/loi');
 
@@ -18,9 +19,38 @@ async function getHoTro(req, res, next) {
 
 async function tao(req, res, next) {
     try {
-        const data = await service.taoYeuCau({ ...req.body, khoaIdempotency: req.get('idempotency-key') || req.body.khoaIdempotency || null }, layChuThe(req));
-        return thanhCong(res, { statusCode: data.daTonTai ? 200 : 201, message: data.daTonTai ? 'Yêu cầu chuyển đổi đã tồn tại.' : 'Đã tạo yêu cầu chuyển đổi.', data });
-    } catch (error) { return next(error); }
+        const data = await service.taoYeuCau({
+            ...req.body,
+            khoaIdempotency: req.get('idempotency-key') || req.body.khoaIdempotency || null
+        }, layChuThe(req));
+        await nhatKyService.ghiTuRequestAnToan(req, {
+            mucDo: nhatKyService.MUC_DO_NHAT_KY.AUDIT,
+            nguon: 'CHUYEN_DOI',
+            maSuKien: data.daTonTai ? 'CHUYEN_DOI_IDEMPOTENCY_HIT' : 'CHUYEN_DOI_DA_TAO',
+            congViecId: data.congViec?.id || null,
+            tepId: data.congViec?.tepNguonId || null,
+            thongDiep: data.daTonTai ? 'Yêu cầu chuyển đổi trùng idempotency key.' : 'Đã tạo yêu cầu chuyển đổi.',
+            duLieu: {
+                daTonTai: data.daTonTai === true,
+                queueName: data.queue?.queueName || null,
+                queueJobId: data.queue?.id || null,
+                dinhDangNguon: data.congViec?.dinhDangNguon || null,
+                dinhDangDich: data.congViec?.dinhDangDich || null
+            }
+        });
+        return thanhCong(res, {
+            statusCode: data.daTonTai ? 200 : 201,
+            message: data.daTonTai ? 'Yêu cầu chuyển đổi đã tồn tại.' : 'Đã tạo yêu cầu chuyển đổi.',
+            data
+        });
+    } catch (error) {
+        await nhatKyService.ghiLoiTuRequestAnToan(req, error, {
+            nguon: 'CHUYEN_DOI',
+            maSuKien: 'CHUYEN_DOI_TAO_THAT_BAI',
+            thongDiep: 'Tạo yêu cầu chuyển đổi thất bại.'
+        });
+        return next(error);
+    }
 }
 
 async function getChiTiet(req, res, next) {

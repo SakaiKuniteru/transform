@@ -5,6 +5,8 @@ const repository = require('./chuyen-doi.repository');
 const congViecService = require('../cong-viec/cong-viec.service');
 const congViecRepository = require('../cong-viec/cong-viec.repository');
 const tepRepository = require('../tep/tep.repository');
+const lichSuService = require('../lich-su/lich-su.service');
+const nhatKyService = require('../nhat-ky/nhat-ky.service');
 const queueService = require('../../infrastructure/queue/queue.service');
 const storageService = require('../../infrastructure/storage/storage.service');
 const planner = require('./engine/conversion-planner');
@@ -136,7 +138,44 @@ async function damBaoXepHang(congViecId, owner) {
         try {
             queue = await queueService.xepHangBuocCongViec({ buocId: buoc.id, congViecId: chiTiet.id, tenQueue, data: { loaiChuyenDoi, nhomXuLy, dinhDangNguon: tuyChon.dinhDangNguon || chiTiet.dinhDangNguon, dinhDangDich: tuyChon.dinhDangDich || chiTiet.dinhDangDich, converterKey: tuyChon.converterKey || null, keHoachConverterKeys: Array.isArray(tuyChon.keHoachConverterKeys) ? tuyChon.keHoachConverterKeys : [] }, mucDoUuTien: chiTiet.mucDoUuTien, soLanThuToiDa: chiTiet.soLanThuToiDa });
         } catch (error) {
-            try { await congViecService.thatBai(chiTiet.id, { maLoi: error?.maLoi || error?.code || MA_LOI.QUEUE_THEM_CONG_VIEC_THAT_BAI, thongBaoLoi: error?.message || 'Không thể đưa công việc vào queue.', chiTietLoi: { tenQueue } }); } catch (capNhatError) { error.capNhatCongViecError = capNhatError; }
+            let daDanhDauThatBai = false;
+            try {
+                await congViecService.thatBai(chiTiet.id, {
+                    maLoi: error?.maLoi || error?.code || MA_LOI.QUEUE_THEM_CONG_VIEC_THAT_BAI,
+                    thongBaoLoi: error?.message || 'Không thể đưa công việc vào queue.',
+                    chiTietLoi: { tenQueue }
+                });
+                daDanhDauThatBai = true;
+            } catch (capNhatError) {
+                error.capNhatCongViecError = capNhatError;
+            }
+            if (daDanhDauThatBai) {
+                await lichSuService.ghiNhanAnToan({
+                    nguoiDungId: chiTiet.nguoiDungId || null,
+                    phienKhachId: chiTiet.phienKhachId || null,
+                    congViecId: chiTiet.id,
+                    tepId: chiTiet.tepNguonId || null,
+                    phienBanTepId: chiTiet.phienBanNguonId || null,
+                    loaiSuKien: lichSuService.LOAI_SU_KIEN.CHUYEN_DOI_THAT_BAI,
+                    nguon: lichSuService.NGUON_LICH_SU.QUEUE,
+                    tieuDe: 'Chuyển đổi thất bại',
+                    moTa: 'Không thể đưa yêu cầu chuyển đổi vào hàng đợi.',
+                    duLieu: {
+                        tenQueue,
+                        maLoi: error?.maLoi || error?.code || MA_LOI.QUEUE_THEM_CONG_VIEC_THAT_BAI
+                    }
+                });
+            }
+            await nhatKyService.ghiLoiAnToan(error, {
+                nguon: 'QUEUE',
+                maSuKien: 'CHUYEN_DOI_XEP_HANG_THAT_BAI',
+                nguoiDungId: chiTiet.nguoiDungId || null,
+                phienKhachId: chiTiet.phienKhachId || null,
+                congViecId: chiTiet.id,
+                tepId: chiTiet.tepNguonId || null,
+                thongDiep: 'Không thể đưa yêu cầu chuyển đổi vào queue.',
+                duLieu: { tenQueue }
+            });
             throw error;
         }
     }
@@ -183,6 +222,25 @@ async function taoYeuCau(data = {}, chuThe) {
         tuyChon,
         cacBuoc: [{ maBuoc: 'THUC_THI_CHUYEN_DOI', tenBuoc: thongTinLoai?.ten || 'Thực thi chuyển đổi', loaiBuoc: nhanDien.nhom || 'CHUYEN_DOI', batBuoc: true, dauVao, tuyChon, soLanThuToiDa: data.soLanThuToiDa ?? 3 }]
     }, owner);
+    if (!congViec.daTonTai) {
+        await lichSuService.ghiNhanAnToan({
+            ...owner,
+            congViecId: congViec.id,
+            tepId: nguon.tepId,
+            phienBanTepId: nguon.phienBanId,
+            loaiSuKien: lichSuService.LOAI_SU_KIEN.CHUYEN_DOI_DA_TAO,
+            nguon: lichSuService.NGUON_LICH_SU.API,
+            tieuDe: 'Đã tạo yêu cầu chuyển đổi',
+            moTa: `Đã tạo yêu cầu chuyển đổi từ ${dinhDangNguon} sang ${dinhDangDich}.`,
+            duLieu: {
+                loaiChuyenDoi,
+                dinhDangNguon,
+                dinhDangDich,
+                converterKey: converterKey || converterTrucTiep,
+                mucDoUuTien: data.mucDoUuTien ?? 5
+            }
+        });
+    }
     const daXepHang = await damBaoXepHang(congViec.id, owner);
     return { daTonTai: congViec.daTonTai === true, ...daXepHang, chuyenDoi: await repository.getTheoCongViec(congViec.id) };
 }
@@ -319,6 +377,24 @@ async function hoanThanhLanXuLy(phienXuLy, { congViec, ketQua = {} } = {}) {
     try {
         return await giaoDich(async (db) => {
             const ketQuaTep = await taoTepKetQua(congViec, ketQua, db);
+            if (ketQuaTep.tepKetQuaId && ketQuaTep.phienBanKetQuaId) {
+                await lichSuService.ghiNhan({
+                    nguoiDungId: congViec.nguoiDungId || null,
+                    phienKhachId: congViec.phienKhachId || null,
+                    congViecId: congViec.id,
+                    tepId: ketQuaTep.tepKetQuaId,
+                    phienBanTepId: ketQuaTep.phienBanKetQuaId,
+                    loaiSuKien: lichSuService.LOAI_SU_KIEN.TEP_KET_QUA_DA_TAO,
+                    nguon: lichSuService.NGUON_LICH_SU.WORKER,
+                    tieuDe: 'Đã tạo tệp kết quả',
+                    moTa: `Đã tạo tệp kết quả định dạng ${ketQuaTep.dauRa?.dinhDang || congViec.dinhDangDich || 'không xác định'}.`,
+                    duLieu: {
+                        dinhDangNguon: congViec.dinhDangNguon,
+                        dinhDangDich: ketQuaTep.dauRa?.dinhDang || congViec.dinhDangDich,
+                        kichThuocBytes: ketQuaTep.dauRa?.kichThuocBytes || null
+                    }
+                }, db);
+            }
             const danhSach = [];
             for (let index = 0; index < phienXuLy.danhSach.length; index += 1) {
                 const banGhi = phienXuLy.danhSach[index];

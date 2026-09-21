@@ -1,6 +1,8 @@
 'use strict';
 
 const repository = require('./cong-viec.repository');
+const lichSuService = require('../lich-su/lich-su.service');
+const nhatKyService = require('../nhat-ky/nhat-ky.service');
 const MA_LOI = require('../../constants/ma-loi');
 const { taoLoiTheoStatus: taoLoi } = require('../../utils/loi');
 const {
@@ -215,10 +217,36 @@ async function huy(id, chuThe) {
         const ketQua = await repository.yeuCauHuy(congViecId, owner, db);
         if (!ketQua) { throw taoLoi(409, 'Trạng thái công việc đã thay đổi nên không thể hủy.', MA_LOI.CONG_VIEC_KHONG_THE_HUY); }
         if (ketQua.trangThai === TRANG_THAI_CONG_VIEC.DA_HUY) { await repository.huyBuocChuaXuLy(congViecId, db); }
-    }, {
-        isolationLevel: ISOLATION_LEVEL.READ_COMMITTED
-    });
-    return getChiTiet(congViecId, owner);
+    }, { isolationLevel: ISOLATION_LEVEL.READ_COMMITTED });
+    const ketQua = await getChiTiet(congViecId, owner);
+    if (hienTai.loaiCongViec === 'CHUYEN_DOI') {
+        if (ketQua.trangThai === TRANG_THAI_CONG_VIEC.DA_HUY) {
+            await lichSuService.ghiNhanAnToan({
+                ...owner,
+                congViecId,
+                tepId: hienTai.tepNguonId || null,
+                phienBanTepId: hienTai.phienBanNguonId || null,
+                loaiSuKien: lichSuService.LOAI_SU_KIEN.CHUYEN_DOI_DA_HUY,
+                nguon: lichSuService.NGUON_LICH_SU.API,
+                tieuDe: 'Đã hủy chuyển đổi',
+                moTa: 'Yêu cầu chuyển đổi đã được hủy trước khi bắt đầu xử lý.'
+            });
+        }
+        await nhatKyService.ghiAnToan({
+            mucDo: nhatKyService.MUC_DO_NHAT_KY.AUDIT,
+            nguon: 'CONG_VIEC',
+            maSuKien: ketQua.trangThai === TRANG_THAI_CONG_VIEC.DA_HUY ? 'CHUYEN_DOI_DA_HUY' : 'CHUYEN_DOI_YEU_CAU_HUY',
+            ...owner,
+            congViecId,
+            tepId: hienTai.tepNguonId || null,
+            thongDiep: ketQua.trangThai === TRANG_THAI_CONG_VIEC.DA_HUY ? 'Đã hủy công việc chuyển đổi.' : 'Đã gửi yêu cầu hủy công việc chuyển đổi.',
+            duLieu: {
+                trangThaiTruoc: hienTai.trangThai,
+                trangThaiSau: ketQua.trangThai
+            }
+        });
+    }
+    return ketQua;
 }
 
 async function ganQueue(id, queueName, queueJobId) {
