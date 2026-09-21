@@ -34,7 +34,7 @@ function layGioiHanHuuHan(tinhTrang, ten) {
     return value;
 }
 
-function mapTongSoTep(tinhTrang) {
+function mapHanMucTheoDoi(tinhTrang) {
     return {
         chinhSachId: tinhTrang.chinhSach.id,
         maHanhDong: tinhTrang.chinhSach.maHanhDong,
@@ -49,11 +49,27 @@ function mapTongSoTep(tinhTrang) {
     };
 }
 
+function batBuocConLaiTruocUpload(tinhTrang) {
+    if (tinhTrang.chinhSach.khongGioiHan || !tinhTrang.ky?.theoDoi || tinhTrang.duocPhep) { return; }
+    throw taoLoiVuotHanMuc(tinhTrang.chinhSach, {
+        maHanhDong: tinhTrang.chinhSach.maHanhDong,
+        gioiHan: tinhTrang.gioiHan,
+        daSuDung: tinhTrang.daSuDung,
+        conLai: tinhTrang.conLai,
+        soLuongYeuCau: 1
+    });
+}
+
 async function chinhSachUpload(req, res, next) {
     try {
         const chuThe = layChuThe(req);
         const thoiDiem = new Date();
-        const [tongSoTep, soTepMoiLan, kichThuocMoiTep] = await Promise.all([
+        const [tongSoLan, tongSoTep, soTepMoiLan, kichThuocMoiTep] = await Promise.all([
+            hanMucService.layTinhTrang({
+                ...chuThe,
+                maHanhDong: MA_HAN_MUC.UPLOAD_TONG_SO_LAN,
+                thoiDiem
+            }),
             hanMucService.layTinhTrang({
                 ...chuThe,
                 maHanhDong: MA_HAN_MUC.UPLOAD_TONG_SO_TEP,
@@ -70,26 +86,21 @@ async function chinhSachUpload(req, res, next) {
                 thoiDiem
             })
         ]);
-        if (!tongSoTep.chinhSach.khongGioiHan && tongSoTep.ky?.theoDoi && !tongSoTep.duocPhep) {
-            throw taoLoiVuotHanMuc(tongSoTep.chinhSach, {
-                maHanhDong: tongSoTep.chinhSach.maHanhDong,
-                gioiHan: tongSoTep.gioiHan,
-                daSuDung: tongSoTep.daSuDung,
-                conLai: tongSoTep.conLai,
-                soLuongYeuCau: 1
-            });
-        }
+        batBuocConLaiTruocUpload(tongSoLan);
+        batBuocConLaiTruocUpload(tongSoTep);
         req.uploadPolicy = Object.freeze({
             daResolve: true,
             chuThe: Object.freeze({ ...chuThe }),
             thoiDiem,
-            tongSoTep: Object.freeze(mapTongSoTep(tongSoTep)),
+            tongSoLan: Object.freeze(mapHanMucTheoDoi(tongSoLan)),
+            khongGioiHanTongSoLan: tongSoLan.chinhSach.khongGioiHan,
+            tongSoTep: Object.freeze(mapHanMucTheoDoi(tongSoTep)),
             khongGioiHanTongSoTep: tongSoTep.chinhSach.khongGioiHan,
             soTepToiDaMoiLan: layGioiHanHuuHan(soTepMoiLan, 'Số tệp tối đa mỗi lần upload'),
             khongGioiHanSoTepMoiLan: soTepMoiLan.chinhSach.khongGioiHan,
             kichThuocToiDaMoiTepBytes: layGioiHanHuuHan(kichThuocMoiTep, 'Kích thước tối đa mỗi tệp'),
             khongGioiHanKichThuocMoiTep: kichThuocMoiTep.chinhSach.khongGioiHan,
-            dangKyGoiId: tongSoTep.chuThe?.dangKyGoi?.id || null
+            dangKyGoiId: tongSoTep.chuThe?.dangKyGoi?.id || tongSoLan.chuThe?.dangKyGoi?.id || null
         });
         return next();
     } catch (error) {

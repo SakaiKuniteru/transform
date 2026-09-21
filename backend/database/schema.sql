@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict I012hXshoz5fuISN4S9u0PMBJYIefaVIEc2VFFIECu17AGFjMTLR6BsE1ExAfpR
+\restrict Om8VEeVKmnGBcOmNUgdNyEHFm7O67qxv3Hb05q2OqwDNix1CfdD1Kc0MWud6bJU
 
 -- Dumped from database version 18.6 (Postgres.app)
 -- Dumped by pg_dump version 18.6 (Postgres.app)
@@ -141,7 +141,7 @@ CREATE TABLE public.chinh_sach_han_muc (
     CONSTRAINT chk_chinh_sach_han_muc_ma CHECK ((btrim((ma)::text) <> ''::text)),
     CONSTRAINT chk_chinh_sach_han_muc_ma_hanh_dong CHECK ((btrim((ma_hanh_dong)::text) <> ''::text)),
     CONSTRAINT chk_chinh_sach_han_muc_ten CHECK ((btrim((ten)::text) <> ''::text)),
-    CONSTRAINT chk_chinh_sach_han_muc_upload CHECK ((((ma_hanh_dong)::text <> ALL ((ARRAY['UPLOAD_TONG_SO_TEP'::character varying, 'UPLOAD_SO_TEP_MOI_LAN'::character varying, 'UPLOAD_KICH_THUOC_MOI_TEP'::character varying])::text[])) OR (((ma_hanh_dong)::text = 'UPLOAD_TONG_SO_TEP'::text) AND ((don_vi)::text = 'TEP'::text) AND ((chu_ky)::text = 'THEO_GOI'::text)) OR (((ma_hanh_dong)::text = 'UPLOAD_SO_TEP_MOI_LAN'::text) AND ((don_vi)::text = 'TEP'::text) AND ((chu_ky)::text = 'MOI_REQUEST'::text)) OR (((ma_hanh_dong)::text = 'UPLOAD_KICH_THUOC_MOI_TEP'::text) AND ((don_vi)::text = 'BYTE'::text) AND ((chu_ky)::text = 'MOI_TEP'::text)))),
+    CONSTRAINT chk_chinh_sach_han_muc_upload CHECK ((((ma_hanh_dong)::text <> ALL ((ARRAY['UPLOAD_TONG_SO_LAN'::character varying, 'UPLOAD_TONG_SO_TEP'::character varying, 'UPLOAD_SO_TEP_MOI_LAN'::character varying, 'UPLOAD_KICH_THUOC_MOI_TEP'::character varying])::text[])) OR (((ma_hanh_dong)::text = 'UPLOAD_TONG_SO_LAN'::text) AND ((don_vi)::text = 'LAN'::text) AND ((chu_ky)::text = 'NGAY'::text)) OR (((ma_hanh_dong)::text = 'UPLOAD_TONG_SO_TEP'::text) AND ((don_vi)::text = 'TEP'::text) AND ((chu_ky)::text = 'THEO_GOI'::text) AND ((khong_gioi_han = true) OR ((doi_tuong)::text = 'GOI_DICH_VU'::text))) OR (((ma_hanh_dong)::text = 'UPLOAD_SO_TEP_MOI_LAN'::text) AND ((don_vi)::text = 'TEP'::text) AND ((chu_ky)::text = 'MOI_REQUEST'::text)) OR (((ma_hanh_dong)::text = 'UPLOAD_KICH_THUOC_MOI_TEP'::text) AND ((don_vi)::text = 'BYTE'::text) AND ((chu_ky)::text = 'MOI_TEP'::text)))),
     CONSTRAINT chk_chinh_sach_han_muc_upload_khong_gioi_han CHECK ((((ma_hanh_dong)::text <> ALL ((ARRAY['UPLOAD_SO_TEP_MOI_LAN'::character varying, 'UPLOAD_KICH_THUOC_MOI_TEP'::character varying])::text[])) OR (khong_gioi_han = false))),
     CONSTRAINT chk_chinh_sach_han_muc_uu_tien CHECK ((muc_do_uu_tien >= 1))
 );
@@ -1732,5 +1732,5 @@ ALTER TABLE ONLY public.tep
 -- PostgreSQL database dump complete
 --
 
-\unrestrict I012hXshoz5fuISN4S9u0PMBJYIefaVIEc2VFFIECu17AGFjMTLR6BsE1ExAfpR
+\unrestrict Om8VEeVKmnGBcOmNUgdNyEHFm7O67qxv3Hb05q2OqwDNix1CfdD1Kc0MWud6bJU
 

@@ -210,86 +210,101 @@ async function batBuocHanMuc(input, db = null) {
     return ketQua;
 }
 
-async function giuHanMuc(input) {
+async function giuHanMucTrongGiaoDich(input, db) {
     const soLuong = parseSoLuong(input.soLuong);
-    return giaoDich(async (db) => {
-        const resolved = await resolveChinhSach(input, db);
-        const { chinhSach, chuThe, thoiDiem } = resolved;
-        if (chinhSach.khongGioiHan) {
-            return {
-                duocPhep: true,
-                theoDoi: false,
-                khongGioiHan: true,
-                maHanhDong: chinhSach.maHanhDong,
-                soLuong
-            };
-        }
-        const ky = taoKyHanMuc(chinhSach, {
-            dangKyGoi: chuThe.dangKyGoi
-        }, thoiDiem);
-        if (!ky.theoDoi) {
-            if (BigInt(soLuong) > chuyenBigInt(chinhSach.gioiHan)) {
-                throw taoLoiVuotHanMuc(chinhSach, {
-                    maHanhDong: chinhSach.maHanhDong,
-                    gioiHan: bigIntRaJson(chinhSach.gioiHan),
-                    daSuDung: 0,
-                    conLai: bigIntRaJson(chinhSach.gioiHan),
-                    soLuongYeuCau: soLuong
-                });
-            }
-            return {
-                duocPhep: true,
-                theoDoi: false,
-                khongGioiHan: false,
-                maHanhDong: chinhSach.maHanhDong,
-                soLuong
-            };
-        }
-        const suDung = await repository.giuSuDung({
-            nguoiDungId: chuThe.nguoiDungId,
-            phienKhachId: chuThe.phienKhachId,
-            chinhSachHanMucId: chinhSach.id,
+    const resolved = await resolveChinhSach(input, db);
+    const { chinhSach, chuThe, thoiDiem } = resolved;
+    if (chinhSach.khongGioiHan) {
+        return {
+            duocPhep: true,
+            theoDoi: false,
+            khongGioiHan: true,
             maHanhDong: chinhSach.maHanhDong,
-            donVi: chinhSach.donVi,
-            kyBatDau: ky.kyBatDau,
-            kyKetThuc: ky.kyKetThuc,
-            soLuong,
-            gioiHan: chinhSach.gioiHan
-        }, db);
-        if (!suDung) {
-            const tinhTrang = await layTinhTrang(input, db);
+            soLuong
+        };
+    }
+    const ky = taoKyHanMuc(chinhSach, {
+        dangKyGoi: chuThe.dangKyGoi
+    }, thoiDiem);
+    if (!ky.theoDoi) {
+        if (BigInt(soLuong) > chuyenBigInt(chinhSach.gioiHan)) {
             throw taoLoiVuotHanMuc(chinhSach, {
                 maHanhDong: chinhSach.maHanhDong,
-                gioiHan: tinhTrang.gioiHan,
-                daSuDung: tinhTrang.daSuDung,
-                conLai: tinhTrang.conLai,
+                gioiHan: bigIntRaJson(chinhSach.gioiHan),
+                daSuDung: 0,
+                conLai: bigIntRaJson(chinhSach.gioiHan),
                 soLuongYeuCau: soLuong
             });
         }
         return {
             duocPhep: true,
-            theoDoi: true,
+            theoDoi: false,
             khongGioiHan: false,
-            nguoiDungId: chuThe.nguoiDungId,
-            phienKhachId: chuThe.phienKhachId,
-            chinhSachHanMucId: chinhSach.id,
             maHanhDong: chinhSach.maHanhDong,
-            donVi: chinhSach.donVi,
-            kyBatDau: ky.kyBatDau,
-            kyKetThuc: ky.kyKetThuc,
-            soLuong,
-            gioiHan: bigIntRaJson(chinhSach.gioiHan),
-            daSuDung: bigIntRaJson(suDung.daSuDung),
-            conLai: bigIntRaJson(tinhConLai(chinhSach.gioiHan, suDung.daSuDung)),
-            dangKyGoiId: ky.dangKyGoiId || null
+            soLuong
         };
+    }
+    const suDung = await repository.giuSuDung({
+        nguoiDungId: chuThe.nguoiDungId,
+        phienKhachId: chuThe.phienKhachId,
+        chinhSachHanMucId: chinhSach.id,
+        maHanhDong: chinhSach.maHanhDong,
+        donVi: chinhSach.donVi,
+        kyBatDau: ky.kyBatDau,
+        kyKetThuc: ky.kyKetThuc,
+        soLuong,
+        gioiHan: chinhSach.gioiHan
+    }, db);
+    if (!suDung) {
+        const tinhTrang = await layTinhTrang(input, db);
+        throw taoLoiVuotHanMuc(chinhSach, {
+            maHanhDong: chinhSach.maHanhDong,
+            gioiHan: tinhTrang.gioiHan,
+            daSuDung: tinhTrang.daSuDung,
+            conLai: tinhTrang.conLai,
+            soLuongYeuCau: soLuong
+        });
+    }
+    return {
+        duocPhep: true,
+        theoDoi: true,
+        khongGioiHan: false,
+        nguoiDungId: chuThe.nguoiDungId,
+        phienKhachId: chuThe.phienKhachId,
+        chinhSachHanMucId: chinhSach.id,
+        maHanhDong: chinhSach.maHanhDong,
+        donVi: chinhSach.donVi,
+        kyBatDau: ky.kyBatDau,
+        kyKetThuc: ky.kyKetThuc,
+        soLuong,
+        gioiHan: bigIntRaJson(chinhSach.gioiHan),
+        daSuDung: bigIntRaJson(suDung.daSuDung),
+        conLai: bigIntRaJson(tinhConLai(chinhSach.gioiHan, suDung.daSuDung)),
+        dangKyGoiId: ky.dangKyGoiId || null
+    };
+}
+
+async function giuHanMuc(input) {
+    return giaoDich((db) => giuHanMucTrongGiaoDich(input, db), {
+        isolationLevel: ISOLATION_LEVEL.READ_COMMITTED,
+        soLanThuLai: 2
+    });
+}
+
+async function giuNhieuHanMuc(danhSachInput) {
+    if (!Array.isArray(danhSachInput) || danhSachInput.length === 0) { throw new TypeError('Danh sách hạn mức cần giữ không hợp lệ.'); }
+    const danhSach = [...danhSachInput].sort((a, b) => String(a?.maHanhDong || '').localeCompare(String(b?.maHanhDong || '')));
+    return giaoDich(async (db) => {
+        const ketQua = [];
+        for (const input of danhSach) { ketQua.push(await giuHanMucTrongGiaoDich(input, db)); }
+        return ketQua;
     }, {
         isolationLevel: ISOLATION_LEVEL.READ_COMMITTED,
         soLanThuLai: 2
     });
 }
 
-async function hoanTraHanMuc(phieuGiu) {
+async function hoanTraHanMucTrongGiaoDich(phieuGiu, db = null) {
     if (!phieuGiu?.theoDoi) { return null; }
     const soLuong = parseSoLuong(phieuGiu.soLuong);
     const chuThe = chuanHoaChuThe(phieuGiu);
@@ -301,12 +316,29 @@ async function hoanTraHanMuc(phieuGiu) {
         kyBatDau: batBuocDate(phieuGiu.kyBatDau),
         kyKetThuc: batBuocDate(phieuGiu.kyKetThuc),
         soLuong
-    });
+    }, db);
     if (!ketQua) { return null; }
     return {
         ...ketQua,
         daSuDung: bigIntRaJson(ketQua.daSuDung)
     };
+}
+
+async function hoanTraHanMuc(phieuGiu) {
+    return hoanTraHanMucTrongGiaoDich(phieuGiu);
+}
+
+async function hoanTraNhieuHanMuc(danhSachPhieuGiu) {
+    if (!Array.isArray(danhSachPhieuGiu) || danhSachPhieuGiu.length === 0) { return []; }
+    const danhSach = [...danhSachPhieuGiu].sort((a, b) => String(a?.maHanhDong || '').localeCompare(String(b?.maHanhDong || '')));
+    return giaoDich(async (db) => {
+        const ketQua = [];
+        for (const phieuGiu of danhSach) { ketQua.push(await hoanTraHanMucTrongGiaoDich(phieuGiu, db)); }
+        return ketQua;
+    }, {
+        isolationLevel: ISOLATION_LEVEL.READ_COMMITTED,
+        soLanThuLai: 2
+    });
 }
 
 function mapNguoiDungTraCuu(context) {
@@ -425,7 +457,9 @@ module.exports = {
     kiemTraHanMuc,
     batBuocHanMuc,
     giuHanMuc,
+    giuNhieuHanMuc,
     hoanTraHanMuc,
+    hoanTraNhieuHanMuc,
     getTongQuanNguoiDung,
     getChiTietHanMucNguoiDung
 };

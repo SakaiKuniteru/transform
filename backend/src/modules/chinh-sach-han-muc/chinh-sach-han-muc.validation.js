@@ -43,7 +43,9 @@ function kiemTraQuanHe(value, helpers) {
     }
     if (value.khongGioiHan === true && value.gioiHan !== null) { return helpers.message({ custom: 'Chính sách không giới hạn phải có gioiHan bằng null.' }); }
     if (value.khongGioiHan === false && value.gioiHan === null) { return helpers.message({ custom: 'Chính sách có giới hạn phải khai báo gioiHan.' }); }
+    if (value.maHanhDong === MA_HAN_MUC.UPLOAD_TONG_SO_LAN && (value.donVi !== DON_VI_HAN_MUC.LAN || value.chuKy !== CHU_KY_HAN_MUC.NGAY)) { return helpers.message({ custom: 'UPLOAD_TONG_SO_LAN phải dùng donVi=LAN và chuKy=NGAY.' }); }
     if (value.maHanhDong === MA_HAN_MUC.UPLOAD_TONG_SO_TEP && (value.donVi !== DON_VI_HAN_MUC.TEP || value.chuKy !== CHU_KY_HAN_MUC.THEO_GOI)) { return helpers.message({ custom: 'UPLOAD_TONG_SO_TEP phải dùng donVi=TEP và chuKy=THEO_GOI.' }); }
+    if (value.maHanhDong === MA_HAN_MUC.UPLOAD_TONG_SO_TEP && value.khongGioiHan === false && value.doiTuong !== DOI_TUONG_HAN_MUC.GOI_DICH_VU) { return helpers.message({ custom: 'UPLOAD_TONG_SO_TEP hữu hạn chỉ được cấu hình cho đối tượng GOI_DICH_VU.' }); }
     if (value.maHanhDong === MA_HAN_MUC.UPLOAD_SO_TEP_MOI_LAN && (value.donVi !== DON_VI_HAN_MUC.TEP || value.chuKy !== CHU_KY_HAN_MUC.MOI_REQUEST || value.khongGioiHan === true)) { return helpers.message({ custom: 'UPLOAD_SO_TEP_MOI_LAN phải dùng donVi=TEP, chuKy=MOI_REQUEST và phải có giới hạn hữu hạn.' }); }
     if (value.maHanhDong === MA_HAN_MUC.UPLOAD_KICH_THUOC_MOI_TEP && (value.donVi !== DON_VI_HAN_MUC.BYTE || value.chuKy !== CHU_KY_HAN_MUC.MOI_TEP || value.khongGioiHan === true)) { return helpers.message({ custom: 'UPLOAD_KICH_THUOC_MOI_TEP phải dùng donVi=BYTE, chuKy=MOI_TEP và phải có giới hạn hữu hạn.' }); }
     if (value.hieuLucTu && value.hieuLucDen && new Date(value.hieuLucTu) >= new Date(value.hieuLucDen)) { return helpers.message({ custom: 'hieuLucTu phải nhỏ hơn hieuLucDen.' }); }

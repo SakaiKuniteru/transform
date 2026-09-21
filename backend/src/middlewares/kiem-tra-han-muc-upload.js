@@ -31,12 +31,20 @@ async function kiemTraHanMucUpload(req, res, next) {
         const policy = layUploadPolicy(req);
         const danhSachTep = layDanhSachTep(req);
         kiemTraTepDaNhan(policy, danhSachTep);
-        const phieuGiu = await hanMucService.giuHanMuc({
-            ...policy.chuThe,
-            maHanhDong: MA_HAN_MUC.UPLOAD_TONG_SO_TEP,
-            soLuong: danhSachTep.length,
-            thoiDiem: policy.thoiDiem
-        });
+        const phieuGiu = await hanMucService.giuNhieuHanMuc([
+            {
+                ...policy.chuThe,
+                maHanhDong: MA_HAN_MUC.UPLOAD_TONG_SO_LAN,
+                soLuong: 1,
+                thoiDiem: policy.thoiDiem
+            },
+            {
+                ...policy.chuThe,
+                maHanhDong: MA_HAN_MUC.UPLOAD_TONG_SO_TEP,
+                soLuong: danhSachTep.length,
+                thoiDiem: policy.thoiDiem
+            }
+        ]);
         req.uploadHanMuc = phieuGiu;
         req.uploadHanMucDaHoanTra = false;
         return next();
@@ -47,10 +55,10 @@ async function kiemTraHanMucUpload(req, res, next) {
 }
 
 async function hoanTraHanMucUpload(req) {
-    if (!req?.uploadHanMuc || req.uploadHanMucDaHoanTra) { return null; }
+    if (!Array.isArray(req?.uploadHanMuc) || req.uploadHanMuc.length === 0 || req.uploadHanMucDaHoanTra) { return null; }
     req.uploadHanMucDaHoanTra = true;
     try {
-        const ketQua = await hanMucService.hoanTraHanMuc(req.uploadHanMuc);
+        const ketQua = await hanMucService.hoanTraNhieuHanMuc(req.uploadHanMuc);
         req.uploadHanMuc = null;
         return ketQua;
     } catch (error) {

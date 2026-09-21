@@ -111,8 +111,14 @@ function kiemTraQuanHe(data) {
     if (!data.khongGioiHan && data.gioiHan === null) { 
         throw taoLoi(400, 'Chính sách hữu hạn phải khai báo gioiHan.', MA_LOI.GIOI_HAN_KHONG_HOP_LE); 
     }
+    if (data.maHanhDong === MA_HAN_MUC.UPLOAD_TONG_SO_LAN && (data.donVi !== DON_VI_HAN_MUC.LAN || data.chuKy !== CHU_KY_HAN_MUC.NGAY)) {
+        throw taoLoi(400, 'UPLOAD_TONG_SO_LAN phải dùng LAN/NGAY.', MA_LOI.CHINH_SACH_UPLOAD_KHONG_HOP_LE);
+    }
     if (data.maHanhDong === MA_HAN_MUC.UPLOAD_TONG_SO_TEP && (data.donVi !== DON_VI_HAN_MUC.TEP || data.chuKy !== CHU_KY_HAN_MUC.THEO_GOI)) { 
         throw taoLoi(400, 'UPLOAD_TONG_SO_TEP phải dùng TEP/THEO_GOI.', MA_LOI.CHINH_SACH_UPLOAD_KHONG_HOP_LE); 
+    }
+    if (data.maHanhDong === MA_HAN_MUC.UPLOAD_TONG_SO_TEP && !data.khongGioiHan && data.doiTuong !== DOI_TUONG_HAN_MUC.GOI_DICH_VU) {
+        throw taoLoi(400, 'UPLOAD_TONG_SO_TEP hữu hạn chỉ được cấu hình cho GOI_DICH_VU.', MA_LOI.CHINH_SACH_UPLOAD_KHONG_HOP_LE);
     }
     if (data.maHanhDong === MA_HAN_MUC.UPLOAD_SO_TEP_MOI_LAN && (data.donVi !== DON_VI_HAN_MUC.TEP || data.chuKy !== CHU_KY_HAN_MUC.MOI_REQUEST || data.khongGioiHan)) { 
         throw taoLoi(400, 'UPLOAD_SO_TEP_MOI_LAN phải dùng TEP/MOI_REQUEST và không được không giới hạn.', MA_LOI.CHINH_SACH_UPLOAD_KHONG_HOP_LE); 

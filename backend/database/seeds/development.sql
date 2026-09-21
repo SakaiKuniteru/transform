@@ -46,7 +46,6 @@ WHERE NOT EXISTS (
     AND xoa_luc IS NULL
 );
 
-
 /*
  * ============================================================
  * HẠN MỨC UPLOAD DÀNH CHO KHÁCH
@@ -66,11 +65,12 @@ INSERT INTO chinh_sach_han_muc (
     hanh_dong_khi_vuot,
     muc_do_uu_tien
 )
-SELECT
+VALUES
+(
     'UPLOAD_KHACH_MAC_DINH',
-    'Upload dành cho khách',
+    'Số lần upload mỗi ngày dành cho khách',
     'KHACH',
-    'UPLOAD',
+    'UPLOAD_TONG_SO_LAN',
     'LAN',
     'NGAY',
     'Asia/Ho_Chi_Minh',
@@ -78,14 +78,47 @@ SELECT
     FALSE,
     'YEU_CAU_DANG_NHAP',
     100
-WHERE NOT EXISTS (
-    SELECT
-        1
-    FROM chinh_sach_han_muc
-    WHERE LOWER(ma) = LOWER(
-        'UPLOAD_KHACH_MAC_DINH'
-    )
-);
+),
+(
+    'UPLOAD_KHACH_TONG_SO_TEP',
+    'Tổng số tệp upload dành cho khách',
+    'KHACH',
+    'UPLOAD_TONG_SO_TEP',
+    'TEP',
+    'THEO_GOI',
+    'Asia/Ho_Chi_Minh',
+    NULL,
+    TRUE,
+    'TU_CHOI',
+    100
+),
+(
+    'UPLOAD_KHACH_SO_TEP_MOI_LAN',
+    'Số tệp tối đa mỗi lần upload dành cho khách',
+    'KHACH',
+    'UPLOAD_SO_TEP_MOI_LAN',
+    'TEP',
+    'MOI_REQUEST',
+    'Asia/Ho_Chi_Minh',
+    20,
+    FALSE,
+    'TU_CHOI',
+    100
+),
+(
+    'UPLOAD_KHACH_KICH_THUOC_MOI_TEP',
+    'Kích thước tối đa mỗi tệp upload dành cho khách',
+    'KHACH',
+    'UPLOAD_KICH_THUOC_MOI_TEP',
+    'BYTE',
+    'MOI_TEP',
+    'Asia/Ho_Chi_Minh',
+    1073741824,
+    FALSE,
+    'TU_CHOI',
+    100
+)
+ON CONFLICT DO NOTHING;
 
 
 /*
@@ -107,11 +140,12 @@ INSERT INTO chinh_sach_han_muc (
     hanh_dong_khi_vuot,
     muc_do_uu_tien
 )
-SELECT
+VALUES
+(
     'UPLOAD_NGUOI_DUNG_MAC_DINH',
-    'Upload dành cho người dùng',
+    'Số lần upload mỗi ngày dành cho người dùng',
     'NGUOI_DUNG',
-    'UPLOAD',
+    'UPLOAD_TONG_SO_LAN',
     'LAN',
     'NGAY',
     'Asia/Ho_Chi_Minh',
@@ -119,57 +153,46 @@ SELECT
     FALSE,
     'YEU_CAU_NANG_CAP',
     100
-WHERE NOT EXISTS (
-    SELECT
-        1
-    FROM chinh_sach_han_muc
-    WHERE LOWER(ma) = LOWER(
-        'UPLOAD_NGUOI_DUNG_MAC_DINH'
-    )
-);
-
-
-/*
- * ============================================================
- * HẠN MỨC UPLOAD DÀNH CHO QUẢN TRỊ VIÊN
- * ============================================================
- */
-
-INSERT INTO chinh_sach_han_muc (
-    ma,
-    ten,
-    doi_tuong,
-    loai_tai_khoan,
-    ma_hanh_dong,
-    don_vi,
-    chu_ky,
-    mui_gio,
-    gioi_han,
-    khong_gioi_han,
-    hanh_dong_khi_vuot,
-    muc_do_uu_tien
-)
-SELECT
-    'UPLOAD_QUAN_TRI',
-    'Upload dành cho quản trị viên',
-    'LOAI_TAI_KHOAN',
-    'QUAN_TRI',
-    'UPLOAD',
-    'LAN',
-    'NGAY',
+),
+(
+    'UPLOAD_NGUOI_DUNG_TONG_SO_TEP',
+    'Tổng số tệp upload mặc định dành cho người dùng',
+    'NGUOI_DUNG',
+    'UPLOAD_TONG_SO_TEP',
+    'TEP',
+    'THEO_GOI',
     'Asia/Ho_Chi_Minh',
     NULL,
     TRUE,
     'TU_CHOI',
-    1000
-WHERE NOT EXISTS (
-    SELECT
-        1
-    FROM chinh_sach_han_muc
-    WHERE LOWER(ma) = LOWER(
-        'UPLOAD_QUAN_TRI'
-    )
-);
-
+    100
+),
+(
+    'UPLOAD_NGUOI_DUNG_SO_TEP_MOI_LAN',
+    'Số tệp tối đa mỗi lần upload dành cho người dùng',
+    'NGUOI_DUNG',
+    'UPLOAD_SO_TEP_MOI_LAN',
+    'TEP',
+    'MOI_REQUEST',
+    'Asia/Ho_Chi_Minh',
+    20,
+    FALSE,
+    'TU_CHOI',
+    100
+),
+(
+    'UPLOAD_NGUOI_DUNG_KICH_THUOC_MOI_TEP',
+    'Kích thước tối đa mỗi tệp upload dành cho người dùng',
+    'NGUOI_DUNG',
+    'UPLOAD_KICH_THUOC_MOI_TEP',
+    'BYTE',
+    'MOI_TEP',
+    'Asia/Ho_Chi_Minh',
+    1073741824,
+    FALSE,
+    'TU_CHOI',
+    100
+)
+ON CONFLICT DO NOTHING;
 
 COMMIT;

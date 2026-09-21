@@ -4,7 +4,6 @@ const express = require('express');
 const { apiResponse } = require('@transform/shared');
 const env = require('../config/env');
 const MA_LOI = require('../constants/ma-loi');
-const { taoLoi } = require('../utils/loi');
 const { kiemTraKetNoi } = require('../infrastructure/database/pool');
 const { kiemTraRedis } = require('../config/redis');
 const storageService = require('../infrastructure/storage/storage.service');
@@ -114,35 +113,6 @@ async function kiemTraStorageReady() {
 
 router.get('/health/ready', async (req, res, next) => {
     try {
-        const database = await kiemTraKetNoi();
-        return res.json(
-            apiResponse.taoThanhCong(
-                {
-                    service: env.ungDung.ten,
-                    version: env.ungDung.phienBan,
-                    status: 'READY',
-                    database
-                },
-                {
-                    message: 'Backend đã sẵn sàng.'
-                }
-            )
-        );
-    } catch (error) {
-        return next(
-            taoLoi({
-                maLoi: MA_LOI.DATABASE_KHONG_KHA_DUNG,
-                thongBao: 'Backend chưa sẵn sàng vì không thể kết nối database.',
-                statusCode: 503,
-                expose: true,
-                cause: error
-            })
-        );
-    }
-});
-
-router.get('/health/ready', async (req, res, next) => {
-    try {
         const [database, redis, storage] = await Promise.all([
             kiemTraDatabaseReady(),
             kiemTraRedisReady(),
@@ -156,6 +126,19 @@ router.get('/health/ready', async (req, res, next) => {
         return next(error);
     }
 });
+
+function napRouteModule(modulePath) {
+    let resolvedPath;
+    try {
+        resolvedPath = require.resolve(modulePath);
+    } catch (error) {
+        if (error?.code === 'MODULE_NOT_FOUND') { return null; }
+        throw error;
+    }
+    const moduleRouter = require(resolvedPath);
+    if (typeof moduleRouter !== 'function') { return null; }
+    return moduleRouter;
+}
 
 function dangKyRouteModules() {
     for (const routeConfig of ROUTE_MODULES) {

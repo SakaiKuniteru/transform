@@ -73,7 +73,7 @@ function taoTempCleaner(options = {}) {
     let timer = null;
     let dangChay = false;
     async function chay() {
-        if (dangChay) { return null; }
+        if (!enabled || dangChay) { return null; }
         dangChay = true;
         try {
             return await donTepTamQuaHan({ quaHanMs });

@@ -200,7 +200,6 @@ async function getChinhSachHieuLuc({ maHanhDong, laKhach, loaiTaiKhoan = null, g
             )
         )
         ORDER BY
-            muc_do_uu_tien ASC,
             CASE doi_tuong
                 WHEN 'GOI_DICH_VU' THEN 1
                 WHEN 'LOAI_TAI_KHOAN' THEN 2
@@ -208,6 +207,7 @@ async function getChinhSachHieuLuc({ maHanhDong, laKhach, loaiTaiKhoan = null, g
                 WHEN 'KHACH' THEN 4
                 ELSE 9
             END ASC,
+            muc_do_uu_tien ASC,
             id DESC
         LIMIT 1
     `, [
