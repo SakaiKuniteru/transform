@@ -24,6 +24,8 @@ require('./tai-lieu/pdf/pdf.converter');
 require('./tai-lieu/word/word.converter');
 require('./tai-lieu/excel/excel.converter');
 require('./tai-lieu/powerpoint/powerpoint.converter');
+require('./dich/dich.converter');
+require('./ai/ai.converter');
 require('./nen/nen.converter');
 
 const SO_BYTE_NHAN_DIEN = 65536;
@@ -109,6 +111,14 @@ function rutGonKeHoach(keHoach) {
 function chonQueue(loaiChuyenDoi, keHoach, nhomNguon) {
     if (loaiChuyenDoi === LOAI_CHUYEN_DOI.OCR) { return TEN_QUEUE.OCR; }
     if ([LOAI_CHUYEN_DOI.DICH, LOAI_CHUYEN_DOI.NHAN_DIEN_NGON_NGU].includes(loaiChuyenDoi)) { return TEN_QUEUE.DICH; }
+    if ([
+        LOAI_CHUYEN_DOI.DINH_DANG_LAI,
+        LOAI_CHUYEN_DOI.THU_GON,
+        LOAI_CHUYEN_DOI.KIEM_TRA,
+        LOAI_CHUYEN_DOI.CHINH_SUA,
+        LOAI_CHUYEN_DOI.THAY_THE,
+        LOAI_CHUYEN_DOI.TOM_TAT
+    ].includes(loaiChuyenDoi)) { return TEN_QUEUE.AI; }
     const nhom = String(keHoach.cacBuoc[0]?.converter?.nhomXuLy?.[0] || keHoach.nhomXuLy || nhomNguon || '').trim().toUpperCase();
     if (nhom === 'HINH_ANH') { return TEN_QUEUE.HINH_ANH; }
     if (nhom === 'TAI_LIEU' || nhom === 'VAN_BAN') { return TEN_QUEUE.TAI_LIEU; }
@@ -117,6 +127,8 @@ function chonQueue(loaiChuyenDoi, keHoach, nhomNguon) {
     if (nhom === 'AI') { return TEN_QUEUE.AI; }
     return TEN_QUEUE.CHUYEN_DOI;
 }
+
+if (loaiChuyenDoi === LOAI_CHUYEN_DOI.CHUAN_HOA && String(nhomNguon || '').trim().toUpperCase() === 'VAN_BAN') { return TEN_QUEUE.AI; }
 
 function taoDauVaoNguon(nguon, nhanDien) {
     return {
