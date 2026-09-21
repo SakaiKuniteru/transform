@@ -11,6 +11,7 @@ const {
     dongRedis
 } = require('./config/redis');
 const storageService = require('./infrastructure/storage/storage.service');
+const { dongTatCaQueue } = require('./infrastructure/queue/queues');
 const { taoTempCleaner } = require('./infrastructure/storage/temp-cleaner');
 
 const tempCleaner = taoTempCleaner();
@@ -57,6 +58,7 @@ async function dongHttpServer() {
 
 async function dongInfrastructure() {
     tempCleaner.dung();
+    await dongTatCaQueue();
     await Promise.allSettled([
         dongRedis(),
         dongPool()
