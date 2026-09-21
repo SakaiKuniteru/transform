@@ -15,13 +15,16 @@ const dinhDangService = require('./nhan-dien/dinh-dang.service');
 const { TEN_QUEUE } = require('../../config/queue');
 const { giaoDich, ISOLATION_LEVEL } = require('../../infrastructure/database/transaction');
 const { LOAI_CHUYEN_DOI, coLoaiChuyenDoi, layThongTinLoaiChuyenDoi } = require('../../constants/loai-chuyen-doi');
-const { chuanHoaDinhDang, coDinhDang, layThongTinDinhDang } = require('../../constants/dinh-dang-tep');
+const { DINH_DANG, chuanHoaDinhDang, coDinhDang, layThongTinDinhDang } = require('../../constants/dinh-dang-tep');
 const MA_LOI = require('../../constants/ma-loi');
 const { taoLoiTheoStatus: taoLoi } = require('../../utils/loi');
 
 require('./hinh-anh/hinh-anh.converter');
 require('./tai-lieu/pdf/pdf.converter');
 require('./tai-lieu/word/word.converter');
+require('./tai-lieu/excel/excel.converter');
+require('./tai-lieu/powerpoint/powerpoint.converter');
+require('./nen/nen.converter');
 
 const SO_BYTE_NHAN_DIEN = 65536;
 
@@ -59,6 +62,7 @@ function chuanHoaDinhDangBatBuoc(value, ten) {
 function chuanHoaDinhDangDich(value, loaiChuyenDoi, dinhDangNguon) {
     if (value === undefined || value === null || value === '') {
         if (loaiChuyenDoi === LOAI_CHUYEN_DOI.CHUYEN_DINH_DANG) { throw taoLoi(400, 'Chuyển đổi định dạng yêu cầu định dạng đích.', MA_LOI.CHUYEN_DOI_KHONG_HO_TRO); }
+        if (loaiChuyenDoi === LOAI_CHUYEN_DOI.NEN) { return DINH_DANG.GZIP; }
         return dinhDangNguon;
     }
     return chuanHoaDinhDangBatBuoc(value, 'Định dạng đích');

@@ -6,8 +6,8 @@ const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { CONG_CU, chayCongCu, kiemTraCongCu } = require('./process-runner');
 
-const DINH_DANG_DAU_RA = Object.freeze({ PDF: 'pdf', DOCX: 'docx', ODT: 'odt', HTML: 'html', TXT: 'txt' });
-const FILTER_DAU_RA = Object.freeze({ pdf: 'pdf', docx: 'docx', odt: 'odt', html: 'html:HTML', txt: 'txt:Text' });
+const DINH_DANG_DAU_RA = Object.freeze({ PDF: 'pdf', DOCX: 'docx', ODT: 'odt', HTML: 'html', TXT: 'txt', XLSX: 'xlsx', ODS: 'ods', CSV: 'csv', PPTX: 'pptx', ODP: 'odp' });
+const FILTER_DAU_RA = Object.freeze({ pdf: 'pdf', docx: 'docx', odt: 'odt', html: 'html:HTML', txt: 'txt:Text', xlsx: 'xlsx:Calc MS Excel 2007 XML', ods: 'ods:calc8', csv: 'csv:Text - txt - csv (StarCalc)', pptx: 'pptx:Impress MS PowerPoint 2007 XML', odp: 'odp:impress8' });
 
 function chuanHoaDuongDan(value, ten) { const duongDan = String(value || '').trim(); if (!duongDan) { throw new TypeError(`${ten} không được để trống.`); } return path.resolve(duongDan); }
 
