@@ -152,6 +152,15 @@ const THONG_TIN_DINH_DANG = Object.freeze({
 
     /*
      * =========================================================
+     * MÃ HÓA
+     * =========================================================
+     */
+    [DINH_DANG.BASE64]: { ma: DINH_DANG.BASE64, ten: 'Base64', nhom: NHOM_DINH_DANG.MA_HOA, extensions: ['base64', 'b64'], mimeTypes: ['text/plain'], binary: false, preview: true },
+    [DINH_DANG.BASE32]: { ma: DINH_DANG.BASE32, ten: 'Base32', nhom: NHOM_DINH_DANG.MA_HOA, extensions: ['base32', 'b32'], mimeTypes: ['text/plain'], binary: false, preview: true },
+    [DINH_DANG.HEX]: { ma: DINH_DANG.HEX, ten: 'Hexadecimal', nhom: NHOM_DINH_DANG.MA_HOA, extensions: ['hex'], mimeTypes: ['text/plain'], binary: false, preview: true },
+
+    /*
+     * =========================================================
      * HÌNH ẢNH
      * =========================================================
      */

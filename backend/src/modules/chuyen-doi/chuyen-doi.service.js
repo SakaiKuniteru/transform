@@ -27,6 +27,9 @@ require('./tai-lieu/powerpoint/powerpoint.converter');
 require('./dich/dich.converter');
 require('./ai/ai.converter');
 require('./nen/nen.converter');
+require('./du-lieu/json/json.converter');
+require('./ma-hoa/base64/base64.converter');
+require('./trich-xuat/trich-xuat.converter');
 
 const SO_BYTE_NHAN_DIEN = 65536;
 
