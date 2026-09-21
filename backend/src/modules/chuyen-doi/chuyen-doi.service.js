@@ -21,6 +21,7 @@ const { taoLoiTheoStatus: taoLoi } = require('../../utils/loi');
 
 require('./hinh-anh/hinh-anh.converter');
 require('./tai-lieu/pdf/pdf.converter');
+require('./tai-lieu/word/word.converter');
 
 const SO_BYTE_NHAN_DIEN = 65536;
 
