@@ -78,9 +78,9 @@ function taoTransactionContext(client) {
             throw error;
         }
     }
-
     const context = Object.freeze({
         ...database,
+        query: database.truyVan,
         savepoint
     });
     return context;

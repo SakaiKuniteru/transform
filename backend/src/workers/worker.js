@@ -4,9 +4,8 @@ const path = require('node:path');
 const { TEN_QUEUE } = require('../config/queue');
 const queueFactory = require('../infrastructure/queue/queue.factory');
 const queueEvents = require('../infrastructure/queue/queue-events');
-
+const processCleanup = require('../infrastructure/process/process-cleanup');
 const workers = new Map();
-
 const HANDLER_MODULES = Object.freeze({
     [TEN_QUEUE.CHUYEN_DOI]: './handlers/chuyen-doi.handler',
     [TEN_QUEUE.TAI_LIEU]: './handlers/tai-lieu.handler',
@@ -90,9 +89,11 @@ async function dungWorker(tenQueue) {
 }
 
 async function dungTatCaWorker() {
+    await processCleanup.donTatCaProcess();
     await Promise.allSettled(Array.from(workers.keys()).map(dungWorker));
     await queueEvents.dungTatCaQueueEvents();
     await queueFactory.dongTatCaQueueInfrastructure();
+    await processCleanup.donTatCaDuongDanTam();
 }
 
 async function chay() {
