@@ -20,6 +20,7 @@ const MA_LOI = require('../../constants/ma-loi');
 const { taoLoiTheoStatus: taoLoi } = require('../../utils/loi');
 
 require('./hinh-anh/hinh-anh.converter');
+require('./tai-lieu/pdf/pdf.converter');
 
 const SO_BYTE_NHAN_DIEN = 65536;
 

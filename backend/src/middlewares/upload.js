@@ -149,12 +149,7 @@ function uploadNhieuTep(fieldName = 'teps') {
     if (typeof fieldName !== 'string' || !fieldName.trim()) { throw new TypeError('Tên field upload không hợp lệ.'); }
     const tenField = fieldName.trim();
     return (req, res, next) => {
-        try {
-            const { maxFiles } = layGioiHanUpload(req);
-            return chayMulter(req, res, next, taoUpload(req).array(tenField, maxFiles));
-        } catch (error) {
-            return next(error);
-        }
+        try { return chayMulter(req, res, next, taoUpload(req).array(tenField)); } catch (error) { return next(error); }
     };
 }
 
