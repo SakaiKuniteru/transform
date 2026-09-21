@@ -503,7 +503,8 @@ async function capNhatTrangThai(id, data, db = null) {
             trang_thai = $2,
             tien_trinh = COALESCE($3, tien_trinh),
             buoc_hien_tai = CASE WHEN $4::BOOLEAN THEN $5 ELSE buoc_hien_tai END,
-            bat_dau_luc = CASE WHEN $6::BOOLEAN AND bat_dau_luc IS NULL THEN NOW() ELSE bat_dau_luc END
+            bat_dau_luc = CASE WHEN $6::BOOLEAN AND bat_dau_luc IS NULL THEN NOW() ELSE bat_dau_luc END,
+            so_lan_thu = COALESCE($7, so_lan_thu)
         WHERE id = $1
         RETURNING *
     `, [
@@ -512,7 +513,8 @@ async function capNhatTrangThai(id, data, db = null) {
         data.tienTrinh ?? null,
         data.coBuocHienTai === true,
         data.buocHienTai ?? null,
-        data.danhDauBatDau === true
+        data.danhDauBatDau === true,
+        data.soLanThu ?? null
     ], db);
     return mapCongViec(result.rows[0]);
 }
@@ -610,8 +612,9 @@ async function capNhatBuoc(id, data, db = null) {
             ma_loi = $11,
             thong_bao_loi = $12,
             chi_tiet_loi = $13,
-            bat_dau_luc = CASE WHEN $14::BOOLEAN AND bat_dau_luc IS NULL THEN NOW() ELSE bat_dau_luc END,
-            hoan_thanh_luc = CASE WHEN $15::BOOLEAN THEN NOW() ELSE hoan_thanh_luc END
+            so_lan_thu = COALESCE($14, so_lan_thu),
+            bat_dau_luc = CASE WHEN $15::BOOLEAN AND bat_dau_luc IS NULL THEN NOW() ELSE bat_dau_luc END,
+            hoan_thanh_luc = CASE WHEN $16::BOOLEAN THEN NOW() ELSE hoan_thanh_luc END
         WHERE id = $1
         RETURNING *
     `, [
@@ -628,6 +631,7 @@ async function capNhatBuoc(id, data, db = null) {
         data.maLoi ?? null,
         data.thongBaoLoi ?? null,
         data.chiTietLoi ?? null,
+        data.soLanThu ?? null,
         data.danhDauBatDau === true,
         data.danhDauHoanThanh === true
     ], db);

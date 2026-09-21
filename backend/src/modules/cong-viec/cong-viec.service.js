@@ -57,6 +57,12 @@ function chuanHoaSoLanThuToiDa(value = 3) {
     return number;
 }
 
+function chuanHoaSoLanThu(value) {
+    const number = Number(value);
+    if (!Number.isSafeInteger(number) || number < 0) { throw taoLoi(400, 'Số lần thử không hợp lệ.', MA_LOI.SO_LAN_THU_KHONG_HOP_LE); }
+    return number;
+}
+
 function chuanHoaTienTrinh(value) {
     const number = Number(value);
     if (!Number.isFinite(number) || number < 0 || number > 100) { throw taoLoi(400, 'Tiến trình phải nằm trong khoảng từ 0 đến 100.', MA_LOI.TIEN_TRINH_KHONG_HOP_LE); }
@@ -232,7 +238,8 @@ async function capNhatTrangThai(id, data = {}) {
         tienTrinh: data.tienTrinh === undefined ? null : chuanHoaTienTrinh(data.tienTrinh),
         coBuocHienTai: Object.prototype.hasOwnProperty.call(data, 'buocHienTai'),
         buocHienTai: data.buocHienTai === null ? null : chuanHoaChuoi(data.buocHienTai, 'Bước hiện tại', 255),
-        danhDauBatDau: data.danhDauBatDau === true
+        danhDauBatDau: data.danhDauBatDau === true,
+        soLanThu: data.soLanThu === undefined ? null : chuanHoaSoLanThu(data.soLanThu)
     });
     if (!congViec) { throw taoLoi(404, 'Công việc không tồn tại.', MA_LOI.CONG_VIEC_KHONG_TIM_THAY); }
     return congViec;
@@ -293,7 +300,8 @@ async function capNhatBuoc(id, data = {}) {
     }
     const buoc = await repository.capNhatBuoc(buocId, {
         ...data,
-        tienTrinh: data.tienTrinh === undefined ? undefined : chuanHoaTienTrinh(data.tienTrinh)
+        tienTrinh: data.tienTrinh === undefined ? undefined : chuanHoaTienTrinh(data.tienTrinh),
+        soLanThu: data.soLanThu === undefined ? undefined : chuanHoaSoLanThu(data.soLanThu)
     });
     if (!buoc) { throw taoLoi(404, 'Bước công việc không tồn tại.', MA_LOI.BUOC_CONG_VIEC_KHONG_TIM_THAY); }
     return buoc;
