@@ -10,16 +10,14 @@ const {
     loiYeuCau,
     loiChuaXacThuc,
     loiKhongCoQuyen,
-    loiXungDot,
-    loiQuaNhieuYeuCau
+    loiXungDot
 } = require('../../utils/loi');
 const { giaoDich } = require('../../infrastructure/database/transaction');
 const nguoiDungRepository = require('../nguoi-dung/nguoi-dung.repository');
 const repository = require('./xac-thuc.repository');
-const MUC_DICH_OTP = Object.freeze({
-    XAC_THUC_EMAIL: 'XAC_THUC_EMAIL',
-    DAT_LAI_MAT_KHAU: 'DAT_LAI_MAT_KHAU'
-});
+const otpService = require('./otp/otp.service');
+const otpEmailService = require('./otp/otp-email.service');
+const { MUC_DICH_OTP } = require('./otp/otp.constant');
 
 function batBuocCauHinh(value, ten) {
     if (!value) { throw new Error(`Thiếu cấu hình ${ten}.`); }
@@ -35,17 +33,6 @@ function layJwtConfig() {
         resetExpiresIn: '15m',
         issuer: env.baoMat.jwtIssuer || 'transform-backend',
         audience: env.baoMat.jwtAudience || 'transform-client'
-    };
-}
-
-function layOtpConfig() {
-    return {
-        secret: batBuocCauHinh(env.otp?.secret, 'OTP_SECRET'),
-        length: Number(env.otp?.length || 6),
-        ttlSeconds: Number(env.otp?.ttlSeconds || 300),
-        maxAttempts: Number(env.otp?.maxAttempts || 5),
-        resendCooldownSeconds: Number(env.otp?.resendCooldownSeconds || 60),
-        maxSendsPerHour: Number(env.otp?.maxSendsPerHour || 5)
     };
 }
 
@@ -74,20 +61,6 @@ function kiemTraTrangThaiTaiKhoan(nguoiDung, { yeuCauXacThucEmail = true } = {})
     if (yeuCauXacThucEmail && !nguoiDung.emailXacThucLuc) {
         throw loiKhongCoQuyen('Email chưa được xác thực.', MA_LOI.EMAIL_CHUA_XAC_THUC);
     }
-}
-
-function taoOtpSo(length) {
-    let ma = '';
-    for (let i = 0; i < length; i += 1) { ma += crypto.randomInt(0, 10).toString(); }
-    return ma;
-}
-
-function bamOtp(diaChi, mucDich, maOtp) {
-    const config = layOtpConfig();
-    return crypto
-        .createHmac('sha256', config.secret)
-        .update(`${mucDich}:${diaChi.toLowerCase()}:${maOtp}`)
-        .digest('hex');
 }
 
 function bamToken(token) {
@@ -271,311 +244,60 @@ async function taoCapToken(nguoiDung, context = {}, db) {
     };
 }
 
-
-async function guiOtpNoiBo({
-    nguoiDung,
-    mucDich,
-    requestId = null
-}, db) {
-    const config = layOtpConfig();
-    const diaChi = chuanHoaEmail(nguoiDung.email);
-
-    const tongGui = await repository.demSoLanGuiOtpTrongGio(
-        {
-            nguoiDungId: nguoiDung.id,
-            diaChi,
-            mucDich
-        },
-        db
-    );
-
-    if (tongGui >= config.maxSendsPerHour) {
-        throw loiQuaNhieuYeuCau(
-            'Bạn đã yêu cầu gửi mã xác thực quá nhiều lần.',
-            MA_LOI.OTP_VUOT_SO_LAN_GUI
-        );
-    }
-
-    const otpMoiNhat = await repository.layOtpMoiNhat(
-        {
-            nguoiDungId: nguoiDung.id,
-            diaChi,
-            mucDich
-        },
-        db
-    );
-
-    if (otpMoiNhat?.guiLanCuoiLuc) {
-        const daQua = Math.floor((Date.now() - new Date(otpMoiNhat.guiLanCuoiLuc).getTime()) / 1000);
-
-        if (daQua < config.resendCooldownSeconds) {
-            throw loiQuaNhieuYeuCau(
-                'Vui lòng chờ trước khi yêu cầu gửi lại mã xác thực.',
-                MA_LOI.OTP_GUI_QUA_NHANH,
-                null,
-                {
-                    thuLaiSauGiay: config.resendCooldownSeconds - daQua
-                }
-            );
-        }
-    }
-
-    const maOtp = taoOtpSo(config.length);
-    const maHash = bamOtp(diaChi, mucDich, maOtp);
-    const hetHanLuc = new Date(Date.now() + config.ttlSeconds * 1000);
-
-    let otp;
-
-    if (otpMoiNhat?.trangThai === 'CHO_XAC_THUC') {
-        otp = await repository.guiLaiOtp(
-            otpMoiNhat.id,
-            {
-                maHash,
-                soLanThuToiDa: config.maxAttempts,
-                hetHanLuc,
-                requestId
-            },
-            db
-        );
-    } else {
-        otp = await repository.taoOtp(
-            {
-                nguoiDungId: nguoiDung.id,
-                diaChi,
-                mucDich,
-                maHash,
-                soLanThuToiDa: config.maxAttempts,
-                hetHanLuc,
-                requestId
-            },
-            db
-        );
-    }
-
-    return {
-        otpId: otp.id,
-        hetHanLuc: otp.hetHanLuc,
-        maOtpDevelopment: env.laDevelopment ? maOtp : null
-    };
-}
-
-
-async function xacThucOtpNoiBo({
-    nguoiDung,
-    mucDich,
-    maOtp
-}, db) {
-    const diaChi = chuanHoaEmail(nguoiDung.email);
-
-    const otp = await repository.layOtpMoiNhat(
-        {
-            nguoiDungId: nguoiDung.id,
-            diaChi,
-            mucDich
-        },
-        db
-    );
-
-    if (!otp) {
-        throw loiYeuCau(
-            'Không tìm thấy mã xác thực.',
-            MA_LOI.OTP_KHONG_TIM_THAY
-        );
-    }
-
-    if (otp.trangThai === 'DA_XAC_THUC') {
-        throw loiYeuCau(
-            'Mã xác thực đã được sử dụng.',
-            MA_LOI.OTP_DA_SU_DUNG
-        );
-    }
-
-    if (otp.trangThai === 'VO_HIEU_HOA') {
-        throw loiYeuCau(
-            'Mã xác thực đã bị vô hiệu hóa.',
-            MA_LOI.OTP_DA_VO_HIEU_HOA
-        );
-    }
-
-    if (otp.trangThai === 'VUOT_SO_LAN_THU') {
-        throw loiYeuCau(
-            'Mã xác thực đã vượt quá số lần thử cho phép.',
-            MA_LOI.OTP_VUOT_SO_LAN_THU
-        );
-    }
-
-    if (otp.trangThai === 'HET_HAN' || new Date(otp.hetHanLuc).getTime() <= Date.now()) {
-        await repository.danhDauOtpHetHan(otp.id, db);
-
-        throw loiYeuCau(
-            'Mã xác thực đã hết hạn.',
-            MA_LOI.OTP_HET_HAN
-        );
-    }
-
-    const maHash = bamOtp(diaChi, mucDich, maOtp);
-
-    if (!soSanhHash(maHash, otp.maHash)) {
-        const ketQua = await repository.tangLanThuOtp(otp.id, db);
-
-        if (ketQua.trangThai === 'VUOT_SO_LAN_THU') {
-            throw loiYeuCau(
-                'Mã xác thực đã vượt quá số lần thử cho phép.',
-                MA_LOI.OTP_VUOT_SO_LAN_THU
-            );
-        }
-
-        throw loiYeuCau(
-            'Mã xác thực không đúng.',
-            MA_LOI.OTP_KHONG_HOP_LE
-        );
-    }
-
-    await repository.danhDauOtpDaXacThuc(otp.id, db);
-
-    return otp;
-}
-
-
 /*
  * ============================================================
  * ĐĂNG KÝ
  * ============================================================
  */
 
-async function dangKy({
-    email,
-    tenDangNhap = null,
-    hoTen,
-    matKhau
-}, context = {}) {
+async function dangKy({ email, tenDangNhap = null, hoTen, matKhau }, context = {}) {
     const emailChuan = chuanHoaEmail(email);
     const tenDangNhapChuan = chuanHoaTenDangNhap(tenDangNhap);
-
-    if (await nguoiDungRepository.emailDaTonTai(emailChuan)) {
-        throw loiXungDot(
-            'Email đã được sử dụng.',
-            MA_LOI.EMAIL_DA_TON_TAI
-        );
-    }
-
-    if (tenDangNhapChuan && await nguoiDungRepository.tenDangNhapDaTonTai(tenDangNhapChuan)) {
-        throw loiXungDot(
-            'Tên đăng nhập đã được sử dụng.',
-            MA_LOI.TEN_DANG_NHAP_DA_TON_TAI
-        );
-    }
-
-    const matKhauHash = await bcrypt.hash(
-        matKhau,
-        env.baoMat.bcryptRounds
-    );
-
-    return giaoDich(async (db) => {
-        const nguoiDung = await nguoiDungRepository.taoMoi(
-            {
-                email: emailChuan,
-                tenDangNhap: tenDangNhapChuan,
-                hoTen: hoTen.trim(),
-                matKhauHash,
-                loaiTaiKhoan: LOAI_TAI_KHOAN.NGUOI_DUNG,
-                trangThai: 'HOAT_DONG',
-                emailXacThucLuc: null,
-                caiDat: {
-                    ngonNgu: 'vi',
-                    muiGio: 'Asia/Ho_Chi_Minh',
-                    giaoDien: 'system'
-                }
-            },
-            db
-        );
-
-        const otp = await guiOtpNoiBo(
-            {
-                nguoiDung,
-                mucDich: MUC_DICH_OTP.XAC_THUC_EMAIL,
-                requestId: context.requestId
-            },
-            db
-        );
-
-        return {
-            nguoiDung,
-            ...otp
-        };
+    if (await nguoiDungRepository.emailDaTonTai(emailChuan)) { throw loiXungDot('Email đã được sử dụng.', MA_LOI.EMAIL_DA_TON_TAI); }
+    if (tenDangNhapChuan && await nguoiDungRepository.tenDangNhapDaTonTai(tenDangNhapChuan)) { throw loiXungDot('Tên đăng nhập đã được sử dụng.', MA_LOI.TEN_DANG_NHAP_DA_TON_TAI); }
+    const matKhauHash = await bcrypt.hash(matKhau, env.baoMat.bcryptRounds);
+    const ketQua = await giaoDich(async (db) => {
+        const nguoiDung = await nguoiDungRepository.taoMoi({
+            email: emailChuan,
+            tenDangNhap: tenDangNhapChuan,
+            hoTen: hoTen.trim(),
+            matKhauHash,
+            loaiTaiKhoan: LOAI_TAI_KHOAN.NGUOI_DUNG,
+            trangThai: 'HOAT_DONG',
+            emailXacThucLuc: null,
+            caiDat: { ngonNgu: 'vi', muiGio: 'Asia/Ho_Chi_Minh', giaoDien: 'system' }
+        }, db);
+        const otp = await otpService.tao({ nguoiDung, mucDich: MUC_DICH_OTP.XAC_THUC_EMAIL, requestId: context.requestId }, db);
+        return { nguoiDung, otp };
     });
+    await otpEmailService.guiKetQuaOtp({ nguoiDung: ketQua.nguoiDung, mucDich: MUC_DICH_OTP.XAC_THUC_EMAIL, otp: ketQua.otp });
+    return { nguoiDung: ketQua.nguoiDung, otpId: ketQua.otp.otpId, hetHanLuc: ketQua.otp.hetHanLuc, maOtpDevelopment: ketQua.otp.maOtpDevelopment };
 }
-
-
 /*
  * ============================================================
  * XÁC THỰC EMAIL
  * ============================================================
  */
 
-async function xacThucEmail({
-    email,
-    maOtp
-}) {
-    const nguoiDung = await repository.timNguoiDungTheoEmail(
-        chuanHoaEmail(email)
-    );
-
-    if (!nguoiDung) {
-        throw loiYeuCau(
-            'Email hoặc mã xác thực không hợp lệ.',
-            MA_LOI.OTP_KHONG_HOP_LE
-        );
-    }
-
-    if (nguoiDung.emailXacThucLuc) {
-        return taoNguoiDungAnToan(nguoiDung);
-    }
-
-    return giaoDich(async (db) => {
-        await xacThucOtpNoiBo(
-            {
-                nguoiDung,
-                mucDich: MUC_DICH_OTP.XAC_THUC_EMAIL,
-                maOtp
-            },
-            db
-        );
-
-        return repository.xacThucEmail(
-            nguoiDung.id,
-            db
-        );
-    });
-}
-
-
-async function guiLaiOtpXacThucEmail({
-    email
-}, context = {}) {
-    const nguoiDung = await repository.timNguoiDungTheoEmail(
-        chuanHoaEmail(email)
-    );
-
-    if (!nguoiDung || nguoiDung.emailXacThucLuc) {
-        return {
-            daGui: true,
-            maOtpDevelopment: null
-        };
-    }
-
-    const otp = await guiOtpNoiBo({
+async function xacThucEmail({ email, maOtp }) {
+    const nguoiDung = await repository.timNguoiDungTheoEmail(chuanHoaEmail(email));
+    if (!nguoiDung) { throw loiYeuCau('Email hoặc mã xác thực không hợp lệ.', MA_LOI.OTP_KHONG_HOP_LE); }
+    if (nguoiDung.emailXacThucLuc) { return taoNguoiDungAnToan(nguoiDung); }
+    return otpService.xacThuc({
         nguoiDung,
         mucDich: MUC_DICH_OTP.XAC_THUC_EMAIL,
-        requestId: context.requestId
+        maOtp,
+        khiHopLe: async (_otp, db) => repository.xacThucEmail(nguoiDung.id, db)
     });
-
-    return {
-        daGui: true,
-        ...otp
-    };
 }
 
+async function guiLaiOtpXacThucEmail({ email }, context = {}) {
+    const nguoiDung = await repository.timNguoiDungTheoEmail(chuanHoaEmail(email));
+    if (!nguoiDung || nguoiDung.emailXacThucLuc) { return { daGui: true, maOtpDevelopment: null }; }
+    const otp = await otpService.tao({ nguoiDung, mucDich: MUC_DICH_OTP.XAC_THUC_EMAIL, requestId: context.requestId });
+    await otpEmailService.guiKetQuaOtp({ nguoiDung, mucDich: MUC_DICH_OTP.XAC_THUC_EMAIL, otp });
+    return { daGui: true, otpId: otp.otpId, hetHanLuc: otp.hetHanLuc, maOtpDevelopment: otp.maOtpDevelopment };
+}
 
 /*
  * ============================================================
@@ -634,7 +356,6 @@ async function dangNhap({
         ...token
     };
 }
-
 
 /*
  * ============================================================
@@ -715,7 +436,6 @@ async function lamMoiToken(refreshToken, context = {}) {
     });
 }
 
-
 /*
  * ============================================================
  * ĐĂNG XUẤT
@@ -749,7 +469,6 @@ async function dangXuat(refreshToken) {
     return true;
 }
 
-
 async function dangXuatTatCa(nguoiDungId) {
     await repository.thuHoiTatCaPhien(
         nguoiDungId,
@@ -759,74 +478,26 @@ async function dangXuatTatCa(nguoiDungId) {
     return true;
 }
 
-
 /*
  * ============================================================
  * QUÊN MẬT KHẨU
  * ============================================================
  */
 
-async function quenMatKhau({
-    email
-}, context = {}) {
-    const nguoiDung = await repository.timNguoiDungTheoEmail(
-        chuanHoaEmail(email)
-    );
-
-    if (!nguoiDung || nguoiDung.trangThai !== 'HOAT_DONG' || !nguoiDung.emailXacThucLuc) {
-        return {
-            daGui: true,
-            maOtpDevelopment: null
-        };
-    }
-
-    const otp = await guiOtpNoiBo({
-        nguoiDung,
-        mucDich: MUC_DICH_OTP.DAT_LAI_MAT_KHAU,
-        requestId: context.requestId
-    });
-
-    return {
-        daGui: true,
-        ...otp
-    };
+async function quenMatKhau({ email }, context = {}) {
+    const nguoiDung = await repository.timNguoiDungTheoEmail(chuanHoaEmail(email));
+    if (!nguoiDung || nguoiDung.trangThai !== 'HOAT_DONG' || !nguoiDung.emailXacThucLuc) { return { daGui: true, maOtpDevelopment: null }; }
+    const otp = await otpService.tao({ nguoiDung, mucDich: MUC_DICH_OTP.DAT_LAI_MAT_KHAU, requestId: context.requestId });
+    await otpEmailService.guiKetQuaOtp({ nguoiDung, mucDich: MUC_DICH_OTP.DAT_LAI_MAT_KHAU, otp });
+    return { daGui: true, otpId: otp.otpId, hetHanLuc: otp.hetHanLuc, maOtpDevelopment: otp.maOtpDevelopment };
 }
 
-
-async function xacThucOtpDatLaiMatKhau({
-    email,
-    maOtp
-}) {
-    const nguoiDung = await repository.timNguoiDungTheoEmail(
-        chuanHoaEmail(email)
-    );
-
-    if (!nguoiDung) {
-        throw loiYeuCau(
-            'Email hoặc mã xác thực không hợp lệ.',
-            MA_LOI.OTP_KHONG_HOP_LE
-        );
-    }
-
-    const otp = await giaoDich(async (db) => {
-        return xacThucOtpNoiBo(
-            {
-                nguoiDung,
-                mucDich: MUC_DICH_OTP.DAT_LAI_MAT_KHAU,
-                maOtp
-            },
-            db
-        );
-    });
-
-    return {
-        resetToken: taoResetToken(
-            nguoiDung.id,
-            otp.id
-        )
-    };
+async function xacThucOtpDatLaiMatKhau({ email, maOtp }) {
+    const nguoiDung = await repository.timNguoiDungTheoEmail(chuanHoaEmail(email));
+    if (!nguoiDung) { throw loiYeuCau('Email hoặc mã xác thực không hợp lệ.', MA_LOI.OTP_KHONG_HOP_LE); }
+    const otp = await otpService.xacThuc({ nguoiDung, mucDich: MUC_DICH_OTP.DAT_LAI_MAT_KHAU, maOtp });
+    return { resetToken: taoResetToken(nguoiDung.id, otp.id) };
 }
-
 
 async function datLaiMatKhau({
     resetToken,
@@ -845,17 +516,7 @@ async function datLaiMatKhau({
             db
         );
 
-        if (
-            !otp
-            || String(otp.nguoiDungId) !== String(payload.sub)
-            || otp.mucDich !== MUC_DICH_OTP.DAT_LAI_MAT_KHAU
-            || otp.trangThai !== 'DA_XAC_THUC'
-        ) {
-            throw loiChuaXacThuc(
-                'Token đặt lại mật khẩu không hợp lệ.',
-                MA_LOI.TOKEN_KHONG_HOP_LE
-            );
-        }
+        if (!otp || String(otp.nguoiDungId) !== String(payload.sub) || otp.mucDich !== MUC_DICH_OTP.DAT_LAI_MAT_KHAU || otp.trangThai !== 'DA_XAC_THUC') { throw loiChuaXacThuc('Token đặt lại mật khẩu không hợp lệ.', MA_LOI.TOKEN_KHONG_HOP_LE); }
 
         if (otp.metadata?.datLaiMatKhauLuc) {
             throw loiChuaXacThuc(

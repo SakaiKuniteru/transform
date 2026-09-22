@@ -17,6 +17,7 @@ const HANDLER_MODULES = Object.freeze({
     [TEN_QUEUE.DU_LIEU]: './handlers/du-lieu.handler',
     [TEN_QUEUE.NEN]: './handlers/nen.handler',
     [TEN_QUEUE.HINH_ANH]: './handlers/hinh-anh.handler',
+    [TEN_QUEUE.EMAIL]: './handlers/email.handler',
     [TEN_QUEUE.OCR]: './handlers/ocr.handler',
     [TEN_QUEUE.DICH]: './handlers/dich.handler',
     [TEN_QUEUE.AI]: './handlers/ai.handler'

@@ -1,0 +1,7 @@
+'use strict';
+
+function taoEmailLayout({ preheader = '', tieuDe = '', noiDungHtml = '' } = {}) {
+    return `<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="x-apple-disable-message-reformatting"><title>${tieuDe}</title></head><body style="margin:0;padding:0;background:#f5f7fb;font-family:Arial,Helvetica,sans-serif;color:#172033;"><div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">${preheader}</div><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f5f7fb;padding:32px 16px;"><tr><td align="center"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:600px;background:#ffffff;border-radius:16px;overflow:hidden;"><tr><td style="padding:28px 32px 12px;font-size:22px;font-weight:700;">Transform</td></tr><tr><td style="padding:8px 32px 32px;"><h1 style="margin:0 0 20px;font-size:24px;line-height:1.3;">${tieuDe}</h1>${noiDungHtml}</td></tr><tr><td style="padding:20px 32px;background:#f8fafc;color:#64748b;font-size:12px;line-height:1.6;">Đây là email tự động từ Transform. Vui lòng không trả lời email này.</td></tr></table></td></tr></table></body></html>`;
+}
+
+module.exports = { taoEmailLayout };

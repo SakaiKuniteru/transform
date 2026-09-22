@@ -284,6 +284,15 @@ const MA_LOI = Object.freeze({
     AI_TIMEOUT: 'AI_TIMEOUT',
     AI_PHAN_HOI_KHONG_HOP_LE: 'AI_PHAN_HOI_KHONG_HOP_LE',
 
+    /*
+     * ========================================================
+     * EMAIL
+     * ========================================================
+     */
+
+    EMAIL_KHONG_KHA_DUNG: 'EMAIL_KHONG_KHA_DUNG',
+    EMAIL_GUI_THAT_BAI: 'EMAIL_GUI_THAT_BAI',
+    EMAIL_DIA_CHI_KHONG_HOP_LE: 'EMAIL_DIA_CHI_KHONG_HOP_LE',
 
     /*
      * ========================================================

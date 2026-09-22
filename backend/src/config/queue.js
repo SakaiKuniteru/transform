@@ -8,6 +8,7 @@ const TEN_QUEUE = Object.freeze({
     DU_LIEU: 'du-lieu',
     NEN: 'nen',
     HINH_ANH: 'hinh-anh',
+    EMAIL: 'email',
     OCR: 'ocr',
     DICH: 'dich',
     AI: 'ai'
@@ -44,6 +45,7 @@ const QUEUE_CONFIG = Object.freeze({
         [TEN_QUEUE.DU_LIEU]: env.queue.concurrency.duLieu,
         [TEN_QUEUE.NEN]: env.queue.concurrency.nen,
         [TEN_QUEUE.HINH_ANH]: env.queue.concurrency.hinhAnh,
+        [TEN_QUEUE.EMAIL]: env.queue.concurrency.default,
         [TEN_QUEUE.OCR]: env.queue.concurrency.ocr,
         [TEN_QUEUE.DICH]: env.queue.concurrency.dich,
         [TEN_QUEUE.AI]: env.queue.concurrency.ai

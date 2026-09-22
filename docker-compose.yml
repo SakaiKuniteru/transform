@@ -218,6 +218,18 @@ services:
     cpus: "2.0"
     mem_limit: 2g
 
+  worker-email:
+    <<: *worker
+    command:
+      - npm
+      - run
+      - worker:email
+    environment:
+      <<: *runtime-environment
+      DB_APPLICATION_NAME: transform-worker-email
+    cpus: "0.25"
+    mem_limit: 512m
+
   worker-tai-lieu:
     <<: *worker
     command:

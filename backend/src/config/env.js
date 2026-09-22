@@ -200,6 +200,29 @@ const schema = Joi.object({
 
     /*
      * =========================================================
+     * EMAIL
+     * =========================================================
+     */
+
+    MAIL_ENABLED: Joi.boolean().truthy('true').falsy('false').default(false),
+    MAIL_PROVIDER: Joi.string().trim().lowercase().valid('smtp').default('smtp'),
+    MAIL_FROM_NAME: Joi.string().trim().min(1).default('Transform'),
+    MAIL_FROM_ADDRESS: Joi.string().trim().email().allow('').default(''),
+    MAIL_REPLY_TO: Joi.string().trim().email().allow('').default(''),
+    SMTP_HOST: Joi.string().trim().allow('').default(''),
+    SMTP_PORT: Joi.number().integer().min(1).max(65535).default(587),
+    SMTP_SECURE: Joi.boolean().truthy('true').falsy('false').default(false),
+    SMTP_USER: Joi.string().allow('').default(''),
+    SMTP_PASSWORD: Joi.string().allow('').default(''),
+    SMTP_CONNECTION_TIMEOUT_MS: Joi.number().integer().min(1000).default(10000),
+    SMTP_GREETING_TIMEOUT_MS: Joi.number().integer().min(1000).default(10000),
+    SMTP_SOCKET_TIMEOUT_MS: Joi.number().integer().min(1000).default(30000),
+    SMTP_POOL: Joi.boolean().truthy('true').falsy('false').default(true),
+    SMTP_MAX_CONNECTIONS: Joi.number().integer().min(1).default(5),
+    SMTP_MAX_MESSAGES: Joi.number().integer().min(1).default(100),
+
+    /*
+     * =========================================================
      * COOKIE
      * =========================================================
      */
@@ -496,6 +519,27 @@ const config = {
         maxSendsPerHour: value.OTP_MAX_SENDS_PER_HOUR
     },
 
+    mail: {
+        enabled: value.MAIL_ENABLED,
+        provider: value.MAIL_PROVIDER,
+        fromName: value.MAIL_FROM_NAME,
+        fromAddress: value.MAIL_FROM_ADDRESS || null,
+        replyTo: value.MAIL_REPLY_TO || null,
+        smtp: {
+            host: value.SMTP_HOST || null,
+            port: value.SMTP_PORT,
+            secure: value.SMTP_SECURE,
+            user: value.SMTP_USER || null,
+            password: value.SMTP_PASSWORD || null,
+            connectionTimeoutMs: value.SMTP_CONNECTION_TIMEOUT_MS,
+            greetingTimeoutMs: value.SMTP_GREETING_TIMEOUT_MS,
+            socketTimeoutMs: value.SMTP_SOCKET_TIMEOUT_MS,
+            pool: value.SMTP_POOL,
+            maxConnections: value.SMTP_MAX_CONNECTIONS,
+            maxMessages: value.SMTP_MAX_MESSAGES
+        }
+    },
+
     congCu: {
         defaultTimeoutMs: value.PROCESS_DEFAULT_TIMEOUT_MS,
         maxBufferBytes: value.PROCESS_MAX_BUFFER_BYTES,
@@ -534,13 +578,11 @@ const config = {
  */
 
 function kiemTraQuanHeCauHinh() {
-    if (config.baoMat.passwordMinLength > config.baoMat.passwordMaxLength) {
-        throw new Error('PASSWORD_MIN_LENGTH không được lớn hơn PASSWORD_MAX_LENGTH.');
-    }
-
-    if (config.baoMat.cookieSameSite === 'none' && !config.baoMat.cookieSecure) {
-        throw new Error('COOKIE_SECURE phải bằng true khi COOKIE_SAME_SITE=none.');
-    }
+    if (config.baoMat.passwordMinLength > config.baoMat.passwordMaxLength) { throw new Error('PASSWORD_MIN_LENGTH không được lớn hơn PASSWORD_MAX_LENGTH.'); }
+    if (config.baoMat.cookieSameSite === 'none' && !config.baoMat.cookieSecure) { throw new Error('COOKIE_SECURE phải bằng true khi COOKIE_SAME_SITE=none.'); }
+    if (config.mail.enabled && !config.mail.fromAddress) { throw new Error('MAIL_FROM_ADDRESS là bắt buộc khi MAIL_ENABLED=true.'); }
+    if (config.mail.enabled && config.mail.provider === 'smtp' && !config.mail.smtp.host) { throw new Error('SMTP_HOST là bắt buộc khi MAIL_ENABLED=true và MAIL_PROVIDER=smtp.'); }
+    if (Boolean(config.mail.smtp.user) !== Boolean(config.mail.smtp.password)) { throw new Error('SMTP_USER và SMTP_PASSWORD phải được cấu hình cùng nhau.'); }
 }
 
 function kiemTraProduction() {

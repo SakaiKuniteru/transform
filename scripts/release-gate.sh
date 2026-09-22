@@ -157,7 +157,7 @@ wait_completed migrate
 wait_completed storage-init
 
 echo "[10/12] BACKEND + WORKERS"
-dc up -d backend worker-chuyen-doi worker-hinh-anh worker-tai-lieu worker-du-lieu worker-nen worker-ocr worker-dich worker-ai
+dc up -d backend worker-chuyen-doi worker-hinh-anh worker-tai-lieu worker-du-lieu worker-nen worker-email worker-ocr worker-dich worker-ai
 wait_healthy backend
 
 echo "[ReleaseGate] Kiểm tra readiness..."
@@ -183,7 +183,7 @@ dc exec -T backend curl -fsS \
         fail "backend chưa READY."
     }
     
-for service in worker-chuyen-doi worker-hinh-anh worker-tai-lieu worker-du-lieu worker-nen worker-ocr worker-dich worker-ai; do
+for service in worker-chuyen-doi worker-hinh-anh worker-tai-lieu worker-du-lieu worker-nen worker-email worker-ocr worker-dich worker-ai; do
     wait_running "$service"
 done
 
@@ -191,11 +191,11 @@ echo "[11/12] PRODUCTION E2E"
 dc exec -T backend npm run smoke:prod
 
 echo "[12/12] RESTART / LOG REGRESSION"
-for service in backend worker-chuyen-doi worker-hinh-anh worker-tai-lieu worker-du-lieu worker-nen worker-ocr worker-dich worker-ai; do
+for service in backend worker-chuyen-doi worker-hinh-anh worker-tai-lieu worker-du-lieu worker-nen worker-email worker-ocr worker-dich worker-ai; do
     assert_restart_zero "$service"
 done
 
-LOI="$(dc logs --no-color backend worker-chuyen-doi worker-hinh-anh worker-tai-lieu worker-du-lieu worker-nen worker-ocr worker-dich worker-ai 2>&1 | grep -Ei 'loaiChuyenDoi is not defined|Cannot find module|MODULE_NOT_FOUND|Missing script:|Unhandled Promise Rejection|Uncaught Exception' || true)"
+LOI="$(dc logs --no-color backend worker-chuyen-doi worker-hinh-anh worker-tai-lieu worker-du-lieu worker-nen worker-email worker-ocr worker-dich worker-ai 2>&1 | grep -Ei 'loaiChuyenDoi is not defined|Cannot find module|MODULE_NOT_FOUND|Missing script:|Unhandled Promise Rejection|Uncaught Exception' || true)"
 [ -z "$LOI" ] || { echo "$LOI"; fail "Log production có regression."; }
 
 dc ps
