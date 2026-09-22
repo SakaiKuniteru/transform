@@ -99,6 +99,46 @@ async function getTheoCongViec(congViecId, db = null) {
     return result.rows.map(mapChuyenDoi);
 }
 
+async function getKetQuaHoanThanhGanNhat(congViecId, db = null) {
+    const result = await thucThi(`
+        SELECT cd.*, pbt.tep_id AS tep_ket_qua_id, pbt.ten_tep AS ket_qua_ten_tep, pbt.dinh_dang AS ket_qua_dinh_dang, pbt.mime_type AS ket_qua_mime_type, pbt.kich_thuoc_bytes AS ket_qua_kich_thuoc_bytes, pbt.storage_driver AS ket_qua_storage_driver, pbt.storage_bucket AS ket_qua_storage_bucket, pbt.storage_key AS ket_qua_storage_key, pbt.storage_etag AS ket_qua_storage_etag
+        FROM chuyen_doi cd
+        INNER JOIN phien_ban_tep pbt ON pbt.id = cd.phien_ban_ket_qua_id
+        INNER JOIN tep t ON t.id = pbt.tep_id
+        WHERE cd.cong_viec_id = $1
+        AND cd.trang_thai = 'HOAN_THANH'
+        AND cd.phien_ban_ket_qua_id IS NOT NULL
+        AND pbt.trang_thai = 'SAN_SANG'
+        AND pbt.xoa_luc IS NULL
+        AND t.trang_thai = 'HOAT_DONG'
+        AND t.xoa_luc IS NULL
+        ORDER BY cd.lan_thu DESC, cd.thu_tu DESC, cd.id DESC
+        LIMIT 1
+    `, [congViecId], db);
+    const row = result.rows[0];
+    if (!row) { return null; }
+    const chuyenDoi = mapChuyenDoi(row);
+    const metadataDauRa = chuyenDoi.metadata?.dauRa && typeof chuyenDoi.metadata.dauRa === 'object' && !Array.isArray(chuyenDoi.metadata.dauRa) ? chuyenDoi.metadata.dauRa : {};
+    return {
+        chuyenDoi,
+        tepKetQuaId: row.tep_ket_qua_id,
+        phienBanKetQuaId: row.phien_ban_ket_qua_id,
+        dauRa: {
+            ...metadataDauRa,
+            tepId: row.tep_ket_qua_id,
+            phienBanId: row.phien_ban_ket_qua_id,
+            tenTep: row.ket_qua_ten_tep,
+            dinhDang: row.ket_qua_dinh_dang,
+            mimeType: row.ket_qua_mime_type,
+            kichThuocBytes: Number(row.ket_qua_kich_thuoc_bytes || 0),
+            storageDriver: row.ket_qua_storage_driver,
+            storageBucket: row.ket_qua_storage_bucket,
+            storageKey: row.ket_qua_storage_key,
+            storageEtag: row.ket_qua_storage_etag
+        }
+    };
+}
+
 async function batDau(id, data = {}, db = null) {
     const result = await thucThi(`
         UPDATE chuyen_doi
@@ -189,6 +229,7 @@ module.exports = {
     getTheoLan,
     getTheoLanXuLy,
     getTheoCongViec,
+    getKetQuaHoanThanhGanNhat,
     batDau,
     hoanThanh,
     thatBai,

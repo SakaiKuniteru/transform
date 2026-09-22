@@ -17,6 +17,13 @@
     "worker:ocr": "node src/workers/ocr.worker.js",
     "worker:dich": "node src/workers/dich.worker.js",
     "worker:ai": "node src/workers/ai.worker.js",
+
+    "syntax:check": "node src/scripts/check-syntax.js",
+    "modules:check": "node src/scripts/check-modules.js",
+    "runtime:check": "node src/scripts/check-runtime.js",
+    "production:env:check": "node src/scripts/check-production-env.js",
+    "smoke:prod": "node src/scripts/production-smoke.js",
+
     "test": "node --test",
     "test:prepare": "node tests/setup-test-db.js",
     "test:integration": "npm run test:prepare && node --test --test-concurrency=1 tests/integration/*.test.js",
@@ -24,8 +31,15 @@
     "test:storage:local": "TEST_STORAGE_DRIVER=local node --test --test-concurrency=1 tests/storage/local-storage.test.js",
     "test:storage:minio": "TEST_STORAGE_DRIVER=minio node --test --test-concurrency=1 tests/storage/minio-storage.test.js",
     "test:queue": "npm run test:prepare && node --test --test-concurrency=1 tests/queue/*.test.js",
+    "test:engine": "node --test --test-concurrency=1 tests/engine/*.test.js",
     "test:e2e:image": "npm run test:prepare && node --test --test-concurrency=1 tests/e2e/image.e2e.test.js",
-    "test:core": "npm run test:integration && npm run test:upload-limits && npm run test:storage:local && npm run test:queue && npm run test:e2e:image"
+    "test:e2e:conversion": "npm run test:prepare && node --test --test-concurrency=1 tests/e2e/conversion.e2e.test.js",
+    "test:e2e:lifecycle": "npm run test:prepare && node --test --test-concurrency=1 tests/e2e/lifecycle.e2e.test.js",
+    "test:e2e:local": "npm run test:prepare && node --test --test-concurrency=1 tests/e2e/*.test.js",
+    "test:migration": "node --test --test-concurrency=1 tests/migration/*.test.js",
+    "test:e2e:ocr": "npm run test:prepare && node --test --test-concurrency=1 tests/e2e/ocr.e2e.test.js",
+    "test:storage:init": "TEST_STORAGE_DRIVER=minio TEST_MINIO_BUCKET=transform-init-test node --test --test-concurrency=1 tests/storage/storage-init.integration.test.js",
+    "test:core": "npm run test:engine && npm run test:integration && npm run test:upload-limits && npm run test:storage:local && npm run test:queue && npm run test:e2e:image"
   },
   "keywords": [],
   "author": "",

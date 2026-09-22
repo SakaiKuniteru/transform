@@ -1,7 +1,8 @@
 'use strict';
 
 const env = require('./env');
-
+const MA_LOI = require('../constants/ma-loi');
+const { loiKhongCoQuyen } = require('../utils/loi');
 /*
  * ============================================================
  * JWT
@@ -78,36 +79,22 @@ const CORS_CONFIG = Object.freeze({
         ...env.baoMat.corsOrigins
     ]),
     credentials: env.baoMat.corsCredentials,
-    allowNoOrigin: env.baoMat.corsAllowNoOrigin,
     maxAge: env.baoMat.corsMaxAgeSeconds
 });
 
 function kiemTraCorsOrigin(origin, callback) {
-    if (!origin && CORS_CONFIG.allowNoOrigin) {
+    if (!origin) { return callback(null, true); }
+    if (origin && (CORS_CONFIG.origins.includes('*') || CORS_CONFIG.origins.includes(origin))) {
         return callback(null, true);
     }
-
-    if (
-        origin
-        && (
-            CORS_CONFIG.origins.includes('*')
-            || CORS_CONFIG.origins.includes(origin)
-        )
-    ) {
-        return callback(null, true);
-    }
-
-    const error = new Error('Nguồn truy cập không được CORS cho phép.');
-
+    const error = loiKhongCoQuyen('Nguồn truy cập không được CORS cho phép.', MA_LOI.CORS_KHONG_DUOC_PHEP);
     error.code = 'CORS_NOT_ALLOWED';
-
     return callback(error);
 }
 
 const CORS_OPTIONS = Object.freeze({
     origin: kiemTraCorsOrigin,
     credentials: CORS_CONFIG.credentials,
-
     methods: Object.freeze([
         'GET',
         'HEAD',
@@ -117,7 +104,6 @@ const CORS_OPTIONS = Object.freeze({
         'DELETE',
         'OPTIONS'
     ]),
-
     allowedHeaders: Object.freeze([
         'Accept',
         'Authorization',
@@ -126,7 +112,6 @@ const CORS_OPTIONS = Object.freeze({
         'If-None-Match',
         'X-Request-Id'
     ]),
-
     exposedHeaders: Object.freeze([
         'Accept-Ranges',
         'Content-Disposition',

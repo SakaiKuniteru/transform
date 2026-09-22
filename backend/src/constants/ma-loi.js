@@ -23,6 +23,7 @@ const MA_LOI = Object.freeze({
     THOI_GIAN_KHONG_HOP_LE: 'THOI_GIAN_KHONG_HOP_LE',
     THOI_DIEM_KHONG_HOP_LE: 'THOI_DIEM_KHONG_HOP_LE',
     MUI_GIO_KHONG_HOP_LE: 'MUI_GIO_KHONG_HOP_LE',
+    CORS_KHONG_DUOC_PHEP: 'CORS_KHONG_DUOC_PHEP',
 
     /*
      * ========================================================

@@ -30,6 +30,7 @@ require('./nen/nen.converter');
 require('./du-lieu/json/json.converter');
 require('./ma-hoa/base64/base64.converter');
 require('./trich-xuat/trich-xuat.converter');
+require('./ocr/ocr.converter');
 
 const SO_BYTE_NHAN_DIEN = 65536;
 
@@ -70,6 +71,7 @@ function chuanHoaDinhDangDich(value, loaiChuyenDoi, dinhDangNguon) {
         if ([LOAI_CHUYEN_DOI.CHUYEN_DINH_DANG, LOAI_CHUYEN_DOI.GIAI_MA, LOAI_CHUYEN_DOI.GIAI_NEN, LOAI_CHUYEN_DOI.TRICH_XUAT].includes(loaiChuyenDoi)) { throw taoLoi(400, 'Định dạng đích là bắt buộc với loại chuyển đổi này.', MA_LOI.DU_LIEU_KHONG_HOP_LE); }
         if (loaiChuyenDoi === LOAI_CHUYEN_DOI.NEN) { return DINH_DANG.GZIP; }
         if (loaiChuyenDoi === LOAI_CHUYEN_DOI.MA_HOA) { return DINH_DANG.BASE64; }
+        if (loaiChuyenDoi === LOAI_CHUYEN_DOI.OCR) { return DINH_DANG.TXT; }
         return dinhDangNguon;
     }
     return chuanHoaDinhDangBatBuoc(value, 'Định dạng đích');
@@ -102,9 +104,10 @@ async function nhanDienNguon(nguon) {
 }
 
 function rutGonKeHoach(keHoach) {
+    const nhomXuLy = String(keHoach.nhomXuLy || keHoach.cacBuoc[0]?.converter?.nhomXuLy?.[0] || '').trim().toUpperCase() || null;
     return {
         loaiChuyenDoi: keHoach.loaiChuyenDoi,
-        nhomXuLy: keHoach.nhomXuLy,
+        nhomXuLy,
         dinhDangNguon: keHoach.dinhDangNguon,
         dinhDangDich: keHoach.dinhDangDich,
         trucTiep: keHoach.trucTiep,
@@ -224,11 +227,12 @@ async function taoYeuCau(data = {}, chuThe) {
     const dinhDangNguon = nhanDien.dinhDang;
     const dinhDangDich = chuanHoaDinhDangDich(data.dinhDangDich, loaiChuyenDoi, dinhDangNguon);
     const converterKey = String(data.converterKey || '').trim() || null;
-    const keHoach = await planner.lapKeHoach({ loaiChuyenDoi, nhomXuLy: nhanDien.nhom, dinhDangNguon, dinhDangDich, converterKey, tuyChon: tuyChonNguoiDung });
+    const keHoach = await planner.lapKeHoach({ loaiChuyenDoi, dinhDangNguon, dinhDangDich, converterKey, tuyChon: tuyChonNguoiDung });
     if (!keHoach?.cacBuoc?.length) { throw taoLoi(422, 'Không tạo được kế hoạch chuyển đổi phù hợp.', MA_LOI.CHUYEN_DOI_KHONG_TIM_THAY_DUONG_DI); }
     const keHoachRutGon = rutGonKeHoach(keHoach);
+    const nhomXuLy = keHoachRutGon.nhomXuLy || nhanDien.nhom || null;
     const converterTrucTiep = keHoach.trucTiep === true && keHoach.cacBuoc.length === 1 ? keHoach.cacBuoc[0].converterKey : null;
-    const tuyChon = { ...tuyChonNguoiDung, loaiChuyenDoi, dinhDangNguon, dinhDangDich, nhomXuLy: nhanDien.nhom, converterKey: converterKey || converterTrucTiep, keHoach: keHoachRutGon, keHoachConverterKeys: keHoach.cacBuoc.map((item) => item.converterKey) };
+    const tuyChon = { ...tuyChonNguoiDung, loaiChuyenDoi, dinhDangNguon, dinhDangDich, nhomXuLy, converterKey: converterKey || converterTrucTiep, keHoach: keHoachRutGon, keHoachConverterKeys: keHoach.cacBuoc.map((item) => item.converterKey) };
     const dauVao = taoDauVaoNguon(nguon, nhanDien);
     const thongTinLoai = layThongTinLoaiChuyenDoi(loaiChuyenDoi);
     const congViec = await congViecService.taoCongViec({
@@ -242,7 +246,7 @@ async function taoYeuCau(data = {}, chuThe) {
         dinhDangDich,
         dauVao,
         tuyChon,
-        cacBuoc: [{ maBuoc: 'THUC_THI_CHUYEN_DOI', tenBuoc: thongTinLoai?.ten || 'Thực thi chuyển đổi', loaiBuoc: nhanDien.nhom || 'CHUYEN_DOI', batBuoc: true, dauVao, tuyChon, soLanThuToiDa: data.soLanThuToiDa ?? 3 }]
+        cacBuoc: [{ maBuoc: 'THUC_THI_CHUYEN_DOI', tenBuoc: thongTinLoai?.ten || 'Thực thi chuyển đổi', loaiBuoc: nhomXuLy || 'CHUYEN_DOI', batBuoc: true, dauVao, tuyChon, soLanThuToiDa: data.soLanThuToiDa ?? 3 }]
     }, owner);
     if (!congViec.daTonTai) {
         await lichSuService.ghiNhanAnToan({
@@ -286,6 +290,16 @@ async function getChiTiet(id, chuThe) {
     const owner = chuanHoaChuThe(chuThe);
     const congViec = await congViecService.getChiTiet(congViecId, owner);
     return { congViec, chuyenDoi: await repository.getTheoCongViec(congViecId) };
+}
+
+async function layKetQuaDaHoanThanh(id) {
+    const congViecId = parseId(id, 'ID công việc');
+    const ketQua = await repository.getKetQuaHoanThanhGanNhat(congViecId);
+    if (!ketQua) { return null; }
+    const storageKey = String(ketQua.dauRa?.storageKey || '').trim();
+    if (!storageKey) { throw taoLoi(500, 'Kết quả chuyển đổi đã hoàn thành nhưng thiếu storage key.', MA_LOI.CHUYEN_DOI_KET_QUA_KHONG_HOP_LE); }
+    if (!await storageService.tonTai(storageKey)) { throw taoLoi(500, 'Kết quả chuyển đổi đã hoàn thành nhưng dữ liệu storage không còn tồn tại.', MA_LOI.CHUYEN_DOI_KET_QUA_KHONG_HOP_LE); }
+    return ketQua;
 }
 
 async function lapKeHoachTuCongViec(congViec, buoc = null) {
@@ -466,6 +480,7 @@ module.exports = {
     taoYeuCau,
     getHoTro,
     getChiTiet,
+    layKetQuaDaHoanThanh,
     batDauLanXuLy,
     hoanThanhLanXuLy,
     thatBaiLanXuLy,

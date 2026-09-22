@@ -48,7 +48,14 @@ async function damBaoBucket() {
     throw loiCuoi || new Error('Không thể khởi tạo MinIO.');
 }
 
-void damBaoBucket().catch((error) => {
-    console.error('[StorageInit] Thất bại:', error);
-    process.exitCode = 1;
-});
+if (require.main === module) {
+    void damBaoBucket().catch((error) => {
+        console.error('[StorageInit] Thất bại:', error);
+        process.exitCode = 1;
+    });
+}
+
+module.exports = {
+    taoMinioClient,
+    damBaoBucket
+};

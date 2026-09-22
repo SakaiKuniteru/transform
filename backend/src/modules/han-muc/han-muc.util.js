@@ -96,9 +96,10 @@ function layDauNgay(value, muiGio) {
 
 function layKyNgay(value, muiGio) {
     const parts = layThanhPhanNgayGio(value, muiGio);
-    const ngaySau = congNgayLich(parts, 1);
+    const dauNgay = { nam: parts.nam, thang: parts.thang, ngay: parts.ngay };
+    const ngaySau = congNgayLich(dauNgay, 1);
     return {
-        kyBatDau: taoUtcTuNgayGioDiaPhuong(parts, muiGio),
+        kyBatDau: taoUtcTuNgayGioDiaPhuong(dauNgay, muiGio),
         kyKetThuc: taoUtcTuNgayGioDiaPhuong(ngaySau, muiGio),
         theoDoi: true
     };

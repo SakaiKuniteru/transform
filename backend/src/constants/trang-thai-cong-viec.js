@@ -1,50 +1,10 @@
 'use strict';
 
-const TRANG_THAI_CONG_VIEC = Object.freeze({
-    CHO_XU_LY: 'CHO_XU_LY',
-    DANG_PHAN_TICH: 'DANG_PHAN_TICH',
-    DANG_XU_LY: 'DANG_XU_LY',
-    DANG_CHUYEN_DOI: 'DANG_CHUYEN_DOI',
-    DANG_KET_XUAT: 'DANG_KET_XUAT',
-    DANG_OCR: 'DANG_OCR',
-    DANG_DICH: 'DANG_DICH',
-    HOAN_THANH: 'HOAN_THANH',
-    THAT_BAI: 'THAT_BAI',
-    DANG_HUY: 'DANG_HUY',
-    DA_HUY: 'DA_HUY'
-});
+const { trangThaiCongViec } = require('@transform/shared');
 
-const TRANG_THAI_KET_THUC = Object.freeze([
-    TRANG_THAI_CONG_VIEC.HOAN_THANH,
-    TRANG_THAI_CONG_VIEC.THAT_BAI,
-    TRANG_THAI_CONG_VIEC.DA_HUY
-]);
-
-const TRANG_THAI_DANG_XU_LY = Object.freeze([
-    TRANG_THAI_CONG_VIEC.DANG_PHAN_TICH,
-    TRANG_THAI_CONG_VIEC.DANG_XU_LY,
-    TRANG_THAI_CONG_VIEC.DANG_CHUYEN_DOI,
-    TRANG_THAI_CONG_VIEC.DANG_KET_XUAT,
-    TRANG_THAI_CONG_VIEC.DANG_OCR,
-    TRANG_THAI_CONG_VIEC.DANG_DICH,
-    TRANG_THAI_CONG_VIEC.DANG_HUY
-]);
-
-const DANH_SACH_TRANG_THAI_CONG_VIEC = Object.freeze(Object.values(TRANG_THAI_CONG_VIEC));
-
-function laTrangThaiKetThuc(value) {
-    return TRANG_THAI_KET_THUC.includes(value);
-}
-
-function laDangXuLy(value) {
-    return TRANG_THAI_DANG_XU_LY.includes(value);
-}
+const DANH_SACH_TRANG_THAI_CONG_VIEC = Object.freeze(Object.values(trangThaiCongViec.TRANG_THAI_CONG_VIEC));
 
 module.exports = {
-    TRANG_THAI_CONG_VIEC,
-    TRANG_THAI_KET_THUC,
-    TRANG_THAI_DANG_XU_LY,
-    DANH_SACH_TRANG_THAI_CONG_VIEC,
-    laTrangThaiKetThuc,
-    laDangXuLy
+    ...trangThaiCongViec,
+    DANH_SACH_TRANG_THAI_CONG_VIEC
 };

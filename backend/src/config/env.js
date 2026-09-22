@@ -221,7 +221,6 @@ const schema = Joi.object({
 
     CORS_ORIGINS: Joi.string().trim().default('http://localhost:2320,http://127.0.0.1:2320'),
     CORS_CREDENTIALS: Joi.boolean().truthy('true').falsy('false').default(true),
-    CORS_ALLOW_NO_ORIGIN: Joi.boolean().truthy('true').falsy('false').default(true),
     CORS_MAX_AGE_SECONDS: Joi.number().integer().min(0).default(86400),
 
     /*
@@ -475,7 +474,6 @@ const config = {
         cookieDomain: value.COOKIE_DOMAIN || null,
         corsOrigins: tachDanhSach(value.CORS_ORIGINS),
         corsCredentials: value.CORS_CREDENTIALS,
-        corsAllowNoOrigin: value.CORS_ALLOW_NO_ORIGIN,
         corsMaxAgeSeconds: value.CORS_MAX_AGE_SECONDS,
         rateLimitWindowMs: value.RATE_LIMIT_WINDOW_MS,
         rateLimitMax: value.RATE_LIMIT_MAX,

@@ -63,7 +63,7 @@ function taoTransformContext(input = {}) {
         buoc?.dinhDangDich,
         congViec.dinhDangDich
     ), 'Định dạng đích');
-    const nhomXuLy = layGiaTri(input.nhomXuLy, input.loaiXuLy, jobData.nhomXuLy, tuyChon.nhomXuLy);
+    const nhomXuLy = layGiaTri(input.nhomXuLy, jobData.nhomXuLy, tuyChon.nhomXuLy, input.loaiXuLy);
     const converterKey = layGiaTri(input.converterKey, jobData.converterKey, tuyChon.converterKey, buoc?.converterKey);
     const capNhatTienTrinhGoc = typeof input.capNhatTienTrinh === 'function' ? input.capNhatTienTrinh : async () => null;
     const kiemTraHuyGoc = typeof input.kiemTraHuy === 'function' ? input.kiemTraHuy : async () => null;

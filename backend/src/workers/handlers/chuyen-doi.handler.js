@@ -135,6 +135,25 @@ function chuanHoaKetQua(value) {
     return value;
 }
 
+async function phucHoiKetQuaDaHoanThanh({ congViec, buoc, loaiXuLy, trangThaiCongViec, thongTinLanThu }) {
+    const ketQua = await chuyenDoiService.layKetQuaDaHoanThanh(congViec.id);
+    if (!ketQua) { return null; }
+    await congViecService.capNhatTrangThai(congViec.id, { trangThai: trangThaiCongViec, tienTrinh: congViec.tienTrinh, buocHienTai: buoc?.tenBuoc || loaiXuLy, danhDauBatDau: true, soLanThu: thongTinLanThu.lanThu });
+    if (buoc && buoc.trangThai !== 'HOAN_THANH') { await congViecService.capNhatBuoc(buoc.id, { trangThai: 'HOAN_THANH', tienTrinh: 100, boXuLy: loaiXuLy, congCu: ketQua.chuyenDoi?.engine || null, phienBanCongCu: ketQua.chuyenDoi?.phienBanEngine || null, dauRa: ketQua.dauRa, soLanThu: thongTinLanThu.lanThu, danhDauHoanThanh: true }); }
+    const congViecHoanThanh = await congViecService.hoanThanh(congViec.id, { tepKetQuaId: ketQua.tepKetQuaId, phienBanKetQuaId: ketQua.phienBanKetQuaId, dauRa: ketQua.dauRa });
+    await ghiLichSuCongViec(congViecHoanThanh, {
+        tepId: ketQua.tepKetQuaId,
+        phienBanTepId: ketQua.phienBanKetQuaId,
+        loaiSuKien: lichSuService.LOAI_SU_KIEN.CHUYEN_DOI_HOAN_THANH,
+        nguon: lichSuService.NGUON_LICH_SU.WORKER,
+        tieuDe: 'Chuyển đổi hoàn thành',
+        moTa: `Đã phục hồi kết quả chuyển đổi đã hoàn thành từ lần xử lý trước.`,
+        duLieu: { daPhucHoi: true, lanThu: thongTinLanThu.lanThu }
+    });
+    await ghiNhatKyWorker(congViecHoanThanh, buoc, { mucDo: nhatKyService.MUC_DO_NHAT_KY.AUDIT, nguon: 'WORKER', maSuKien: 'CHUYEN_DOI_PHUC_HOI_KET_QUA', tepId: ketQua.tepKetQuaId, thongDiep: 'Worker phục hồi kết quả đã commit thay vì chạy converter lại.', duLieu: { lanThu: thongTinLanThu.lanThu, phienBanKetQuaId: ketQua.phienBanKetQuaId } });
+    return { daPhucHoi: true, congViecId: congViec.id, buocId: buoc?.id || null, loaiXuLy, boXuLy: ketQua.chuyenDoi?.engine || loaiXuLy, congCu: ketQua.chuyenDoi?.engine || null, phienBanCongCu: ketQua.chuyenDoi?.phienBanEngine || null, dauRa: ketQua.dauRa, dinhDangDich: ketQua.chuyenDoi?.dinhDangDich || congViec.dinhDangDich, tepKetQuaId: ketQua.tepKetQuaId, phienBanKetQuaId: ketQua.phienBanKetQuaId, hoanTatCongViec: true };
+}
+
 function taoHandler({ tenQueue, loaiXuLy, trangThaiCongViec }) {
     if (!Object.values(TEN_QUEUE).includes(tenQueue)) { throw new TypeError(`Queue "${tenQueue}" không hợp lệ.`); }
     if (!Object.values(TRANG_THAI_CONG_VIEC).includes(trangThaiCongViec)) { throw new TypeError(`Trạng thái công việc "${trangThaiCongViec}" không hợp lệ.`); }
@@ -145,6 +164,8 @@ function taoHandler({ tenQueue, loaiXuLy, trangThaiCongViec }) {
         if (laTrangThaiKetThuc(congViec.trangThai)) { return { boQua: true, lyDo: congViec.trangThai, congViecId: congViec.id, buocId: buoc?.id || null }; }
         const ketQuaHuy = await xuLyHuy(congViec, buoc);
         if (ketQuaHuy) { return ketQuaHuy; }
+        const ketQuaPhucHoi = await phucHoiKetQuaDaHoanThanh({ congViec, buoc, loaiXuLy, trangThaiCongViec, thongTinLanThu });
+        if (ketQuaPhucHoi) { return ketQuaPhucHoi; }
         await congViecService.capNhatTrangThai(congViec.id, { trangThai: trangThaiCongViec, tienTrinh: congViec.tienTrinh, buocHienTai: buoc?.tenBuoc || loaiXuLy, danhDauBatDau: true, soLanThu: thongTinLanThu.lanThu });
         if (buoc) { await congViecService.capNhatBuoc(buoc.id, { trangThai: 'DANG_XU_LY', tienTrinh: buoc.tienTrinh, boXuLy: loaiXuLy, soLanThu: thongTinLanThu.lanThu, danhDauBatDau: true }); }
         let phienChuyenDoi = null;

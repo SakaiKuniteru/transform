@@ -83,6 +83,7 @@ async function choCongViecKetThuc(agent, congViecId, options = {}) {
     const batDau = Date.now();
     while (Date.now() - batDau < timeoutMs) {
         const response = await agent.get(`/api/v1/chuyen-doi/${congViecId}`);
+        if (response.statusCode !== 200) { throw new Error(`Không thể lấy trạng thái công việc ${congViecId}: HTTP ${response.statusCode}.`); }
         const congViec = response.body?.data?.congViec;
         if (['HOAN_THANH', 'THAT_BAI', 'DA_HUY'].includes(congViec?.trangThai)) { return response; }
         await new Promise((resolve) => setTimeout(resolve, intervalMs));

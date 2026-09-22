@@ -5,9 +5,26 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const { Client } = require('pg');
 const env = require('../config/env');
-
 const MIGRATIONS_DIR = path.join(env.backendRoot, 'database/migrations');
 const LOCK_KEY = 'transform:migrations';
+const LEGACY_BASELINE_VERSION = 16;
+const BANG_LEGACY_V16 = Object.freeze([
+    'nguoi_dung',
+    'tep',
+    'phien_ban_tep',
+    'cong_viec',
+    'buoc_cong_viec',
+    'chuyen_doi',
+    'lich_su',
+    'nhat_ky',
+    'ma_xac_thuc',
+    'phien_khach',
+    'goi_dich_vu',
+    'chinh_sach_han_muc',
+    'dang_ky_goi',
+    'su_dung_han_muc',
+    'phien_dang_nhap'
+]);
 
 function quoteIdentifier(value) {
     const text = String(value || '');
@@ -74,6 +91,60 @@ async function layMigrationDaChay(client) {
     return new Map(rows.map((item) => [Number(item.version), item]));
 }
 
+async function bangTonTai(client, tenBang) {
+    const quanHe = `${quoteIdentifier(env.database.schema)}.${quoteIdentifier(tenBang)}`;
+    const { rows } = await client.query('SELECT to_regclass($1) AS quan_he', [quanHe]);
+    return Boolean(rows[0]?.quan_he);
+}
+
+async function laLegacyV16HoanChinh(client) {
+    const tonTai = await Promise.all(BANG_LEGACY_V16.map((tenBang) => bangTonTai(client, tenBang)));
+    const soBangTonTai = tonTai.filter(Boolean).length;
+    if (soBangTonTai === 0) { return false; }
+    if (soBangTonTai !== BANG_LEGACY_V16.length) { throw new Error(`Database legacy chỉ có ${soBangTonTai}/${BANG_LEGACY_V16.length} bảng kỳ vọng. Không tự động baseline database chưa đầy đủ.`); }
+    const { rows } = await client.query(`
+        SELECT pg_get_constraintdef(c.oid) AS dinh_nghia
+        FROM pg_constraint c
+        INNER JOIN pg_class t ON t.oid = c.conrelid
+        INNER JOIN pg_namespace n ON n.oid = t.relnamespace
+        WHERE n.nspname = $1
+        AND t.relname = 'chinh_sach_han_muc'
+        AND c.conname = 'chk_chinh_sach_han_muc_upload'
+        LIMIT 1
+    `, [env.database.schema]);
+    const dinhNghia = String(rows[0]?.dinh_nghia || '');
+    if (!dinhNghia.includes('UPLOAD_TONG_SO_LAN')) { throw new Error('Database legacy chưa có thay đổi của migration 016. Không tự động baseline.'); }
+    const policyCu = await client.query(`
+        SELECT COUNT(*)::INTEGER AS tong
+        FROM ${quoteIdentifier(env.database.schema)}.chinh_sach_han_muc
+        WHERE ma IN ('UPLOAD_KHACH_MAC_DINH','UPLOAD_NGUOI_DUNG_MAC_DINH')
+        AND ma_hanh_dong = 'UPLOAD'
+    `);
+    if (Number(policyCu.rows[0]?.tong || 0) > 0) { throw new Error('Database legacy vẫn còn policy UPLOAD cũ, migration 016 chưa hoàn tất.'); }
+    return true;
+}
+
+async function baselineLegacyNeuCan(client, migrations, daChay) {
+    if (daChay.size > 0) { return false; }
+    if (!await laLegacyV16HoanChinh(client)) { return false; }
+    const baseline = migrations.filter((item) => item.version <= LEGACY_BASELINE_VERSION);
+    for (let version = 1; version <= LEGACY_BASELINE_VERSION; version += 1) { if (!baseline.some((item) => item.version === version)) { throw new Error(`Thiếu migration ${version} nên không thể baseline database legacy.`); } }
+    const schema = quoteIdentifier(env.database.schema);
+    await client.query('BEGIN');
+    try {
+        for (const migration of baseline) {
+            const content = await fs.promises.readFile(migration.duongDan, 'utf8');
+            await client.query(`INSERT INTO ${schema}.schema_migrations (version, filename, checksum) VALUES ($1,$2,$3)`, [migration.version, migration.fileName, tinhChecksum(content)]);
+        }
+        await client.query('COMMIT');
+    } catch (error) {
+        await client.query('ROLLBACK').catch(() => {});
+        throw error;
+    }
+    console.log(`[Migration] BASELINE legacy 001-${String(LEGACY_BASELINE_VERSION).padStart(3, '0')}.`);
+    return true;
+}
+
 async function chayMotMigration(client, migration) {
     const schema = quoteIdentifier(env.database.schema);
     const content = await fs.promises.readFile(migration.duongDan, 'utf8');
@@ -111,7 +182,8 @@ async function chayMigration() {
             if (versions.has(migration.version)) { throw new Error(`Trùng version migration ${migration.version}.`); }
             versions.add(migration.version);
         }
-        const daChay = await layMigrationDaChay(client);
+        let daChay = await layMigrationDaChay(client);
+        if (await baselineLegacyNeuCan(client, migrations, daChay)) { daChay = await layMigrationDaChay(client); }
         for (const migration of migrations) {
             const content = await fs.promises.readFile(migration.duongDan, 'utf8');
             const checksum = tinhChecksum(content);
@@ -132,7 +204,21 @@ async function chayMigration() {
     }
 }
 
-void chayMigration().catch((error) => {
-    console.error('[Migration] Thất bại:', error);
-    process.exitCode = 1;
-});
+if (require.main === module) {
+    void chayMigration().catch((error) => {
+        console.error('[Migration] Thất bại:', error);
+        process.exitCode = 1;
+    });
+}
+
+module.exports = {
+    taoClientConfig,
+    layThongTinMigration,
+    tinhChecksum,
+    boTransactionNgoai,
+    damBaoBangMigration,
+    layMigrationDaChay,
+    chayMotMigration,
+    baselineLegacyNeuCan,
+    chayMigration
+};
