@@ -4,8 +4,9 @@ const crypto = require('node:crypto');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const env = require('../../config/env');
-const { JWT_CONFIG } = require('../../config/security');
+// const { JWT_CONFIG } = require('../../config/security');
 const MA_LOI = require('../../constants/ma-loi');
+const { LOAI_TAI_KHOAN } = require('../../constants/loai-tai-khoan');
 const {
     loiYeuCau,
     loiChuaXacThuc,
@@ -729,7 +730,7 @@ async function dangXuat(refreshToken) {
 
     try {
         payload = xacThucRefreshToken(refreshToken);
-    } catch (error) {
+    } catch {
         return true;
     }
 

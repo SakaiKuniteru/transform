@@ -2,10 +2,15 @@
 
 const path = require('node:path');
 const { TEN_QUEUE } = require('../config/queue');
+const { kiemTraKetNoi, dongPool } = require('../infrastructure/database/pool');
+const { ketNoiRedis, dongRedis } = require('../config/redis');
+const storageService = require('../infrastructure/storage/storage.service');
 const queueFactory = require('../infrastructure/queue/queue.factory');
 const queueEvents = require('../infrastructure/queue/queue-events');
 const processCleanup = require('../infrastructure/process/process-cleanup');
+
 const workers = new Map();
+
 const HANDLER_MODULES = Object.freeze({
     [TEN_QUEUE.CHUYEN_DOI]: './handlers/chuyen-doi.handler',
     [TEN_QUEUE.TAI_LIEU]: './handlers/tai-lieu.handler',
@@ -17,21 +22,15 @@ const HANDLER_MODULES = Object.freeze({
     [TEN_QUEUE.AI]: './handlers/ai.handler'
 });
 
-function layProcessor(moduleExport, modulePath) {
-    if (typeof moduleExport === 'function') { return moduleExport; }
-    if (typeof moduleExport?.xuLy === 'function') { return moduleExport.xuLy; }
-    throw new TypeError(`Handler "${modulePath}" phải export function hoặc { xuLy }.`);
-}
+let daDangKyShutdown = false;
+let dangDungWorker = false;
+
+function layProcessor(moduleExport, modulePath) { if (typeof moduleExport === 'function') { return moduleExport; } if (typeof moduleExport?.xuLy === 'function') { return moduleExport.xuLy; } throw new TypeError(`Handler "${modulePath}" phải export function hoặc { xuLy }.`); }
 
 function napHandler(modulePath) {
     const absolute = path.resolve(__dirname, modulePath);
     let resolved;
-    try {
-        resolved = require.resolve(absolute);
-    } catch (error) {
-        if (error?.code === 'MODULE_NOT_FOUND') { return null; }
-        throw error;
-    }
+    try { resolved = require.resolve(absolute); } catch (error) { if (error?.code === 'MODULE_NOT_FOUND') { return null; } throw error; }
     const moduleExport = require(resolved);
     if (!moduleExport || (typeof moduleExport !== 'function' && typeof moduleExport.xuLy !== 'function')) { return null; }
     return layProcessor(moduleExport, modulePath);
@@ -69,14 +68,18 @@ async function batWorker(tenQueue, processor) {
     return worker;
 }
 
+async function batWorkerTheoQueue(tenQueue) {
+    const modulePath = HANDLER_MODULES[tenQueue];
+    if (!modulePath) { throw new Error(`Không có handler cho queue "${tenQueue}".`); }
+    const processor = napHandler(modulePath);
+    if (!processor) { throw new Error(`Không thể nạp handler "${modulePath}" cho queue "${tenQueue}".`); }
+    await batWorker(tenQueue, processor);
+    return tenQueue;
+}
+
 async function batWorkerTuDong() {
     const daBat = [];
-    for (const [tenQueue, modulePath] of Object.entries(HANDLER_MODULES)) {
-        const processor = napHandler(modulePath);
-        if (!processor) { continue; }
-        await batWorker(tenQueue, processor);
-        daBat.push(tenQueue);
-    }
+    for (const tenQueue of Object.keys(HANDLER_MODULES)) { daBat.push(await batWorkerTheoQueue(tenQueue)); }
     return daBat;
 }
 
@@ -89,37 +92,61 @@ async function dungWorker(tenQueue) {
 }
 
 async function dungTatCaWorker() {
-    await processCleanup.donTatCaProcess();
     await Promise.allSettled(Array.from(workers.keys()).map(dungWorker));
     await queueEvents.dungTatCaQueueEvents();
     await queueFactory.dongTatCaQueueInfrastructure();
+    await processCleanup.donTatCaProcess();
     await processCleanup.donTatCaDuongDanTam();
 }
 
-async function chay() {
-    const daBat = await batWorkerTuDong();
-    if (!daBat.length) {
-        console.log('Chưa có worker handler nào được triển khai. Hoàn thiện bước 59 trước khi chạy worker xử lý thật.');
-        return;
-    }
-    console.log(`Đã khởi động worker: ${daBat.join(', ')}`);
-    let dangDung = false;
-    const dung = async (tinHieu) => {
-        if (dangDung) { return; }
-        dangDung = true;
-        console.log(`Đang dừng Worker (${tinHieu})...`);
-        await dungTatCaWorker();
-        console.log('Worker đã dừng.');
-        process.exit(0);
-    };
-    process.on('SIGINT', () => { void dung('SIGINT'); });
-    process.on('SIGTERM', () => { void dung('SIGTERM'); });
+async function khoiDongInfrastructureWorker() {
+    await kiemTraKetNoi();
+    await ketNoiRedis();
+    await storageService.damBaoSanSang();
 }
+
+async function dongInfrastructureWorker() {
+    await dungTatCaWorker();
+    await Promise.allSettled([dongRedis(), dongPool()]);
+}
+
+async function dungWorkerProcess(tinHieu, exitCode = 0) {
+    if (dangDungWorker) { return; }
+    dangDungWorker = true;
+    console.log(`Đang dừng Worker (${tinHieu})...`);
+    let maThoat = exitCode;
+    try { await dongInfrastructureWorker(); } catch (error) { maThoat = 1; console.error('Không thể đóng Worker an toàn:', error); }
+    console.log('Worker đã dừng.');
+    process.exit(maThoat);
+}
+
+function dangKyShutdown() {
+    if (daDangKyShutdown) { return; }
+    daDangKyShutdown = true;
+    process.on('SIGINT', () => { void dungWorkerProcess('SIGINT'); });
+    process.on('SIGTERM', () => { void dungWorkerProcess('SIGTERM'); });
+    process.on('unhandledRejection', (reason) => { console.error('Worker Unhandled Promise Rejection:', reason); void dungWorkerProcess('unhandledRejection', 1); });
+    process.on('uncaughtException', (error) => { console.error('Worker Uncaught Exception:', error); void dungWorkerProcess('uncaughtException', 1); });
+}
+
+async function chayDanhSachWorker(danhSachQueue) {
+    if (!Array.isArray(danhSachQueue) || !danhSachQueue.length) { throw new TypeError('Danh sách queue worker không hợp lệ.'); }
+    await khoiDongInfrastructureWorker();
+    const daBat = [];
+    for (const tenQueue of danhSachQueue) { daBat.push(await batWorkerTheoQueue(tenQueue)); }
+    dangKyShutdown();
+    console.log(`Đã khởi động worker: ${daBat.join(', ')}`);
+    return daBat;
+}
+
+async function chayWorkerDon(tenQueue) { return chayDanhSachWorker([tenQueue]); }
+
+async function chay() { return chayDanhSachWorker(Object.keys(HANDLER_MODULES)); }
 
 if (require.main === module) {
     void chay().catch(async (error) => {
         console.error('Không thể khởi động Worker:', error);
-        await dungTatCaWorker();
+        await dongInfrastructureWorker().catch(() => {});
         process.exit(1);
     });
 }
@@ -128,7 +155,11 @@ module.exports = {
     HANDLER_MODULES,
     taoWorker,
     batWorker,
+    batWorkerTheoQueue,
     batWorkerTuDong,
+    chayWorkerDon,
+    chayDanhSachWorker,
     dungWorker,
-    dungTatCaWorker
+    dungTatCaWorker,
+    dongInfrastructureWorker
 };

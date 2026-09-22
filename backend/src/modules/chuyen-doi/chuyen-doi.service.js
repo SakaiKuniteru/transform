@@ -14,7 +14,7 @@ const registry = require('./engine/converter-registry');
 const dinhDangService = require('./nhan-dien/dinh-dang.service');
 const { TEN_QUEUE } = require('../../config/queue');
 const { giaoDich, ISOLATION_LEVEL } = require('../../infrastructure/database/transaction');
-const { LOAI_CHUYEN_DOI, coLoaiChuyenDoi, layThongTinLoaiChuyenDoi } = require('../../constants/loai-chuyen-doi');
+const { LOAI_CHUYEN_DOI, coLoaiChuyenDoi, layThongTinLoaiChuyenDoi, laLoaiChuyenDoiDaHoTro } = require('../../constants/loai-chuyen-doi');
 const { DINH_DANG, chuanHoaDinhDang, coDinhDang, layThongTinDinhDang } = require('../../constants/dinh-dang-tep');
 const MA_LOI = require('../../constants/ma-loi');
 const { taoLoiTheoStatus: taoLoi } = require('../../utils/loi');
@@ -54,7 +54,8 @@ function chuanHoaObject(value, ten = 'Dữ liệu') {
 
 function chuanHoaLoaiChuyenDoi(value) {
     const loai = String(value || '').trim().toUpperCase();
-    if (!coLoaiChuyenDoi(loai)) { throw taoLoi(400, 'Loại chuyển đổi không hợp lệ.', MA_LOI.CHUYEN_DOI_KHONG_HO_TRO); }
+    if (!coLoaiChuyenDoi(loai)) { throw taoLoi(400, 'Loại chuyển đổi không hợp lệ.', MA_LOI.DU_LIEU_KHONG_HOP_LE); }
+    if (!laLoaiChuyenDoiDaHoTro(loai)) { throw taoLoi(422, 'Loại chuyển đổi này hiện chưa được hỗ trợ.', MA_LOI.CHUYEN_DOI_KHONG_HO_TRO); }
     return loai;
 }
 
@@ -66,8 +67,9 @@ function chuanHoaDinhDangBatBuoc(value, ten) {
 
 function chuanHoaDinhDangDich(value, loaiChuyenDoi, dinhDangNguon) {
     if (value === undefined || value === null || value === '') {
-        if (loaiChuyenDoi === LOAI_CHUYEN_DOI.CHUYEN_DINH_DANG) { throw taoLoi(400, 'Chuyển đổi định dạng yêu cầu định dạng đích.', MA_LOI.CHUYEN_DOI_KHONG_HO_TRO); }
+        if ([LOAI_CHUYEN_DOI.CHUYEN_DINH_DANG, LOAI_CHUYEN_DOI.GIAI_MA, LOAI_CHUYEN_DOI.GIAI_NEN, LOAI_CHUYEN_DOI.TRICH_XUAT].includes(loaiChuyenDoi)) { throw taoLoi(400, 'Định dạng đích là bắt buộc với loại chuyển đổi này.', MA_LOI.DU_LIEU_KHONG_HOP_LE); }
         if (loaiChuyenDoi === LOAI_CHUYEN_DOI.NEN) { return DINH_DANG.GZIP; }
+        if (loaiChuyenDoi === LOAI_CHUYEN_DOI.MA_HOA) { return DINH_DANG.BASE64; }
         return dinhDangNguon;
     }
     return chuanHoaDinhDangBatBuoc(value, 'Định dạng đích');
@@ -122,6 +124,7 @@ function chonQueue(loaiChuyenDoi, keHoach, nhomNguon) {
         LOAI_CHUYEN_DOI.THAY_THE,
         LOAI_CHUYEN_DOI.TOM_TAT
     ].includes(loaiChuyenDoi)) { return TEN_QUEUE.AI; }
+    if (loaiChuyenDoi === LOAI_CHUYEN_DOI.CHUAN_HOA && String(nhomNguon || '').trim().toUpperCase() === 'VAN_BAN') { return TEN_QUEUE.AI; }
     const nhom = String(keHoach.cacBuoc[0]?.converter?.nhomXuLy?.[0] || keHoach.nhomXuLy || nhomNguon || '').trim().toUpperCase();
     if (nhom === 'HINH_ANH') { return TEN_QUEUE.HINH_ANH; }
     if (nhom === 'TAI_LIEU' || nhom === 'VAN_BAN') { return TEN_QUEUE.TAI_LIEU; }
@@ -130,8 +133,6 @@ function chonQueue(loaiChuyenDoi, keHoach, nhomNguon) {
     if (nhom === 'AI') { return TEN_QUEUE.AI; }
     return TEN_QUEUE.CHUYEN_DOI;
 }
-
-if (loaiChuyenDoi === LOAI_CHUYEN_DOI.CHUAN_HOA && String(nhomNguon || '').trim().toUpperCase() === 'VAN_BAN') { return TEN_QUEUE.AI; }
 
 function taoDauVaoNguon(nguon, nhanDien) {
     return {

@@ -12,7 +12,6 @@ const routes = require('./routes');
 const khongTimThay = require('./middlewares/khong-tim-thay');
 const xuLyLoi = require('./middlewares/xu-ly-loi');
 const app = express();
-const { chuanHoaNgayGioJson } = require('./utils/ngay-gio');
 const { rateLimitChung } = require('./middlewares/rate-limit');
 
 app.disable('x-powered-by');

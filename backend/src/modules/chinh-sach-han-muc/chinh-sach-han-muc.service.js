@@ -21,12 +21,6 @@ function parseId(value, ten = 'ID chính sách hạn mức') {
 
 function chuanHoaMa(value) { return String(value).trim().toUpperCase(); }
 
-function chuanHoaChuoi(value) {
-    if (value === undefined) { return undefined; }
-    if (value === null) { return null; }
-    return String(value).trim();
-}
-
 function chuanHoaThoiGian(value) {
     if (value === undefined) { return undefined; }
     if (value === null) { return null; }

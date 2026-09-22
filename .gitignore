@@ -111,3 +111,6 @@ appendonly.aof
 *.key
 *.crt
 *.p12
+
+.env.production
+.env.production.*

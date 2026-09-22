@@ -6,6 +6,7 @@ const MA_LOI = require('../../../constants/ma-loi');
 const { taoLoiTheoStatus: taoLoi } = require('../../../utils/loi');
 const storageService = require('../../../infrastructure/storage/storage.service');
 const transformEngine = require('../engine/transform-engine.service');
+const dinhDangService = require('../nhan-dien/dinh-dang.service');
 const gzipCompress = require('./gzip/gzip.compress');
 const gzipExtract = require('./gzip/gzip.extract');
 
@@ -43,6 +44,7 @@ async function xuLyGiaiNenGzip(context) {
     const buffer = await docBufferDauVao(context.dauVao);
     await context.capNhatTienTrinh(30);
     const ketQua = await gzipExtract.giaiNen(buffer, { ...context.tuyChon, tenTepNguon: context.dauVao?.tenTep || context.tuyChon?.tenTepNguon });
+    if (!dinhDangService.laTuongDuong(ketQua.dinhDang, context.dinhDangDich)) { throw taoLoi(422, `Dữ liệu sau giải nén thực tế là "${ketQua.dinhDang || 'không xác định'}", không khớp "${context.dinhDangDich}".`, MA_LOI.TEP_KHONG_HOP_LE); }
     await context.kiemTraHuy();
     await context.capNhatTienTrinh(90);
     const dauRa = await taoDauRa(context, ketQua);

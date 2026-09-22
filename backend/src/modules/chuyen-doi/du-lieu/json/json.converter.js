@@ -1,102 +1,95 @@
 'use strict';
 
-const YAML = require('yaml');
-const { XMLBuilder } = require('fast-xml-parser');
-const { DINH_DANG } = require('../../../../constants/dinh-dang-tep');
-const validator = require('./json.validator');
+const { DINH_DANG, layThongTinDinhDang } = require('../../../../constants/dinh-dang-tep');
+const { LOAI_CHUYEN_DOI } = require('../../../../constants/loai-chuyen-doi');
+const MA_LOI = require('../../../../constants/ma-loi');
+const { taoLoiTheoStatus: taoLoi, laLoiUngDung } = require('../../../../utils/loi');
+const storageService = require('../../../../infrastructure/storage/storage.service');
+const transformEngine = require('../../engine/transform-engine.service');
+const parser = require('./json.parser');
+const formatter = require('./json.formatter');
 
-function sapXepKhoa(value) {
-    if (Array.isArray(value)) { return value.map(sapXepKhoa); }
-    if (!value || typeof value !== 'object') { return value; }
-    return Object.fromEntries(Object.keys(value).sort((a, b) => a.localeCompare(b)).map((key) => [key, sapXepKhoa(value[key])]));
+const DINH_DANG_DICH_HO_TRO = Object.freeze([
+    DINH_DANG.JSON,
+    DINH_DANG.YAML,
+    DINH_DANG.YML,
+    DINH_DANG.XML,
+    DINH_DANG.CSV
+]);
+
+function layStorageKey(dauVao) { return dauVao?.storageKey || dauVao?.khoa || dauVao?.khoaLuuTru || dauVao?.storage?.khoa || dauVao?.storage?.storageKey || dauVao?.phienBan?.storageKey || dauVao?.phienBanHienTai?.storageKey || null; }
+
+async function docBufferDauVao(dauVao) {
+    if (Buffer.isBuffer(dauVao)) { return dauVao; }
+    if (Buffer.isBuffer(dauVao?.buffer)) { return dauVao.buffer; }
+    if (typeof dauVao === 'string') { return Buffer.from(dauVao, 'utf8'); }
+    if (typeof dauVao?.text === 'string') { return Buffer.from(dauVao.text, 'utf8'); }
+    const storageKey = layStorageKey(dauVao);
+    if (storageKey) { return storageService.docBuffer(storageKey); }
+    throw taoLoi(422, 'Không tìm thấy dữ liệu JSON đầu vào.', MA_LOI.TEP_KHONG_THE_DOC);
 }
 
-function formatJson(value, options = {}) {
-    validator.kiemTraCauTruc(value, options);
-    const data = options.sapXepKhoa === true ? sapXepKhoa(value) : value;
-    const indent = options.minify === true ? 0 : Number(options.indent ?? 2);
-    if (!Number.isSafeInteger(indent) || indent < 0 || indent > 10) { throw new TypeError('JSON indent phải nằm trong khoảng 0-10.'); }
-    let text = JSON.stringify(data, null, indent);
-    if (options.newlineCuoi === true) { text += '\n'; }
-    return text;
+function laBuocCuoi(context) { const tongSoBuoc = Number(context.tongSoBuoc || 1); const thuTuBuoc = Number(context.thuTuBuoc || tongSoBuoc); return thuTuBuoc >= tongSoBuoc; }
+
+function chuanHoaLoiJson(error) {
+    if (laLoiUngDung(error)) { return error; }
+    if (error instanceof RangeError) { return taoLoi(413, error.message, MA_LOI.TEP_VUOT_KICH_THUOC); }
+    if (error instanceof TypeError) { return taoLoi(422, error.message, MA_LOI.DU_LIEU_KHONG_HOP_LE); }
+    return error;
 }
 
-function formatYaml(value, options = {}) {
-    validator.kiemTraCauTruc(value, options);
-    const data = options.sapXepKhoa === true ? sapXepKhoa(value) : value;
-    const indent = Number(options.indent ?? 2);
-    if (!Number.isSafeInteger(indent) || indent < 1 || indent > 10) { throw new TypeError('YAML indent phải nằm trong khoảng 1-10.'); }
-    return YAML.stringify(data, null, { indent, lineWidth: Number(options.lineWidth || 0) || 0 });
+async function taoDauRa(context, ketQua, metadata = {}) {
+    const thongTin = { dinhDang: ketQua.dinhDang, mimeType: ketQua.mimeType, kichThuocBytes: ketQua.kichThuocBytes, metadata };
+    if (!laBuocCuoi(context)) { return { ...thongTin, buffer: ketQua.buffer }; }
+    await context.kiemTraHuy();
+    const extension = layThongTinDinhDang(ketQua.dinhDang)?.extensions?.[0] || ketQua.dinhDang || 'txt';
+    const khoa = storageService.taoKhoaLuuTru({ loai: storageService.LOAI_THU_MUC.OUTPUT, tenTep: `ket-qua.${extension}` });
+    const storage = await storageService.luuTuBuffer(khoa, ketQua.buffer, { contentType: ketQua.mimeType, metadata: { congViecId: context.congViecId ? String(context.congViecId) : '', buocId: context.buocId ? String(context.buocId) : '', dinhDang: ketQua.dinhDang, boXuLy: 'json' } });
+    return { ...thongTin, storageKey: storage.khoa, storageDriver: storage.driver, storageBucket: storage.bucket, storageEtag: storage.etag };
 }
 
-function taoXmlNode(value) {
-    if (value === null) { return { '@_type': 'null' }; }
-    if (Array.isArray(value)) { return { '@_type': 'array', item: value.map(taoXmlNode) }; }
-    if (typeof value === 'object') { return { '@_type': 'object', entry: Object.entries(value).map(([key, item]) => ({ '@_key': key, ...taoXmlNode(item) })) }; }
-    return { '@_type': typeof value, '#text': String(value) };
+async function xuLy(context) {
+    try {
+        await context.kiemTraHuy();
+        await context.capNhatTienTrinh(5);
+        const input = await docBufferDauVao(context.dauVao);
+        await context.capNhatTienTrinh(25);
+        const daParse = parser.parse(input, context.tuyChon);
+        await context.kiemTraHuy();
+        await context.capNhatTienTrinh(55);
+        const ketQua = formatter.format(daParse.giaTri, context.dinhDangDich, context.tuyChon);
+        await context.capNhatTienTrinh(90);
+        const dauRa = await taoDauRa(context, ketQua, { dinhDangNguon: DINH_DANG.JSON, soNode: daParse.thongKe?.soNode ?? null, doSauLonNhat: daParse.thongKe?.doSauLonNhat ?? null });
+        return { boXuLy: 'DU_LIEU', congCu: 'transform-json', phienBanCongCu: null, dauRa, dinhDangDich: ketQua.dinhDang, thongKe: { ...daParse.thongKe, kichThuocNguonBytes: daParse.kichThuocBytes, kichThuocDichBytes: ketQua.kichThuocBytes } };
+    } catch (error) { throw chuanHoaLoiJson(error); }
 }
 
-function formatXml(value, options = {}) {
-    validator.kiemTraCauTruc(value, options);
-    const builder = new XMLBuilder({
-        ignoreAttributes: false,
-        attributeNamePrefix: '@_',
-        format: options.minify !== true,
-        indentBy: ' '.repeat(Number(options.indent ?? 2)),
-        suppressEmptyNode: false
-    });
-    const body = builder.build({ json: taoXmlNode(value) });
-    return options.boKhaiBaoXml === true ? body : `<?xml version="1.0" encoding="UTF-8"?>\n${body}`;
+function dangKyNeuChuaCo(converter) { const hienTai = transformEngine.layConverter(converter.key); return hienTai || transformEngine.dangKyConverter(converter); }
+
+function dangKyTatCa() {
+    return Object.freeze([
+        dangKyNeuChuaCo({
+            key: 'json:chuyen-dinh-dang',
+            ten: 'Chuyển đổi dữ liệu JSON',
+            loaiChuyenDoi: LOAI_CHUYEN_DOI.CHUYEN_DINH_DANG,
+            nhomXuLy: 'DU_LIEU',
+            dinhDangNguon: DINH_DANG.JSON,
+            dinhDangDich: DINH_DANG_DICH_HO_TRO,
+            uuTien: 100,
+            chiPhi: 1,
+            engine: 'transform-json',
+            phienBanEngine: null,
+            xuLy
+        })
+    ]);
 }
 
-function escapeCsv(value, delimiter) {
-    if (value === null || value === undefined) { return ''; }
-    const text = typeof value === 'object' ? JSON.stringify(value) : String(value);
-    return text.includes(delimiter) || /["\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
-}
-
-function chuanHoaBang(value) {
-    if (!Array.isArray(value)) {
-        if (value && typeof value === 'object') { return [['key', 'value'], ...Object.entries(value).map(([key, item]) => [key, item])]; }
-        return [['value'], [value]];
-    }
-    if (!value.length) { return []; }
-    if (value.every((item) => Array.isArray(item))) { return value; }
-    if (value.every((item) => item && typeof item === 'object' && !Array.isArray(item))) {
-        const headers = [...new Set(value.flatMap((item) => Object.keys(item)))];
-        return [headers, ...value.map((item) => headers.map((header) => item[header] ?? null))];
-    }
-    return [['value'], ...value.map((item) => [item])];
-}
-
-function formatCsv(value, options = {}) {
-    validator.kiemTraCauTruc(value, options);
-    const delimiter = options.delimiter === undefined ? ',' : String(options.delimiter);
-    if (delimiter.length !== 1 || /["\r\n]/.test(delimiter)) { throw new TypeError('CSV delimiter phải là một ký tự hợp lệ.'); }
-    const lineEnding = options.lineEnding === 'CRLF' ? '\r\n' : '\n';
-    const rows = chuanHoaBang(value);
-    const text = rows.map((row) => row.map((item) => escapeCsv(item, delimiter)).join(delimiter)).join(lineEnding);
-    return `${options.bom === true ? '\uFEFF' : ''}${text}${text && options.newlineCuoi !== false ? lineEnding : ''}`;
-}
-
-function format(value, dinhDangDich, options = {}) {
-    const dinhDang = String(dinhDangDich || '').trim().toLowerCase();
-    let text;
-    let mimeType;
-    if (dinhDang === DINH_DANG.JSON) { text = formatJson(value, options); mimeType = 'application/json; charset=utf-8'; }
-    else if ([DINH_DANG.YAML, DINH_DANG.YML].includes(dinhDang)) { text = formatYaml(value, options); mimeType = 'application/yaml; charset=utf-8'; }
-    else if (dinhDang === DINH_DANG.XML) { text = formatXml(value, options); mimeType = 'application/xml; charset=utf-8'; }
-    else if (dinhDang === DINH_DANG.CSV) { text = formatCsv(value, options); mimeType = 'text/csv; charset=utf-8'; }
-    else { throw new TypeError(`JSON formatter chưa hỗ trợ định dạng "${dinhDang}".`); }
-    const buffer = Buffer.from(text, 'utf8');
-    return { buffer, text, dinhDang, mimeType, kichThuocBytes: buffer.length };
-}
+const converters = dangKyTatCa();
 
 module.exports = {
-    sapXepKhoa,
-    formatJson,
-    formatYaml,
-    formatXml,
-    formatCsv,
-    format
+    DINH_DANG_DICH_HO_TRO,
+    converters,
+    dangKyTatCa,
+    docBufferDauVao,
+    xuLy
 };
