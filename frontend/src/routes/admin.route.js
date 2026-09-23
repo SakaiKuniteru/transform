@@ -10,18 +10,21 @@ const { router: congViecRouter } = require('../modules/admin/cong-viec/cong-viec
 const { router: goiDichVuRouter } = require('../modules/admin/goi-dich-vu/goi-dich-vu.route');
 const { router: dangKyGoiRouter } = require('../modules/admin/dang-ky-goi/dang-ky-goi.route');
 const { router: chinhSachHanMucRouter } = require('../modules/admin/chinh-sach-han-muc/chinh-sach-han-muc.route');
-
+const { router: suDungHanMucRouter } = require('../modules/admin/su-dung-han-muc/su-dung-han-muc.route');
+const { router: nhatKyRouter } = require('../modules/admin/nhat-ky/nhat-ky.route');
 const router = express.Router();
 
 router.use(yeuCauDangNhap);
 router.use(adminMiddleware);
-router.use('/', dashboardRouter);
 router.use('/nguoi-dung', nguoiDungRouter);
 router.use('/tep', tepRouter);
 router.use('/cong-viec', congViecRouter);
 router.use('/goi-dich-vu', goiDichVuRouter);
 router.use('/dang-ky-goi', dangKyGoiRouter);
 router.use('/chinh-sach-han-muc', chinhSachHanMucRouter);
+router.use('/su-dung-han-muc', suDungHanMucRouter);
+router.use('/nhat-ky', nhatKyRouter);
+router.use('/', dashboardRouter);
 
 module.exports = {
     router

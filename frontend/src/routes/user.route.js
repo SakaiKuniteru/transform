@@ -1,4 +1,5 @@
 'use strict';
+
 const express = require('express');
 const { yeuCauDangNhap } = require('../middlewares/auth.middleware');
 const { userMiddleware } = require('../middlewares/user.middleware');
@@ -13,13 +14,13 @@ const router = express.Router();
 
 router.use(yeuCauDangNhap);
 router.use(userMiddleware);
-router.use('/', dashboardRouter);
 router.use('/tep', tepRouter);
 router.use('/chuyen-doi', chuyenDoiRouter);
 router.use('/cong-viec', congViecRouter);
 router.use('/lich-su', lichSuRouter);
 router.use('/tai-khoan', taiKhoanRouter);
 router.use('/goi-dich-vu', goiDichVuRouter);
+router.use('/', dashboardRouter);
 
 module.exports = {
     router
