@@ -20,4 +20,6 @@ router.post('/doi-mat-khau', yeuCauDangNhap, controller.doiMatKhauPost);
 router.post('/dang-xuat', controller.dangXuatPost);
 router.post('/dang-xuat-tat-ca', yeuCauDangNhap, controller.dangXuatTatCaPost);
 
-module.exports = router;
+module.exports = {
+    router
+};

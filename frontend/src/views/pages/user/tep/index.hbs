@@ -1,0 +1,59 @@
+<section class="user-page user-files">
+    <header class="user-page__header">
+        <div>
+            <h1 class="user-page__title">Tệp của tôi</h1>
+            <p class="user-page__description">Quản lý các tệp đã tải lên Transform.</p>
+        </div>
+    </header>
+    <section class="user-section">
+        <h2 class="user-section__title">Tải tệp lên</h2>
+        {{> forms/form uploadForm}}
+    </section>
+    <section class="user-section">
+        <form action="/user/tep" method="GET" class="user-toolbar">
+            <input type="search" name="q" value="{{filters.q}}" class="form-control" placeholder="Tìm theo tên tệp">
+            <select name="trangThai" class="form-control form-select">
+                <option value="">Tất cả trạng thái</option>
+                <option value="HOAT_DONG"{{#if (eq filters.trangThai "HOAT_DONG")}} selected{{/if}}>Hoạt động</option>
+                <option value="HET_HAN"{{#if (eq filters.trangThai "HET_HAN")}} selected{{/if}}>Hết hạn</option>
+            </select>
+            <button type="submit" class="btn btn-secondary">Tìm kiếm</button>
+        </form>
+        {{#if danhSach.length}}
+            <div class="user-table-wrapper">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Tên tệp</th>
+                            <th>Định dạng</th>
+                            <th>Kích thước</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày tạo</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each danhSach}}
+                            <tr>
+                                <td><a href="/user/tep/{{id}}">{{tenTep}}</a></td>
+                                <td>{{dinhDangHienThi}}</td>
+                                <td>{{kichThuocHienThi}}</td>
+                                <td>{{trangThai}}</td>
+                                <td>{{createdAtHienThi}}</td>
+                                <td>
+                                    <div class="table-actions">
+                                        <a href="/user/tep/{{id}}/tai-xuong" class="btn btn-sm btn-secondary">Tải xuống</a>
+                                        <a href="/user/tep/{{id}}" class="btn btn-sm btn-secondary">Chi tiết</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+            {{> common/pagination pagination=pagination}}
+        {{else}}
+            {{> common/empty-state title="Chưa có tệp" message="Tải tệp đầu tiên để bắt đầu sử dụng Transform."}}
+        {{/if}}
+    </section>
+</section>

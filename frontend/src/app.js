@@ -17,6 +17,8 @@ const { requestContextMiddleware } = require('./middlewares/request-context.midd
 const { securityMiddleware } = require('./middlewares/security.middleware');
 const { notFoundMiddleware } = require('./middlewares/not-found.middleware');
 const { errorMiddleware } = require('./middlewares/error.middleware');
+const { router: authRouter } = require('./modules/auth/auth.route');
+const { router: userRouter } = require('./routes/user.route');
 const app = express();
 
 if (appConfig.trustProxy !== false) { app.set('trust proxy', appConfig.trustProxy); }
@@ -35,6 +37,8 @@ app.use(express.json({ limit: appConfig.jsonLimit }));
 app.use(express.urlencoded({ extended: true, limit: appConfig.urlencodedLimit }));
 app.use(csrfMiddleware);
 app.use(authMiddleware);
+app.use(authRouter);
+app.use('/user', userRouter);
 app.get('/', (req, res) => res.render('pages/trang-chu', taoViewContext(req, res, { page: { title: 'Transform Platform' } })));
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);

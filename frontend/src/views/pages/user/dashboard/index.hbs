@@ -1,0 +1,91 @@
+<section class="user-page user-dashboard">
+    <header class="user-page__header">
+        <div>
+            <h1 class="user-page__title">Tổng quan</h1>
+            <p class="user-page__description">Theo dõi nhanh tệp, công việc và hoạt động gần đây.</p>
+        </div>
+        <a href="/user/chuyen-doi" class="btn btn-primary">Chuyển đổi tệp</a>
+    </header>
+    <div class="dashboard-stats">
+        <article class="dashboard-stat">
+            <span class="dashboard-stat__label">Tệp của tôi</span>
+            <strong class="dashboard-stat__value">{{dashboard.thongKe.tongSoTep}}</strong>
+            <a href="/user/tep" class="dashboard-stat__link">Xem tệp</a>
+        </article>
+        <article class="dashboard-stat">
+            <span class="dashboard-stat__label">Công việc</span>
+            <strong class="dashboard-stat__value">{{dashboard.thongKe.tongSoCongViec}}</strong>
+            <a href="/user/cong-viec" class="dashboard-stat__link">Xem công việc</a>
+        </article>
+        <article class="dashboard-stat">
+            <span class="dashboard-stat__label">Hoạt động</span>
+            <strong class="dashboard-stat__value">{{dashboard.thongKe.tongSoLichSu}}</strong>
+            <a href="/user/lich-su" class="dashboard-stat__link">Xem lịch sử</a>
+        </article>
+    </div>
+    <div class="dashboard-grid">
+        <section class="dashboard-section">
+            <header class="dashboard-section__header">
+                <h2>Tệp gần đây</h2>
+                <a href="/user/tep">Xem tất cả</a>
+            </header>
+            {{#if dashboard.tepGanDay.length}}
+                <div class="dashboard-list">
+                    {{#each dashboard.tepGanDay}}
+                        <a href="/user/tep/{{id}}" class="dashboard-list__item">
+                            <div>
+                                <strong>{{tenTep}}</strong>
+                                <span>{{dinhDangHienThi}} · {{kichThuocHienThi}}</span>
+                            </div>
+                            <time>{{createdAtHienThi}}</time>
+                        </a>
+                    {{/each}}
+                </div>
+            {{else}}
+                {{> common/empty-state title="Chưa có tệp" message="Tải tệp đầu tiên để bắt đầu sử dụng Transform." action=(lookup . "uploadAction")}}
+            {{/if}}
+        </section>
+        <section class="dashboard-section">
+            <header class="dashboard-section__header">
+                <h2>Công việc gần đây</h2>
+                <a href="/user/cong-viec">Xem tất cả</a>
+            </header>
+            {{#if dashboard.congViecGanDay.length}}
+                <div class="dashboard-list">
+                    {{#each dashboard.congViecGanDay}}
+                        <a href="/user/cong-viec/{{id}}" class="dashboard-list__item">
+                            <div>
+                                <strong>{{loaiHienThi}}</strong>
+                                <span>{{trangThaiHienThi}} · {{tienTrinh}}%</span>
+                            </div>
+                            <time>{{createdAtHienThi}}</time>
+                        </a>
+                    {{/each}}
+                </div>
+            {{else}}
+                {{> common/empty-state title="Chưa có công việc" message="Các yêu cầu chuyển đổi sẽ xuất hiện tại đây."}}
+            {{/if}}
+        </section>
+    </div>
+    <section class="dashboard-section">
+        <header class="dashboard-section__header">
+            <h2>Hoạt động gần đây</h2>
+            <a href="/user/lich-su">Xem tất cả</a>
+        </header>
+        {{#if dashboard.lichSuGanDay.length}}
+            <div class="dashboard-list">
+                {{#each dashboard.lichSuGanDay}}
+                    <div class="dashboard-list__item">
+                        <div>
+                            <strong>{{tieuDe}}</strong>
+                            {{#if moTa}}<span>{{moTa}}</span>{{/if}}
+                        </div>
+                        <time>{{createdAtHienThi}}</time>
+                    </div>
+                {{/each}}
+            </div>
+        {{else}}
+            {{> common/empty-state title="Chưa có hoạt động" message="Hoạt động sử dụng hệ thống sẽ được ghi lại tại đây."}}
+        {{/if}}
+    </section>
+</section>

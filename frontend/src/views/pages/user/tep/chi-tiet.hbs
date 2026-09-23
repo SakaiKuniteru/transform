@@ -1,0 +1,39 @@
+<section class="user-page user-file-detail">
+    <header class="user-page__header">
+        <div>
+            <h1 class="user-page__title">{{tep.tenTep}}</h1>
+            <p class="user-page__description">Thông tin chi tiết của tệp.</p>
+        </div>
+        <div class="user-page__actions">
+            <a href="/user/tep/{{tep.id}}/tai-xuong" class="btn btn-secondary">Tải xuống</a>
+            <a href="/user/chuyen-doi?tepId={{tep.id}}" class="btn btn-primary">Chuyển đổi</a>
+        </div>
+    </header>
+    <div class="user-detail-grid">
+        <section class="user-section">
+            <h2 class="user-section__title">Thông tin tệp</h2>
+            <dl class="detail-list">
+                <div><dt>Tên tệp</dt><dd>{{tep.tenTep}}</dd></div>
+                <div><dt>Định dạng</dt><dd>{{tep.dinhDangHienThi}}</dd></div>
+                <div><dt>MIME type</dt><dd>{{tep.mimeTypeHienThi}}</dd></div>
+                <div><dt>Kích thước</dt><dd>{{tep.kichThuocHienThi}}</dd></div>
+                <div><dt>Trạng thái</dt><dd>{{tep.trangThai}}</dd></div>
+                <div><dt>Ngày tạo</dt><dd>{{tep.createdAtHienThi}}</dd></div>
+                <div><dt>Cập nhật</dt><dd>{{tep.updatedAtHienThi}}</dd></div>
+                {{#if tep.moTa}}<div><dt>Mô tả</dt><dd>{{tep.moTa}}</dd></div>{{/if}}
+            </dl>
+        </section>
+        <section class="user-section">
+            <h2 class="user-section__title">Cập nhật thông tin</h2>
+            {{> forms/form capNhatForm}}
+        </section>
+    </div>
+    <section class="user-section user-section--danger">
+        <h2 class="user-section__title">Xóa tệp</h2>
+        <p>Xóa tệp và dữ liệu liên quan khỏi tài khoản của bạn.</p>
+        <form action="/user/tep/{{tep.id}}/xoa" method="POST">
+            {{#if csrfToken}}<input type="hidden" name="_csrf" value="{{csrfToken}}">{{/if}}
+            <button type="submit" class="btn btn-danger">Xóa tệp</button>
+        </form>
+    </section>
+</section>
