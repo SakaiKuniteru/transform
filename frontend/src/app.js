@@ -11,6 +11,7 @@ const sessionConfig = require('./config/session.config');
 const securityConfig = require('./config/security.config');
 const viewConfig = require('./config/view.config');
 const assetConfig = require('./config/asset.config');
+const { layViewHelpers } = require('./core/views/view-helper');
 const app = express();
 const ERROR_VIEWS = new Set([ 400, 401, 403, 404, 429, 500, 503 ]);
 
@@ -52,7 +53,13 @@ function errorMiddleware(error, req, res, next) {
 
 if (appConfig.trustProxy !== false) { app.set('trust proxy', appConfig.trustProxy); }
 app.disable('x-powered-by');
-app.engine(viewConfig.engineName, engine({ extname: viewConfig.extname, defaultLayout: viewConfig.defaultLayout, layoutsDir: viewConfig.layoutsDir, partialsDir: viewConfig.partialsDir }));
+app.engine(viewConfig.engineName, engine({
+    extname: viewConfig.extname,
+    defaultLayout: viewConfig.defaultLayout,
+    layoutsDir: viewConfig.layoutsDir,
+    partialsDir: viewConfig.partialsDir,
+    helpers: layViewHelpers()
+}));
 app.set('view engine', viewConfig.engineName);
 app.set('views', viewConfig.viewsDir);
 app.use(helmet(securityConfig.helmet));

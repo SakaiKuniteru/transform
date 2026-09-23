@@ -1,0 +1,4 @@
+<div{{#if id}} id="{{id}}"{{/if}} class="loading{{#if fullscreen}} loading--fullscreen{{/if}}{{#if className}} {{className}}{{/if}}" data-loading{{#unless visible}} hidden{{/unless}} role="status" aria-live="polite" aria-busy="true">
+    <span class="loading__spinner" aria-hidden="true"></span>
+    {{#if text}}<span class="loading__text">{{text}}</span>{{/if}}
+</div>

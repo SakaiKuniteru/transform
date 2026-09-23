@@ -1,0 +1,19 @@
+<div id="{{id}}" class="modal{{#if size}} modal--{{size}}{{/if}}{{#if className}} {{className}}{{/if}}" data-modal{{#unless open}} hidden{{/unless}}>
+    <div class="modal__backdrop"{{#unless lockBackdrop}} data-modal-close{{/unless}}></div>
+    <section class="modal__dialog" role="dialog" aria-modal="true"{{#if title}} aria-labelledby="{{id}}-title"{{/if}}>
+        {{#if title}}
+            <header class="modal__header">
+                <h2 id="{{id}}-title" class="modal__title">{{title}}</h2>
+                {{#unless lockClose}}<button type="button" class="modal__close" data-modal-close aria-label="Đóng">×</button>{{/unless}}
+            </header>
+        {{/if}}
+        <div class="modal__body">
+            {{#if contentPartial}}{{> (lookup . "contentPartial") context}}{{else}}{{#if message}}<p>{{message}}</p>{{/if}}{{/if}}
+        </div>
+        {{#if actions}}
+            <footer class="modal__footer">
+                {{#each actions}}<button type="{{#if type}}{{type}}{{else}}button{{/if}}" class="modal__action{{#if className}} {{className}}{{/if}}"{{#if action}} data-modal-action="{{action}}"{{/if}}{{#if value}} value="{{value}}"{{/if}}{{#if disabled}} disabled{{/if}}>{{label}}</button>{{/each}}
+            </footer>
+        {{/if}}
+    </section>
+</div>

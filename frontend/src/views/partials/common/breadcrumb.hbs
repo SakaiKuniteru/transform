@@ -1,0 +1,9 @@
+{{#if breadcrumb}}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <ol class="breadcrumb__list">
+        {{#each breadcrumb}}
+            <li class="breadcrumb__item{{#if current}} is-current{{/if}}">{{#if current}}<span aria-current="page">{{label}}</span>{{else}}{{#if url}}<a href="{{url}}">{{label}}</a>{{else}}<span>{{label}}</span>{{/if}}{{/if}}</li>
+        {{/each}}
+    </ol>
+</nav>
+{{/if}}

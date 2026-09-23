@@ -1,0 +1,11 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{{#if page.description}}<meta name="description" content="{{page.description}}">{{/if}}
+{{#if page.noIndex}}<meta name="robots" content="noindex, nofollow">{{else}}<meta name="robots" content="index, follow">{{/if}}
+{{#if page.canonical}}<link rel="canonical" href="{{page.canonical}}">{{/if}}
+<meta property="og:type" content="{{page.ogType}}">
+<meta property="og:title" content="{{page.title}}">
+{{#if page.description}}<meta property="og:description" content="{{page.description}}">{{/if}}
+{{#if page.canonical}}<meta property="og:url" content="{{page.canonical}}">{{/if}}
+{{#if page.ogImage}}<meta property="og:image" content="{{page.ogImage}}">{{/if}}
+{{#if csrfToken}}<meta name="csrf-token" content="{{csrfToken}}">{{/if}}

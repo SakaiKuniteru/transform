@@ -1,0 +1,13 @@
+<div id="{{id}}" class="modal modal--confirm{{#if className}} {{className}}{{/if}}" data-confirm{{#unless open}} hidden{{/unless}}>
+    <div class="modal__backdrop" data-confirm-cancel></div>
+    <section class="modal__dialog" role="alertdialog" aria-modal="true" aria-labelledby="{{id}}-title" aria-describedby="{{id}}-message">
+        <header class="modal__header">
+            <h2 id="{{id}}-title" class="modal__title">{{#if title}}{{title}}{{else}}Xác nhận{{/if}}</h2>
+        </header>
+        <div class="modal__body"><p id="{{id}}-message">{{message}}</p></div>
+        <footer class="modal__footer">
+            <button type="button" class="modal__action{{#if cancelClass}} {{cancelClass}}{{/if}}" data-confirm-cancel>{{#if cancelLabel}}{{cancelLabel}}{{else}}Huỷ{{/if}}</button>
+            <button type="button" class="modal__action{{#if confirmClass}} {{confirmClass}}{{/if}}" data-confirm-ok{{#if value}} data-confirm-value="{{value}}"{{/if}}>{{#if confirmLabel}}{{confirmLabel}}{{else}}Xác nhận{{/if}}</button>
+        </footer>
+    </section>
+</div>

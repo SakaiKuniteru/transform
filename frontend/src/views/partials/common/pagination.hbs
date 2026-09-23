@@ -1,0 +1,13 @@
+{{#if pagination.visible}}
+<nav class="pagination" aria-label="Phân trang">
+    <a class="pagination__item pagination__item--previous{{#unless pagination.hasPrevious}} is-disabled{{/unless}}"{{#if pagination.hasPrevious}} href="{{pagination.previousUrl}}"{{else}} aria-disabled="true" tabindex="-1"{{/if}} aria-label="Trang trước">‹</a>
+    {{#each pagination.pages}}
+        {{#if ellipsis}}
+            <span class="pagination__ellipsis" aria-hidden="true">…</span>
+        {{else}}
+            {{#if current}}<span class="pagination__item is-active" aria-current="page">{{number}}</span>{{else}}<a class="pagination__item" href="{{url}}">{{number}}</a>{{/if}}
+        {{/if}}
+    {{/each}}
+    <a class="pagination__item pagination__item--next{{#unless pagination.hasNext}} is-disabled{{/unless}}"{{#if pagination.hasNext}} href="{{pagination.nextUrl}}"{{else}} aria-disabled="true" tabindex="-1"{{/if}} aria-label="Trang sau">›</a>
+</nav>
+{{/if}}

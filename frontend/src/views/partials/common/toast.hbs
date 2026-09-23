@@ -1,0 +1,11 @@
+<div class="toast-container" data-toast-container aria-live="polite" aria-atomic="false">
+    {{#each toasts}}
+        <div id="{{id}}" class="toast toast--{{type}}" data-toast data-toast-type="{{type}}" data-toast-duration="{{duration}}" role="status">
+            <div class="toast__content">
+                {{#if title}}<div class="toast__title">{{title}}</div>{{/if}}
+                <div class="toast__message">{{message}}</div>
+            </div>
+            {{#unless persistent}}<button type="button" class="toast__close" data-toast-close aria-label="Đóng thông báo">×</button>{{/unless}}
+        </div>
+    {{/each}}
+</div>

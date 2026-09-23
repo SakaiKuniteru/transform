@@ -1,0 +1,7 @@
+<div class="error-state{{#if className}} {{className}}{{/if}}" role="alert">
+    {{#if statusCode}}<div class="error-state__code">{{statusCode}}</div>{{/if}}
+    <h2 class="error-state__title">{{#if title}}{{title}}{{else}}Đã xảy ra lỗi{{/if}}</h2>
+    {{#if message}}<p class="error-state__message">{{message}}</p>{{/if}}
+    {{#if requestId}}<p class="error-state__request-id">Mã yêu cầu: {{requestId}}</p>{{/if}}
+    {{#if action}}<a class="error-state__action{{#if action.className}} {{action.className}}{{/if}}" href="{{action.url}}">{{action.label}}</a>{{/if}}
+</div>
