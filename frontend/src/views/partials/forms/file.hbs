@@ -1,0 +1,4 @@
+<div class="form-file">
+    <input type="file" id="{{id}}" name="{{name}}" class="form-file__input{{#if hasError}} is-invalid{{/if}}"{{#if accept}} accept="{{accept}}"{{/if}}{{#if multiple}} multiple{{/if}}{{#if required}} required{{/if}}{{#if disabled}} disabled{{/if}}{{#if label}} aria-labelledby="{{id}}-label"{{/if}} aria-invalid="{{ariaInvalid}}"{{#if ariaDescribedBy}} aria-describedby="{{ariaDescribedBy}}"{{/if}}{{#each attributes}} {{@key}}="{{this}}"{{/each}}>
+    {{#if text}}<div class="form-file__text">{{text}}</div>{{/if}}
+</div>

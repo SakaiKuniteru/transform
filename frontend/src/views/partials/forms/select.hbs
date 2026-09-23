@@ -1,0 +1,4 @@
+<select id="{{id}}" name="{{name}}" class="form-control form-select{{#if hasError}} is-invalid{{/if}}"{{#if multiple}} multiple{{/if}}{{#if required}} required{{/if}}{{#if disabled}} disabled{{/if}}{{#if label}} aria-labelledby="{{id}}-label"{{/if}} aria-invalid="{{ariaInvalid}}"{{#if ariaDescribedBy}} aria-describedby="{{ariaDescribedBy}}"{{/if}}{{#each attributes}} {{@key}}="{{this}}"{{/each}}>
+    {{#if placeholder}}<option value="">{{placeholder}}</option>{{/if}}
+    {{#each options}}<option value="{{value}}"{{#if selected}} selected{{/if}}{{#if disabled}} disabled{{/if}}>{{label}}</option>{{/each}}
+</select>

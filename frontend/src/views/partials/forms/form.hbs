@@ -1,0 +1,13 @@
+<form id="{{id}}" name="{{name}}" action="{{action}}" method="{{htmlMethod}}" enctype="{{enctype}}" class="form{{#if className}} {{className}}{{/if}}"{{#each attributes}} {{@key}}="{{this}}"{{/each}}>
+    {{#if csrfToken}}<input type="hidden" name="_csrf" value="{{csrfToken}}">{{/if}}
+    {{#if methodOverride}}<input type="hidden" name="_method" value="{{methodOverride}}">{{/if}}
+    {{#if globalErrors}}
+        <div class="form-errors" role="alert">
+            {{#each globalErrors}}{{> forms/error message=this global=true}}{{/each}}
+        </div>
+    {{/if}}
+    <div class="form-fields">
+        {{#each fields}}{{> forms/field}}{{/each}}
+    </div>
+    {{#if actions}}{{> forms/actions actions=actions}}{{/if}}
+</form>

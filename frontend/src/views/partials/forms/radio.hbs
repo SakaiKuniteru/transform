@@ -1,0 +1,8 @@
+<div class="form-radio-group" role="radiogroup"{{#if label}} aria-labelledby="{{id}}-label"{{/if}}{{#if ariaDescribedBy}} aria-describedby="{{ariaDescribedBy}}"{{/if}}>
+    {{#each options}}
+        <label class="form-radio">
+            <input type="radio" name="{{../name}}" value="{{value}}" class="form-radio__input{{#if ../hasError}} is-invalid{{/if}}"{{#if selected}} checked{{/if}}{{#if disabled}} disabled{{/if}}{{#if ../required}} required{{/if}}>
+            <span class="form-radio__label">{{label}}</span>
+        </label>
+    {{/each}}
+</div>

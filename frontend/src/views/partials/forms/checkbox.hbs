@@ -1,0 +1,4 @@
+<label class="form-checkbox">
+    <input type="checkbox" id="{{id}}" name="{{name}}" value="true" class="form-checkbox__input{{#if hasError}} is-invalid{{/if}}"{{#if checked}} checked{{/if}}{{#if required}} required{{/if}}{{#if disabled}} disabled{{/if}}{{#if label}} aria-labelledby="{{id}}-label"{{/if}} aria-invalid="{{ariaInvalid}}"{{#if ariaDescribedBy}} aria-describedby="{{ariaDescribedBy}}"{{/if}}{{#each attributes}} {{@key}}="{{this}}"{{/each}}>
+    {{#if text}}<span class="form-checkbox__text">{{text}}</span>{{/if}}
+</label>

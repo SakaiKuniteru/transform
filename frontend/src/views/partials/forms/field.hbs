@@ -1,0 +1,11 @@
+<div class="form-field form-field--{{type}}{{#if hasError}} form-field--error{{/if}}" data-field="{{name}}">
+    {{#if label}}
+        <div id="{{id}}-label" class="form-label">
+            <span>{{label}}</span>
+            {{#if required}}<span class="form-required" aria-hidden="true">*</span>{{/if}}
+        </div>
+    {{/if}}
+    {{> (lookup . "partialPath")}}
+    {{#if helpText}}<div class="form-help" id="{{id}}-help">{{helpText}}</div>{{/if}}
+    {{#if error}}{{> forms/error message=error id=ariaDescribedBy}}{{/if}}
+</div>

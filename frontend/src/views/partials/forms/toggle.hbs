@@ -1,0 +1,5 @@
+<label class="form-toggle">
+    <input type="checkbox" id="{{id}}" name="{{name}}" value="true" class="form-toggle__input{{#if hasError}} is-invalid{{/if}}"{{#if checked}} checked{{/if}}{{#if disabled}} disabled{{/if}}{{#if label}} aria-labelledby="{{id}}-label"{{/if}} aria-invalid="{{ariaInvalid}}"{{#if ariaDescribedBy}} aria-describedby="{{ariaDescribedBy}}"{{/if}}{{#each attributes}} {{@key}}="{{this}}"{{/each}}>
+    <span class="form-toggle__track" aria-hidden="true"><span class="form-toggle__thumb"></span></span>
+    {{#if text}}<span class="form-toggle__text">{{text}}</span>{{/if}}
+</label>
