@@ -5,6 +5,8 @@ const { yeuCauDangNhap } = require('../middlewares/auth.middleware');
 const { adminMiddleware } = require('../middlewares/admin.middleware');
 const { router: dashboardRouter } = require('../modules/admin/dashboard/dashboard.route');
 const { router: nguoiDungRouter } = require('../modules/admin/nguoi-dung/nguoi-dung.route');
+const { router: tepRouter } = require('../modules/admin/tep/tep.route');
+const { router: congViecRouter } = require('../modules/admin/cong-viec/cong-viec.route');
 
 const router = express.Router();
 
@@ -12,6 +14,8 @@ router.use(yeuCauDangNhap);
 router.use(adminMiddleware);
 router.use('/', dashboardRouter);
 router.use('/nguoi-dung', nguoiDungRouter);
+router.use('/tep', tepRouter);
+router.use('/cong-viec', congViecRouter);
 
 module.exports = {
     router

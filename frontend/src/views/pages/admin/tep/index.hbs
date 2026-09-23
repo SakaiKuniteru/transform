@@ -1,0 +1,21 @@
+<section class="admin-page admin-files">
+    <header class="admin-page__header">
+        <div>
+            <h1 class="admin-page__title">Quản lý tệp</h1>
+            <p class="admin-page__description">Quản lý tệp trên toàn hệ thống Transform.</p>
+        </div>
+    </header>
+    {{#unless khaNang.hoTro}}
+        <section class="admin-section">
+            {{> common/error-state title=khaNang.tieuDe message=khaNang.thongBao}}
+            <div class="admin-capability">
+                <h2 class="admin-section__title">API hiện có</h2>
+                <ul class="admin-capability__list">
+                    {{#each khaNang.endpointHienTai}}<li><code>{{this}}</code></li>{{/each}}
+                </ul>
+                <p>Những endpoint trên chỉ thao tác với tệp thuộc chủ sở hữu của request hiện tại, nên không được dùng để giả lập chức năng quản trị toàn hệ thống.</p>
+                <a href="/user/tep" class="btn btn-secondary">Xem tệp của tài khoản hiện tại</a>
+            </div>
+        </section>
+    {{/unless}}
+</section>

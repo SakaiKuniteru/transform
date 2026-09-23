@@ -1,0 +1,21 @@
+<section class="admin-page admin-jobs">
+    <header class="admin-page__header">
+        <div>
+            <h1 class="admin-page__title">Quản lý công việc</h1>
+            <p class="admin-page__description">Theo dõi và quản lý công việc xử lý trên toàn hệ thống Transform.</p>
+        </div>
+    </header>
+    {{#unless khaNang.hoTro}}
+        <section class="admin-section">
+            {{> common/error-state title=khaNang.tieuDe message=khaNang.thongBao}}
+            <div class="admin-capability">
+                <h2 class="admin-section__title">API hiện có</h2>
+                <ul class="admin-capability__list">
+                    {{#each khaNang.endpointHienTai}}<li><code>{{this}}</code></li>{{/each}}
+                </ul>
+                <p>Những endpoint trên luôn kiểm tra chủ sở hữu công việc, nên không thể dùng chúng để hiển thị danh sách công việc của toàn hệ thống cho quản trị.</p>
+                <a href="/user/cong-viec" class="btn btn-secondary">Xem công việc của tài khoản hiện tại</a>
+            </div>
+        </section>
+    {{/unless}}
+</section>
