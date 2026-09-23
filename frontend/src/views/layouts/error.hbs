@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    {{> common/head}}
+</head>
+<body class="layout-error">
+    <main class="error-layout" id="main-content">
+        {{{body}}}
+    </main>
+    {{> common/toast toasts=toasts}}
+    {{#each assets.scripts}}<script src="{{src}}"{{#if defer}} defer{{/if}}{{#if async}} async{{/if}}{{#if type}} type="{{type}}"{{/if}}></script>{{/each}}
+</body>
+</html>

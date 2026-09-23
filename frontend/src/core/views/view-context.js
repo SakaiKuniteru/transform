@@ -1,6 +1,9 @@
 'use strict';
+const fs = require('node:fs');
+const path = require('node:path');
 const appConfig = require('../../config/app.config');
 const authContext = require('../auth/auth-context');
+const assetConfig = require('../../config/asset.config');
 const { asset } = require('./view-helper');
 const LOAI_TOAST = new Set([ 'success', 'error', 'warning', 'info' ]);
 const AUTH_AN_DANH = Object.freeze({
@@ -13,6 +16,7 @@ const AUTH_AN_DANH = Object.freeze({
     coTheTruyCapKhuVucNguoiDung: false,
     coTheTruyCapKhuVucQuanTri: false
 });
+const BUILD_MANIFEST_PATH = path.join(assetConfig.rootDir, 'manifest.json');
 
 function chuanHoaChuoi(value, macDinh = null) {
     if (typeof value !== 'string') { return macDinh; }
@@ -21,6 +25,24 @@ function chuanHoaChuoi(value, macDinh = null) {
 }
 
 function chuanHoaDanhSach(value) { return Array.isArray(value) ? value.filter((item) => item !== null && item !== undefined) : []; }
+
+function layBuildAssets() {
+    try {
+        const manifest = JSON.parse(fs.readFileSync(BUILD_MANIFEST_PATH, 'utf8'));
+        return {
+            styles: manifest.assets?.['css/app.css'] ? [ manifest.assets['css/app.css'] ] : [],
+            scripts: manifest.assets?.['js/app.js'] ? [ { src: manifest.assets['js/app.js'], defer: true } ] : []
+        };
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            return {
+                styles: [],
+                scripts: []
+            };
+        }
+        throw error;
+    }
+}
 
 function chuanHoaAssets(input = {}) {
     const styles = chuanHoaDanhSach(input.styles).map((item) => asset(item));
@@ -139,7 +161,12 @@ function layAuthContext(req, res) {
 function taoViewContext(req, res, data = {}) {
     if (!data || typeof data !== 'object' || Array.isArray(data)) { throw new TypeError('View data phải là một object.'); }
     const page = chuanHoaPage({ ...(data.page || {}), title: data.title || data.page?.title, description: data.description || data.page?.description });
-    const assets = chuanHoaAssets(data.assets || {});
+    const buildAssets = layBuildAssets();
+    const assets = chuanHoaAssets({
+        favicon: data.assets?.favicon || null,
+        styles: [ ...buildAssets.styles, ...chuanHoaDanhSach(data.assets?.styles) ],
+        scripts: [ ...buildAssets.scripts, ...chuanHoaDanhSach(data.assets?.scripts) ]
+    });
     const breadcrumb = chuanHoaBreadcrumb(data.breadcrumb || []);
     const toasts = chuanHoaToasts(data.toasts || res?.locals?.toasts || []);
     return {
@@ -168,5 +195,6 @@ module.exports = {
     chuanHoaBreadcrumb,
     taoPagination,
     taoRequestContext,
+    layBuildAssets,
     taoViewContext
 };

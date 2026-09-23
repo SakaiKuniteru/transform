@@ -230,6 +230,27 @@ progress::-moz-progress-bar {
     background: var(--color-primary-600);
 }
 
+.layout-error {
+    min-height: 100vh;
+    background: var(--color-gray-50);
+}
+
+.error-layout {
+    display: flex;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-6);
+}
+
+.error-page {
+    width: min(100%, 680px);
+}
+
+.error-page__content {
+    width: 100%;
+}
+
 @keyframes loading-spin {
     to {
         transform: rotate(360deg);
