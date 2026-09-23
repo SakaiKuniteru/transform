@@ -7,6 +7,8 @@ const { router: tepRouter } = require('../modules/user/tep/tep.route');
 const { router: chuyenDoiRouter } = require('../modules/user/chuyen-doi/chuyen-doi.route');
 const { router: congViecRouter } = require('../modules/user/cong-viec/cong-viec.route');
 const { router: lichSuRouter } = require('../modules/user/lich-su/lich-su.route');
+const { router: taiKhoanRouter } = require('../modules/user/tai-khoan/tai-khoan.route');
+const { router: goiDichVuRouter } = require('../modules/user/goi-dich-vu/goi-dich-vu.route');
 const router = express.Router();
 
 router.use(yeuCauDangNhap);
@@ -16,6 +18,8 @@ router.use('/tep', tepRouter);
 router.use('/chuyen-doi', chuyenDoiRouter);
 router.use('/cong-viec', congViecRouter);
 router.use('/lich-su', lichSuRouter);
+router.use('/tai-khoan', taiKhoanRouter);
+router.use('/goi-dich-vu', goiDichVuRouter);
 
 module.exports = {
     router

@@ -1,0 +1,30 @@
+<section class="user-page user-account">
+    <header class="user-page__header">
+        <div>
+            <h1 class="user-page__title">Tài khoản</h1>
+            <p class="user-page__description">Quản lý thông tin cá nhân và bảo mật tài khoản.</p>
+        </div>
+    </header>
+    <div class="user-detail-grid">
+        <section class="user-section">
+            <h2 class="user-section__title">Thông tin tài khoản</h2>
+            <dl class="detail-list">
+                <div><dt>Email</dt><dd>{{nguoiDung.email}}</dd></div>
+                <div><dt>Xác thực email</dt><dd>{{#if nguoiDung.emailDaXacThuc}}Đã xác thực{{else}}Chưa xác thực{{/if}}</dd></div>
+                <div><dt>Loại tài khoản</dt><dd>{{nguoiDung.loaiTaiKhoanHienThi}}</dd></div>
+                <div><dt>Trạng thái</dt><dd>{{nguoiDung.trangThaiHienThi}}</dd></div>
+                <div><dt>Đăng nhập gần nhất</dt><dd>{{nguoiDung.lanDangNhapCuoiLucHienThi}}</dd></div>
+                <div><dt>Ngày tạo</dt><dd>{{nguoiDung.createdAtHienThi}}</dd></div>
+            </dl>
+        </section>
+        <section class="user-section">
+            <h2 class="user-section__title">Cập nhật thông tin</h2>
+            {{> forms/form capNhatThongTinForm}}
+        </section>
+    </div>
+    <section class="user-section user-account__security">
+        <h2 class="user-section__title">Đổi mật khẩu</h2>
+        <p class="user-section__description">Sau khi đổi mật khẩu, các phiên đăng nhập hiện tại sẽ bị thu hồi và bạn cần đăng nhập lại.</p>
+        {{> forms/form doiMatKhauForm}}
+    </section>
+</section>

@@ -119,10 +119,12 @@ function taoPagination(options = {}) {
 }
 
 function taoRequestContext(req) {
+    const originalUrl = req?.originalUrl || req?.url || '/';
+    const path = originalUrl.split('?', 1)[0] || '/';
     return {
         method: req?.method || 'GET',
-        path: req?.path || '/',
-        originalUrl: req?.originalUrl || req?.url || '/',
+        path,
+        originalUrl,
         requestId: req?.id || req?.requestId || null
     };
 }

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    {{> common/head}}
+</head>
+<body class="layout-admin{{#if page.bodyClass}} {{page.bodyClass}}{{/if}}">
+    <div class="admin-layout" data-admin-layout>
+        {{> admin/sidebar}}
+        <div class="admin-layout__content">
+            {{> admin/header}}
+            <main class="admin-main" id="main-content">
+                {{#if breadcrumb}}{{> common/breadcrumb breadcrumb=breadcrumb}}{{/if}}
+                {{{body}}}
+            </main>
+        </div>
+    </div>
+    {{> common/toast toasts=toasts}}
+    {{> common/loading id="global-loading" text="Đang xử lý..." fullscreen=true}}
+    {{#each assets.scripts}}<script src="{{src}}"{{#if defer}} defer{{/if}}{{#if async}} async{{/if}}{{#if type}} type="{{type}}"{{/if}}></script>{{/each}}
+</body>
+</html>

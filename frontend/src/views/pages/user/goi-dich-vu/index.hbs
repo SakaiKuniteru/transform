@@ -1,0 +1,119 @@
+<section class="user-page user-service-plan">
+    <header class="user-page__header">
+        <div>
+            <h1 class="user-page__title">Gói dịch vụ</h1>
+            <p class="user-page__description">Theo dõi gói đang sử dụng, hạn mức và lịch sử đăng ký.</p>
+        </div>
+    </header>
+    <section class="user-section service-plan-current">
+        <h2 class="user-section__title">Gói hiện tại</h2>
+        {{#if hienTai}}
+            <div class="service-plan-card">
+                <div class="service-plan-card__main">
+                    <div>
+                        <span class="service-plan-card__code">{{hienTai.goiDichVu.ma}}</span>
+                        <h3>{{hienTai.goiDichVu.ten}}</h3>
+                    </div>
+                    <span class="service-plan-status service-plan-status--{{hienTai.trangThai}}">{{hienTai.trangThaiHienThi}}</span>
+                </div>
+                <div class="service-plan-card__price">
+                    <strong>{{hienTai.goiDichVu.giaHienThi}}</strong>
+                    <span>{{hienTai.goiDichVu.chuKyDayDuHienThi}}</span>
+                </div>
+                <dl class="detail-list">
+                    <div><dt>Bắt đầu</dt><dd>{{hienTai.batDauLucHienThi}}</dd></div>
+                    <div><dt>Hết hạn</dt><dd>{{hienTai.hetHanLucHienThi}}</dd></div>
+                    <div><dt>Nguồn kích hoạt</dt><dd>{{hienTai.nguonKichHoatHienThi}}</dd></div>
+                    <div><dt>Tự động gia hạn</dt><dd>{{#if hienTai.tuDongGiaHan}}Có{{else}}Không{{/if}}</dd></div>
+                </dl>
+                {{#if hienTai.coTheHuy}}
+                    <form action="/user/goi-dich-vu/{{hienTai.id}}/huy" method="POST" class="service-plan-card__cancel">
+                        {{#if csrfToken}}<input type="hidden" name="_csrf" value="{{csrfToken}}">{{/if}}
+                        <input type="text" name="lyDo" maxlength="500" class="form-control" placeholder="Lý do hủy (không bắt buộc)">
+                        <button type="submit" class="btn btn-danger">Hủy gói</button>
+                    </form>
+                {{/if}}
+            </div>
+        {{else}}
+            {{> common/empty-state title="Chưa có gói đang hoạt động" message="Tài khoản hiện chưa có gói dịch vụ đang hoạt động."}}
+        {{/if}}
+    </section>
+    <section class="user-section">
+        <h2 class="user-section__title">Hạn mức sử dụng</h2>
+        {{#if hanMuc.danhSachHanMuc.length}}
+            <div class="quota-grid">
+                {{#each hanMuc.danhSachHanMuc}}
+                    <article class="quota-card">
+                        <div class="quota-card__header">
+                            <strong>{{tenHienThi}}</strong>
+                            {{#if khongGioiHan}}<span>Không giới hạn</span>{{/if}}
+                        </div>
+                        <div class="quota-card__numbers">
+                            <span>Đã dùng: {{daSuDungHienThi}}</span>
+                            <span>Còn lại: {{conLaiHienThi}}</span>
+                        </div>
+                        {{#if phanTram}}
+                            <progress value="{{phanTram}}" max="100">{{phanTram}}%</progress>
+                        {{/if}}
+                        <div class="quota-card__limit">Giới hạn: {{gioiHanHienThi}}</div>
+                    </article>
+                {{/each}}
+            </div>
+        {{else}}
+            {{> common/empty-state title="Chưa có hạn mức" message="Tài khoản chưa có thông tin hạn mức sử dụng."}}
+        {{/if}}
+    </section>
+    <section class="user-section">
+        <div class="user-section__header">
+            <h2 class="user-section__title">Lịch sử đăng ký</h2>
+            <form action="/user/goi-dich-vu" method="GET" class="service-plan-filter">
+                <select name="trangThai" class="form-control form-select">
+                    <option value="">Tất cả trạng thái</option>
+                    {{#each trangThaiOptions}}<option value="{{value}}"{{#if (eq ../filters.trangThai value)}} selected{{/if}}>{{label}}</option>{{/each}}
+                </select>
+                <button type="submit" class="btn btn-secondary">Lọc</button>
+            </form>
+        </div>
+        {{#if lichSu.length}}
+            <div class="user-table-wrapper">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Gói</th>
+                            <th>Trạng thái</th>
+                            <th>Thanh toán</th>
+                            <th>Bắt đầu</th>
+                            <th>Hết hạn</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each lichSu}}
+                            <tr>
+                                <td>
+                                    <strong>{{goiDichVu.ten}}</strong>
+                                    <span>{{goiDichVu.ma}}</span>
+                                </td>
+                                <td><span class="service-plan-status service-plan-status--{{trangThai}}">{{trangThaiHienThi}}</span></td>
+                                <td>{{giaThanhToanHienThi}}</td>
+                                <td>{{batDauLucHienThi}}</td>
+                                <td>{{hetHanLucHienThi}}</td>
+                                <td>
+                                    {{#if coTheHuy}}
+                                        <form action="/user/goi-dich-vu/{{id}}/huy" method="POST">
+                                            {{#if ../csrfToken}}<input type="hidden" name="_csrf" value="{{../csrfToken}}">{{/if}}
+                                            <button type="submit" class="btn btn-sm btn-danger">Hủy</button>
+                                        </form>
+                                    {{/if}}
+                                </td>
+                            </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+            {{> common/pagination pagination=pagination}}
+        {{else}}
+            {{> common/empty-state title="Chưa có lịch sử đăng ký" message="Các lần đăng ký gói dịch vụ sẽ xuất hiện tại đây."}}
+        {{/if}}
+    </section>
+</section>
