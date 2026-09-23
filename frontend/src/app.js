@@ -19,6 +19,7 @@ const { notFoundMiddleware } = require('./middlewares/not-found.middleware');
 const { errorMiddleware } = require('./middlewares/error.middleware');
 const { router: authRouter } = require('./modules/auth/auth.route');
 const { router: userRouter } = require('./routes/user.route');
+const { router: adminRouter } = require('./routes/admin.route');
 const app = express();
 
 if (appConfig.trustProxy !== false) { app.set('trust proxy', appConfig.trustProxy); }
@@ -39,6 +40,7 @@ app.use(csrfMiddleware);
 app.use(authMiddleware);
 app.use(authRouter);
 app.use('/user', userRouter);
+app.use('/admin', adminRouter);
 app.get('/', (req, res) => res.render('pages/trang-chu', taoViewContext(req, res, { page: { title: 'Transform Platform' } })));
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);

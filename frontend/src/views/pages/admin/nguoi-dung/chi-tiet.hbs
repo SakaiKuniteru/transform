@@ -1,0 +1,64 @@
+<section class="admin-page admin-user-detail">
+    <header class="admin-page__header">
+        <div>
+            <h1 class="admin-page__title">{{#if nguoiDung.hoTen}}{{nguoiDung.hoTen}}{{else}}{{nguoiDung.email}}{{/if}}</h1>
+            <p class="admin-page__description">Người dùng #{{nguoiDung.id}}</p>
+        </div>
+        <div class="admin-page__actions">
+            <a href="/admin/nguoi-dung" class="btn btn-secondary">Quay lại danh sách</a>
+        </div>
+    </header>
+    {{#if nguoiDung.laHeThong}}
+        <div class="admin-notice admin-notice--warning">Đây là tài khoản hệ thống. Backend không cho phép chỉnh sửa, đổi trạng thái hoặc xóa tài khoản này.</div>
+    {{/if}}
+    {{#if laChinhMinh}}
+        <div class="admin-notice admin-notice--info">Đây là tài khoản quản trị hiện tại. Bạn có thể cập nhật thông tin nhưng không thể tự đổi loại tài khoản, tự khóa hoặc tự xóa mình.</div>
+    {{/if}}
+    <div class="admin-detail-grid">
+        <section class="admin-section">
+            <h2 class="admin-section__title">Thông tin tài khoản</h2>
+            <dl class="detail-list">
+                <div><dt>ID</dt><dd>#{{nguoiDung.id}}</dd></div>
+                <div><dt>Email</dt><dd>{{nguoiDung.email}}</dd></div>
+                <div><dt>Xác thực email</dt><dd>{{#if nguoiDung.emailDaXacThuc}}Đã xác thực{{else}}Chưa xác thực{{/if}}</dd></div>
+                <div><dt>Tên đăng nhập</dt><dd>{{#if nguoiDung.tenDangNhap}}{{nguoiDung.tenDangNhap}}{{else}}-{{/if}}</dd></div>
+                <div><dt>Họ và tên</dt><dd>{{nguoiDung.hoTen}}</dd></div>
+                <div><dt>Loại tài khoản</dt><dd>{{nguoiDung.loaiTaiKhoanHienThi}}</dd></div>
+                <div><dt>Trạng thái</dt><dd>{{nguoiDung.trangThaiHienThi}}</dd></div>
+                <div><dt>Xác thực email lúc</dt><dd>{{nguoiDung.emailXacThucLucHienThi}}</dd></div>
+                <div><dt>Đăng nhập gần nhất</dt><dd>{{nguoiDung.lanDangNhapCuoiLucHienThi}}</dd></div>
+                <div><dt>Ngày tạo</dt><dd>{{nguoiDung.createdAtHienThi}}</dd></div>
+                <div><dt>Cập nhật</dt><dd>{{nguoiDung.updatedAtHienThi}}</dd></div>
+            </dl>
+        </section>
+        {{#if capNhatNguoiDungForm}}
+            <section class="admin-section">
+                <h2 class="admin-section__title">Cập nhật người dùng</h2>
+                <p class="admin-section__description">Nếu thay đổi email, trạng thái xác thực email sẽ được Backend đặt lại.</p>
+                {{> forms/form capNhatNguoiDungForm}}
+            </section>
+        {{/if}}
+    </div>
+    {{#if coTheDoiTrangThai}}
+        <section class="admin-section">
+            <h2 class="admin-section__title">Trạng thái tài khoản</h2>
+            <form action="/admin/nguoi-dung/{{nguoiDung.id}}/trang-thai" method="POST" class="admin-inline-form">
+                {{#if csrfToken}}<input type="hidden" name="_csrf" value="{{csrfToken}}">{{/if}}
+                <select name="trangThai" class="form-control form-select" required>
+                    {{#each trangThaiOptions}}<option value="{{value}}"{{#if (eq ../nguoiDung.trangThai value)}} selected{{/if}}>{{label}}</option>{{/each}}
+                </select>
+                <button type="submit" class="btn btn-secondary">Cập nhật trạng thái</button>
+            </form>
+        </section>
+    {{/if}}
+    {{#if coTheXoa}}
+        <section class="admin-section admin-section--danger">
+            <h2 class="admin-section__title">Xóa người dùng</h2>
+            <p>Thao tác này xóa mềm tài khoản và chuyển trạng thái sang vô hiệu hóa.</p>
+            <form action="/admin/nguoi-dung/{{nguoiDung.id}}/xoa" method="POST">
+                {{#if csrfToken}}<input type="hidden" name="_csrf" value="{{csrfToken}}">{{/if}}
+                <button type="submit" class="btn btn-danger">Xóa người dùng</button>
+            </form>
+        </section>
+    {{/if}}
+</section>

@@ -1,13 +1,21 @@
 'use strict';
-const { trangThaiCongViec, loaiChuyenDoi } = require('@transform/shared');
+
 const backendClient = require('../../../core/api/backend-client');
 const sessionService = require('../../../core/auth/session.service');
 
-function taoAuthOptions(req, params = {}) {
+const TRANG_THAI_DANG_KY = Object.freeze({
+    CHO_THANH_TOAN: 'Chờ thanh toán',
+    HOAT_DONG: 'Hoạt động',
+    TAM_DUNG: 'Tạm dừng',
+    HET_HAN: 'Hết hạn',
+    DA_HUY: 'Đã hủy'
+});
+
+function taoAuthOptions(req, options = {}) {
     return {
+        ...options,
         accessToken: sessionService.layAccessToken(req),
-        requestId: req.requestId || null,
-        params
+        requestId: req.requestId || null
     };
 }
 
@@ -15,63 +23,75 @@ function dinhDangNgay(value) {
     if (!value) { return '-'; }
     const ngay = new Date(value);
     if (Number.isNaN(ngay.getTime())) { return '-'; }
-    return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Asia/Ho_Chi_Minh' }).format(ngay);
+    return new Intl.DateTimeFormat('vi-VN', {
+        dateStyle: 'short',
+        timeStyle: 'short',
+        timeZone: 'Asia/Ho_Chi_Minh'
+    }).format(ngay);
 }
 
-function dinhDangKichThuoc(value) {
-    const bytes = Number(value || 0);
-    if (!Number.isFinite(bytes) || bytes <= 0) { return '0 B'; }
-    const donVi = [ 'B', 'KB', 'MB', 'GB', 'TB' ];
-    const bac = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), donVi.length - 1);
-    const giaTri = bytes / (1024 ** bac);
-    return `${giaTri >= 10 || bac === 0 ? giaTri.toFixed(0) : giaTri.toFixed(1)} ${donVi[bac]}`;
+function dinhDangGia(value, tienTe = 'VND') {
+    const so = Number(value || 0);
+    try {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: tienTe || 'VND',
+            maximumFractionDigits: tienTe === 'VND' ? 0 : 2
+        }).format(so);
+    } catch (error) { return `${so.toLocaleString('vi-VN')} ${tienTe || ''}`.trim(); }
 }
 
-function mapTep(tep) {
+function layTong(payload) { return Number(payload?.meta?.total || 0); }
+
+function mapNguoiDung(nguoiDung) {
     return {
-        ...tep,
-        kichThuocHienThi: dinhDangKichThuoc(tep.phienBanHienTai?.kichThuocBytes),
-        dinhDangHienThi: String(tep.phienBanHienTai?.dinhDang || '-').toUpperCase(),
-        createdAtHienThi: dinhDangNgay(tep.createdAt)
+        ...nguoiDung,
+        createdAtHienThi: dinhDangNgay(nguoiDung.createdAt),
+        lanDangNhapCuoiLucHienThi: dinhDangNgay(nguoiDung.lanDangNhapCuoiLuc)
     };
 }
 
-function mapCongViec(congViec) {
-    const thongTinTrangThai = trangThaiCongViec.layThongTinTrangThai(congViec.trangThai);
-    const thongTinLoai = loaiChuyenDoi.layThongTinLoaiChuyenDoi(congViec.tuyChon?.loaiChuyenDoi);
+function mapDangKy(dangKy) {
     return {
-        ...congViec,
-        trangThaiHienThi: thongTinTrangThai?.ten || congViec.trangThai || '-',
-        loaiHienThi: thongTinLoai?.ten || congViec.loaiCongViec || '-',
-        createdAtHienThi: dinhDangNgay(congViec.createdAt)
-    };
-}
-
-function mapLichSu(item) {
-    return {
-        ...item,
-        createdAtHienThi: dinhDangNgay(item.createdAt)
+        ...dangKy,
+        trangThaiHienThi: TRANG_THAI_DANG_KY[dangKy.trangThai] || dangKy.trangThai || '-',
+        giaThanhToanHienThi: dinhDangGia(dangKy.giaThanhToan, dangKy.tienTe),
+        createdAtHienThi: dinhDangNgay(dangKy.createdAt)
     };
 }
 
 async function layDashboard(req) {
-    const [tepPayload, congViecPayload, lichSuPayload] = await Promise.all([
-        backendClient.get('/tep/cua-toi', taoAuthOptions(req, { trang: 1, gioiHan: 5 })),
-        backendClient.get('/cong-viec/cua-toi', taoAuthOptions(req, { trang: 1, gioiHan: 5 })),
-        backendClient.get('/lich-su/cua-toi', taoAuthOptions(req, { trang: 1, gioiHan: 8 }))
+    const [ nguoiDung, nguoiDungHoatDong, quanTri, goiDichVu, goiDichVuHoatDong, dangKy, dangKyHoatDong, dangKyChoThanhToan, health ] = await Promise.all([
+        backendClient.get('/nguoi-dung', taoAuthOptions(req, { params: { page: 1, pageSize: 5 } })),
+        backendClient.get('/nguoi-dung', taoAuthOptions(req, { params: { page: 1, pageSize: 1, trangThai: 'HOAT_DONG' } })),
+        backendClient.get('/nguoi-dung', taoAuthOptions(req, { params: { page: 1, pageSize: 1, loaiTaiKhoan: 'QUAN_TRI' } })),
+        backendClient.get('/goi-dich-vu', taoAuthOptions(req, { params: { page: 1, limit: 1 } })),
+        backendClient.get('/goi-dich-vu', taoAuthOptions(req, { params: { page: 1, limit: 1, active: true } })),
+        backendClient.get('/dang-ky-goi', taoAuthOptions(req, { params: { page: 1, limit: 5 } })),
+        backendClient.get('/dang-ky-goi', taoAuthOptions(req, { params: { page: 1, limit: 1, trangThai: 'HOAT_DONG' } })),
+        backendClient.get('/dang-ky-goi', taoAuthOptions(req, { params: { page: 1, limit: 1, trangThai: 'CHO_THANH_TOAN' } })),
+        backendClient.get('/health', { requestId: req.requestId || null })
     ]);
-    const tep = tepPayload.data || {};
-    const congViec = congViecPayload.data || {};
-    const lichSu = lichSuPayload.data || {};
     return {
         thongKe: {
-            tongSoTep: Number(tep.phanTrang?.tongSo || 0),
-            tongSoCongViec: Number(congViec.phanTrang?.tongSo || 0),
-            tongSoLichSu: Number(lichSu.phanTrang?.tongSo || 0)
+            tongNguoiDung: layTong(nguoiDung),
+            nguoiDungHoatDong: layTong(nguoiDungHoatDong),
+            tongQuanTri: layTong(quanTri),
+            tongGoiDichVu: layTong(goiDichVu),
+            goiDichVuHoatDong: layTong(goiDichVuHoatDong),
+            tongDangKy: layTong(dangKy),
+            dangKyHoatDong: layTong(dangKyHoatDong),
+            choThanhToan: layTong(dangKyChoThanhToan)
         },
-        tepGanDay: (tep.danhSach || []).map(mapTep),
-        congViecGanDay: (congViec.danhSach || []).map(mapCongViec),
-        lichSuGanDay: (lichSu.danhSach || []).map(mapLichSu)
+        nguoiDungGanDay: (nguoiDung.data || []).map(mapNguoiDung),
+        dangKyGanDay: (dangKy.data || []).map(mapDangKy),
+        heThong: {
+            status: health.data?.status || 'UNKNOWN',
+            service: health.data?.service || 'Transform Backend',
+            version: health.data?.version || '-',
+            uptimeSeconds: Number(health.data?.uptimeSeconds || 0),
+            timestampHienThi: dinhDangNgay(health.data?.timestamp)
+        }
     };
 }
 

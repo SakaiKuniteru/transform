@@ -1,0 +1,86 @@
+<section class="admin-page admin-dashboard">
+    <header class="admin-page__header">
+        <div>
+            <h1 class="admin-page__title">Tổng quan quản trị</h1>
+            <p class="admin-page__description">Theo dõi nhanh người dùng, gói dịch vụ và đăng ký gói trên hệ thống.</p>
+        </div>
+    </header>
+    <div class="admin-stats">
+        <article class="admin-stat">
+            <span class="admin-stat__label">Người dùng</span>
+            <strong class="admin-stat__value">{{dashboard.thongKe.tongNguoiDung}}</strong>
+            <span>{{dashboard.thongKe.nguoiDungHoatDong}} đang hoạt động</span>
+        </article>
+        <article class="admin-stat">
+            <span class="admin-stat__label">Quản trị</span>
+            <strong class="admin-stat__value">{{dashboard.thongKe.tongQuanTri}}</strong>
+            <span>Tài khoản quản trị</span>
+        </article>
+        <article class="admin-stat">
+            <span class="admin-stat__label">Gói dịch vụ</span>
+            <strong class="admin-stat__value">{{dashboard.thongKe.goiDichVuHoatDong}}</strong>
+            <span>{{dashboard.thongKe.tongGoiDichVu}} gói tổng cộng</span>
+        </article>
+        <article class="admin-stat">
+            <span class="admin-stat__label">Đăng ký đang hoạt động</span>
+            <strong class="admin-stat__value">{{dashboard.thongKe.dangKyHoatDong}}</strong>
+            <span>{{dashboard.thongKe.choThanhToan}} chờ thanh toán</span>
+        </article>
+    </div>
+    <section class="admin-section admin-system-status">
+        <div class="admin-section__header">
+            <h2 class="admin-section__title">Trạng thái Backend</h2>
+            <span class="system-status system-status--{{dashboard.heThong.status}}">{{dashboard.heThong.status}}</span>
+        </div>
+        <dl class="detail-list">
+            <div><dt>Dịch vụ</dt><dd>{{dashboard.heThong.service}}</dd></div>
+            <div><dt>Phiên bản</dt><dd>{{dashboard.heThong.version}}</dd></div>
+            <div><dt>Uptime</dt><dd>{{dashboard.heThong.uptimeSeconds}} giây</dd></div>
+            <div><dt>Thời điểm kiểm tra</dt><dd>{{dashboard.heThong.timestampHienThi}}</dd></div>
+        </dl>
+    </section>
+    <div class="admin-dashboard__grid">
+        <section class="admin-section">
+            <div class="admin-section__header">
+                <h2 class="admin-section__title">Người dùng mới</h2>
+                <a href="/admin/nguoi-dung">Xem tất cả</a>
+            </div>
+            {{#if dashboard.nguoiDungGanDay.length}}
+                <div class="admin-list">
+                    {{#each dashboard.nguoiDungGanDay}}
+                        <a href="/admin/nguoi-dung/{{id}}" class="admin-list__item">
+                            <div>
+                                <strong>{{#if hoTen}}{{hoTen}}{{else}}{{email}}{{/if}}</strong>
+                                <span>{{email}}</span>
+                            </div>
+                            <time>{{createdAtHienThi}}</time>
+                        </a>
+                    {{/each}}
+                </div>
+            {{else}}
+                {{> common/empty-state title="Chưa có người dùng" message="Chưa có dữ liệu người dùng để hiển thị."}}
+            {{/if}}
+        </section>
+        <section class="admin-section">
+            <div class="admin-section__header">
+                <h2 class="admin-section__title">Đăng ký gói gần đây</h2>
+                <a href="/admin/dang-ky-goi">Xem tất cả</a>
+            </div>
+            {{#if dashboard.dangKyGanDay.length}}
+                <div class="admin-list">
+                    {{#each dashboard.dangKyGanDay}}
+                        <div class="admin-list__item">
+                            <div>
+                                <strong>{{#if nguoiDung.hoTen}}{{nguoiDung.hoTen}}{{else}}{{nguoiDung.email}}{{/if}}</strong>
+                                <span>{{goiDichVu.ten}} · {{trangThaiHienThi}} · {{giaThanhToanHienThi}}</span>
+                            </div>
+                            <time>{{createdAtHienThi}}</time>
+                        </div>
+                    {{/each}}
+                </div>
+            {{else}}
+                {{> common/empty-state title="Chưa có đăng ký gói" message="Chưa có dữ liệu đăng ký gói để hiển thị."}}
+            {{/if}}
+        </section>
+    </div>
+</section>

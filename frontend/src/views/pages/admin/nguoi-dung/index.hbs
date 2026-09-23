@@ -1,0 +1,81 @@
+<section class="admin-page admin-users">
+    <header class="admin-page__header">
+        <div>
+            <h1 class="admin-page__title">Quản lý người dùng</h1>
+            <p class="admin-page__description">Tạo tài khoản, tìm kiếm và quản lý trạng thái người dùng.</p>
+        </div>
+    </header>
+    <details class="admin-section admin-create"{{#if taoNguoiDungForm.hasErrors}} open{{/if}}>
+        <summary class="admin-section__summary">Tạo người dùng mới</summary>
+        <div class="admin-section__body">
+            {{> forms/form taoNguoiDungForm}}
+        </div>
+    </details>
+    <section class="admin-section">
+        <form action="/admin/nguoi-dung" method="GET" class="admin-filter">
+            <div class="admin-filter__search">
+                <label for="admin-user-search">Tìm kiếm</label>
+                <input type="search" id="admin-user-search" name="tuKhoa" value="{{filters.tuKhoa}}" class="form-control" placeholder="Email, tên đăng nhập, họ tên...">
+            </div>
+            <div class="admin-filter__field">
+                <label for="admin-user-role">Loại tài khoản</label>
+                <select id="admin-user-role" name="loaiTaiKhoan" class="form-control form-select">
+                    <option value="">Tất cả loại</option>
+                    {{#each loaiTaiKhoanOptions}}<option value="{{value}}"{{#if (eq ../filters.loaiTaiKhoan value)}} selected{{/if}}>{{label}}</option>{{/each}}
+                </select>
+            </div>
+            <div class="admin-filter__field">
+                <label for="admin-user-status">Trạng thái</label>
+                <select id="admin-user-status" name="trangThai" class="form-control form-select">
+                    <option value="">Tất cả trạng thái</option>
+                    {{#each trangThaiOptions}}<option value="{{value}}"{{#if (eq ../filters.trangThai value)}} selected{{/if}}>{{label}}</option>{{/each}}
+                </select>
+            </div>
+            <div class="admin-filter__actions">
+                <button type="submit" class="btn btn-secondary">Tìm kiếm</button>
+                <a href="/admin/nguoi-dung" class="btn btn-link">Xóa lọc</a>
+            </div>
+        </form>
+        {{#if danhSach.length}}
+            <div class="admin-table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Người dùng</th>
+                            <th>Loại tài khoản</th>
+                            <th>Trạng thái</th>
+                            <th>Email</th>
+                            <th>Đăng nhập gần nhất</th>
+                            <th>Ngày tạo</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each danhSach}}
+                            <tr>
+                                <td>#{{id}}</td>
+                                <td>
+                                    <strong>{{#if hoTen}}{{hoTen}}{{else}}-{{/if}}</strong>
+                                    {{#if tenDangNhap}}<span>@{{tenDangNhap}}</span>{{/if}}
+                                </td>
+                                <td><span class="account-type account-type--{{loaiTaiKhoan}}">{{loaiTaiKhoanHienThi}}</span></td>
+                                <td><span class="account-status account-status--{{trangThai}}">{{trangThaiHienThi}}</span></td>
+                                <td>
+                                    <span>{{email}}</span>
+                                    <small>{{#if emailDaXacThuc}}Đã xác thực{{else}}Chưa xác thực{{/if}}</small>
+                                </td>
+                                <td>{{lanDangNhapCuoiLucHienThi}}</td>
+                                <td>{{createdAtHienThi}}</td>
+                                <td><a href="/admin/nguoi-dung/{{id}}" class="btn btn-sm btn-secondary">Chi tiết</a></td>
+                            </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+            {{> common/pagination pagination=pagination}}
+        {{else}}
+            {{> common/empty-state title="Không có người dùng" message="Không tìm thấy người dùng phù hợp với điều kiện hiện tại."}}
+        {{/if}}
+    </section>
+</section>

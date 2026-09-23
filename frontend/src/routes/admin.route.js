@@ -1,0 +1,18 @@
+'use strict';
+
+const express = require('express');
+const { yeuCauDangNhap } = require('../middlewares/auth.middleware');
+const { adminMiddleware } = require('../middlewares/admin.middleware');
+const { router: dashboardRouter } = require('../modules/admin/dashboard/dashboard.route');
+const { router: nguoiDungRouter } = require('../modules/admin/nguoi-dung/nguoi-dung.route');
+
+const router = express.Router();
+
+router.use(yeuCauDangNhap);
+router.use(adminMiddleware);
+router.use('/', dashboardRouter);
+router.use('/nguoi-dung', nguoiDungRouter);
+
+module.exports = {
+    router
+};
