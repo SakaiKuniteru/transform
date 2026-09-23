@@ -1,0 +1,23 @@
+<details class="account-menu">
+    <summary class="account-menu__trigger">
+        <span class="account-menu__identity">
+            <span class="account-menu__name">{{#if auth.nguoiDung.hoTen}}{{auth.nguoiDung.hoTen}}{{else}}{{auth.nguoiDung.email}}{{/if}}</span>
+            {{#if auth.nguoiDung.email}}<span class="account-menu__email">{{auth.nguoiDung.email}}</span>{{/if}}
+        </span>
+    </summary>
+    <div class="account-menu__dropdown">
+        <div class="account-menu__profile">
+            <strong>{{#if auth.nguoiDung.hoTen}}{{auth.nguoiDung.hoTen}}{{else}}Tài khoản Transform{{/if}}</strong>
+            {{#if auth.nguoiDung.email}}<span>{{auth.nguoiDung.email}}</span>{{/if}}
+        </div>
+        <nav class="account-menu__nav" aria-label="Menu tài khoản">
+            <a href="/user/tai-khoan" class="account-menu__item">Thông tin tài khoản</a>
+            <a href="/user/goi-dich-vu" class="account-menu__item">Gói dịch vụ</a>
+        </nav>
+        <div class="account-menu__separator"></div>
+        <form action="/dang-xuat" method="POST" class="account-menu__logout">
+            {{#if csrfToken}}<input type="hidden" name="_csrf" value="{{csrfToken}}">{{/if}}
+            <button type="submit" class="account-menu__item account-menu__item--danger">Đăng xuất</button>
+        </form>
+    </div>
+</details>

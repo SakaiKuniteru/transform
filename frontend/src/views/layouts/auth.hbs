@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    {{> common/head}}
+</head>
+<body class="layout-auth{{#if page.bodyClass}} {{page.bodyClass}}{{/if}}">
+    <div class="auth-layout">
+        <header class="auth-layout__header">
+            <a href="/" class="auth-layout__brand" aria-label="Transform - Trang chủ">Transform</a>
+        </header>
+        <main class="auth-layout__main" id="main-content">
+            {{{body}}}
+        </main>
+    </div>
+    {{> common/toast toasts=toasts}}
+    {{> common/loading id="global-loading" text="Đang xử lý..." fullscreen=true}}
+    {{#each assets.scripts}}<script src="{{src}}"{{#if defer}} defer{{/if}}{{#if async}} async{{/if}}{{#if type}} type="{{type}}"{{/if}}></script>{{/each}}
+</body>
+</html>

@@ -1,0 +1,20 @@
+<section class="auth-page auth-page--reset-password">
+    {{#if (eq buoc "otp")}}
+        <div class="auth-page__header">
+            <h1 class="auth-page__title">Xác thực mã</h1>
+            <p class="auth-page__description">Nhập mã xác thực đã được gửi tới {{email}}.</p>
+        </div>
+        {{#if otpHetHanLuc}}<div class="auth-page__otp-status" data-otp-expire-at="{{otpHetHanLuc}}" aria-live="polite">Mã xác thực có thời hạn sử dụng.</div>{{/if}}
+    {{else}}
+        <div class="auth-page__header">
+            <h1 class="auth-page__title">Tạo mật khẩu mới</h1>
+            <p class="auth-page__description">Tạo mật khẩu mới cho tài khoản {{email}}.</p>
+        </div>
+    {{/if}}
+    <div class="auth-page__content">
+        {{> forms/form form}}
+    </div>
+    <div class="auth-page__links">
+        <a href="/dang-nhap">Quay lại đăng nhập</a>
+    </div>
+</section>

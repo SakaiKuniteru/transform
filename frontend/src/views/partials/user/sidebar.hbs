@@ -1,0 +1,30 @@
+<aside class="user-sidebar" id="user-sidebar" data-user-sidebar>
+    <div class="user-sidebar__header">
+        <a href="/user" class="user-sidebar__brand">Transform</a>
+    </div>
+    <nav class="user-sidebar__nav" aria-label="Menu người dùng">
+        <a href="/user" class="user-sidebar__item{{#if (eq request.path "/user")}} is-active{{/if}}"{{#if (eq request.path "/user")}} aria-current="page"{{/if}}>
+            <span class="user-sidebar__label">Tổng quan</span>
+        </a>
+        <a href="/user/chuyen-doi" class="user-sidebar__item{{#if (includes request.path "/user/chuyen-doi")}} is-active{{/if}}"{{#if (includes request.path "/user/chuyen-doi")}} aria-current="page"{{/if}}>
+            <span class="user-sidebar__label">Chuyển đổi</span>
+        </a>
+        <a href="/user/tep" class="user-sidebar__item{{#if (includes request.path "/user/tep")}} is-active{{/if}}"{{#if (includes request.path "/user/tep")}} aria-current="page"{{/if}}>
+            <span class="user-sidebar__label">Tệp của tôi</span>
+        </a>
+        <a href="/user/cong-viec" class="user-sidebar__item{{#if (includes request.path "/user/cong-viec")}} is-active{{/if}}"{{#if (includes request.path "/user/cong-viec")}} aria-current="page"{{/if}}>
+            <span class="user-sidebar__label">Công việc</span>
+        </a>
+        <a href="/user/lich-su" class="user-sidebar__item{{#if (includes request.path "/user/lich-su")}} is-active{{/if}}"{{#if (includes request.path "/user/lich-su")}} aria-current="page"{{/if}}>
+            <span class="user-sidebar__label">Lịch sử</span>
+        </a>
+        <a href="/user/goi-dich-vu" class="user-sidebar__item{{#if (includes request.path "/user/goi-dich-vu")}} is-active{{/if}}"{{#if (includes request.path "/user/goi-dich-vu")}} aria-current="page"{{/if}}>
+            <span class="user-sidebar__label">Gói dịch vụ</span>
+        </a>
+    </nav>
+    <div class="user-sidebar__footer">
+        <a href="/user/tai-khoan" class="user-sidebar__item{{#if (includes request.path "/user/tai-khoan")}} is-active{{/if}}"{{#if (includes request.path "/user/tai-khoan")}} aria-current="page"{{/if}}>
+            <span class="user-sidebar__label">Tài khoản</span>
+        </a>
+    </div>
+</aside>
