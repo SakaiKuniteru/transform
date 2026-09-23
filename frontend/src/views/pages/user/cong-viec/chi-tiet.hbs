@@ -1,0 +1,97 @@
+<section class="user-page job-detail">
+    <header class="user-page__header">
+        <div>
+            <h1 class="user-page__title">Công việc #{{congViec.id}}</h1>
+            <p class="user-page__description">{{congViec.loaiHienThi}}</p>
+        </div>
+        <div class="user-page__actions">
+            {{#if congViec.tepKetQuaId}}<a href="/user/tep/{{congViec.tepKetQuaId}}/tai-xuong" class="btn btn-primary">Tải kết quả</a>{{/if}}
+            {{#if congViec.coTheHuy}}
+                <form action="/user/cong-viec/{{congViec.id}}/huy" method="POST">
+                    {{#if csrfToken}}<input type="hidden" name="_csrf" value="{{csrfToken}}">{{/if}}
+                    <button type="submit" class="btn btn-danger">Hủy công việc</button>
+                </form>
+            {{/if}}
+        </div>
+    </header>
+    <section class="user-section">
+        <div class="job-detail__status">
+            <span class="job-status job-status--{{congViec.trangThai}}">{{congViec.trangThaiHienThi}}</span>
+            <div class="job-progress">
+                <progress value="{{congViec.tienTrinh}}" max="100">{{congViec.tienTrinh}}%</progress>
+                <span>{{congViec.tienTrinh}}%</span>
+            </div>
+            {{#if congViec.buocHienTai}}<span>Đang thực hiện: {{congViec.buocHienTai}}</span>{{/if}}
+        </div>
+    </section>
+    <div class="user-detail-grid">
+        <section class="user-section">
+            <h2 class="user-section__title">Thông tin công việc</h2>
+            <dl class="detail-list">
+                <div><dt>Mã công việc</dt><dd>#{{congViec.id}}</dd></div>
+                <div><dt>Loại xử lý</dt><dd>{{congViec.loaiHienThi}}</dd></div>
+                <div><dt>Định dạng nguồn</dt><dd>{{#if congViec.dinhDangNguon}}{{congViec.dinhDangNguon}}{{else}}-{{/if}}</dd></div>
+                <div><dt>Định dạng đích</dt><dd>{{#if congViec.dinhDangDich}}{{congViec.dinhDangDich}}{{else}}-{{/if}}</dd></div>
+                <div><dt>Mức ưu tiên</dt><dd>{{congViec.mucDoUuTien}}</dd></div>
+                <div><dt>Số lần thử</dt><dd>{{congViec.soLanThu}} / {{congViec.soLanThuToiDa}}</dd></div>
+                <div><dt>Tạo lúc</dt><dd>{{congViec.createdAtHienThi}}</dd></div>
+                <div><dt>Xếp hàng lúc</dt><dd>{{congViec.xepHangLucHienThi}}</dd></div>
+                <div><dt>Bắt đầu lúc</dt><dd>{{congViec.batDauLucHienThi}}</dd></div>
+                <div><dt>Hoàn thành lúc</dt><dd>{{congViec.hoanThanhLucHienThi}}</dd></div>
+            </dl>
+        </section>
+        <section class="user-section">
+            <h2 class="user-section__title">Tệp</h2>
+            <div class="job-files">
+                <article class="job-file">
+                    <span class="job-file__label">Tệp nguồn</span>
+                    {{#if congViec.tepNguon}}
+                        <a href="/user/tep/{{congViec.tepNguon.id}}"><strong>{{congViec.tepNguon.tenTep}}</strong></a>
+                        {{#if congViec.phienBanNguon}}<span>{{congViec.phienBanNguon.dinhDang}} · {{congViec.tepNguonKichThuocHienThi}}</span>{{/if}}
+                    {{else}}
+                        <span>-</span>
+                    {{/if}}
+                </article>
+                <article class="job-file">
+                    <span class="job-file__label">Tệp kết quả</span>
+                    {{#if congViec.tepKetQua}}
+                        <a href="/user/tep/{{congViec.tepKetQua.id}}"><strong>{{congViec.tepKetQua.tenTep}}</strong></a>
+                        {{#if congViec.phienBanKetQua}}<span>{{congViec.phienBanKetQua.dinhDang}} · {{congViec.tepKetQuaKichThuocHienThi}}</span>{{/if}}
+                    {{else}}
+                        <span>Chưa có kết quả</span>
+                    {{/if}}
+                </article>
+            </div>
+        </section>
+    </div>
+    <section class="user-section">
+        <h2 class="user-section__title">Các bước xử lý</h2>
+        {{#if congViec.cacBuoc.length}}
+            <div class="job-steps">
+                {{#each congViec.cacBuoc}}
+                    <article class="job-step">
+                        <div class="job-step__order">{{thuTu}}</div>
+                        <div class="job-step__content">
+                            <div class="job-step__header">
+                                <strong>{{tenBuoc}}</strong>
+                                <span class="job-status job-status--{{trangThai}}">{{trangThaiHienThi}}</span>
+                            </div>
+                            <div class="job-progress"><progress value="{{tienTrinh}}" max="100">{{tienTrinh}}%</progress><span>{{tienTrinh}}%</span></div>
+                            {{#if boXuLy}}<span>Bộ xử lý: {{boXuLy}}{{#if congCu}} · {{congCu}}{{/if}}</span>{{/if}}
+                            {{#if maLoi}}<div class="job-step__error"><strong>{{maLoi}}</strong>{{#if thongBaoLoi}}<span>{{thongBaoLoi}}</span>{{/if}}</div>{{/if}}
+                        </div>
+                    </article>
+                {{/each}}
+            </div>
+        {{else}}
+            {{> common/empty-state title="Chưa có bước xử lý" message="Công việc này chưa có thông tin bước xử lý."}}
+        {{/if}}
+    </section>
+    {{#if congViec.maLoi}}
+        <section class="user-section user-section--danger">
+            <h2 class="user-section__title">Lỗi công việc</h2>
+            <p><strong>{{congViec.maLoi}}</strong></p>
+            {{#if congViec.thongBaoLoi}}<p>{{congViec.thongBaoLoi}}</p>{{/if}}
+        </section>
+    {{/if}}
+</section>

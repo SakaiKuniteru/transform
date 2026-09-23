@@ -1,0 +1,78 @@
+<section class="user-page user-history">
+    <header class="user-page__header">
+        <div>
+            <h1 class="user-page__title">Lịch sử</h1>
+            <p class="user-page__description">Theo dõi các hoạt động đã phát sinh trên tài khoản của bạn.</p>
+        </div>
+    </header>
+    <section class="user-section">
+        <form action="/user/lich-su" method="GET" class="user-filter">
+            <div class="user-filter__search">
+                <label for="lich-su-tu-khoa">Tìm kiếm</label>
+                <input type="search" id="lich-su-tu-khoa" name="tuKhoa" value="{{filters.tuKhoa}}" class="form-control" placeholder="Tiêu đề, mô tả, tệp...">
+            </div>
+            <div class="user-filter__field">
+                <label for="lich-su-loai">Loại sự kiện</label>
+                <select id="lich-su-loai" name="loaiSuKien" class="form-control form-select">
+                    <option value="">Tất cả sự kiện</option>
+                    {{#each loaiSuKienOptions}}<option value="{{value}}"{{#if (eq ../filters.loaiSuKien value)}} selected{{/if}}>{{label}}</option>{{/each}}
+                </select>
+            </div>
+            <div class="user-filter__field">
+                <label for="lich-su-nguon">Nguồn</label>
+                <select id="lich-su-nguon" name="nguon" class="form-control form-select">
+                    <option value="">Tất cả nguồn</option>
+                    {{#each nguonOptions}}<option value="{{value}}"{{#if (eq ../filters.nguon value)}} selected{{/if}}>{{label}}</option>{{/each}}
+                </select>
+            </div>
+            <div class="user-filter__field">
+                <label for="lich-su-cong-viec">Mã công việc</label>
+                <input type="number" id="lich-su-cong-viec" name="congViecId" value="{{filters.congViecId}}" min="1" class="form-control" placeholder="Ví dụ: 123">
+            </div>
+            <div class="user-filter__field">
+                <label for="lich-su-tep">Mã tệp</label>
+                <input type="number" id="lich-su-tep" name="tepId" value="{{filters.tepId}}" min="1" class="form-control" placeholder="Ví dụ: 456">
+            </div>
+            <div class="user-filter__field">
+                <label for="lich-su-tu-ngay">Từ ngày</label>
+                <input type="date" id="lich-su-tu-ngay" name="tuNgay" value="{{filters.tuNgay}}" class="form-control">
+            </div>
+            <div class="user-filter__field">
+                <label for="lich-su-den-ngay">Đến ngày</label>
+                <input type="date" id="lich-su-den-ngay" name="denNgay" value="{{filters.denNgay}}" class="form-control">
+            </div>
+            <div class="user-filter__actions">
+                <button type="submit" class="btn btn-secondary">Tìm kiếm</button>
+                <a href="/user/lich-su" class="btn btn-link">Xóa lọc</a>
+            </div>
+        </form>
+        {{#if danhSach.length}}
+            <div class="history-list">
+                {{#each danhSach}}
+                    <article class="history-item">
+                        <div class="history-item__marker" aria-hidden="true"></div>
+                        <div class="history-item__content">
+                            <div class="history-item__header">
+                                <div>
+                                    <strong>{{tieuDe}}</strong>
+                                    <span class="history-item__type">{{loaiSuKienHienThi}}</span>
+                                </div>
+                                <time>{{createdAtHienThi}}</time>
+                            </div>
+                            {{#if moTa}}<p class="history-item__description">{{moTa}}</p>{{/if}}
+                            <div class="history-item__meta">
+                                <span>Nguồn: {{nguonHienThi}}</span>
+                                {{#if congViecId}}<a href="/user/cong-viec/{{congViecId}}">Công việc #{{congViecId}}</a>{{/if}}
+                                {{#if tepId}}<a href="/user/tep/{{tepId}}">{{#if tenTepHienThi}}{{tenTepHienThi}}{{else}}Tệp #{{tepId}}{{/if}}</a>{{/if}}
+                                {{#if phienBanTep}}<span>Phiên bản {{phienBanTep.soPhienBan}}{{#if phienBanTep.dinhDang}} · {{phienBanTep.dinhDang}}{{/if}}</span>{{/if}}
+                            </div>
+                        </div>
+                    </article>
+                {{/each}}
+            </div>
+            {{> common/pagination pagination=pagination}}
+        {{else}}
+            {{> common/empty-state title="Chưa có lịch sử" message="Các hoạt động trên tài khoản sẽ được hiển thị tại đây."}}
+        {{/if}}
+    </section>
+</section>
