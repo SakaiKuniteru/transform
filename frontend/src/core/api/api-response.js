@@ -16,4 +16,11 @@ function layMeta(value) { return chuanHoaApiResponse(value).meta; }
 
 function layMessage(value) { return chuanHoaApiResponse(value).message || ''; }
 
-module.exports = { chuanHoaApiResponse, laThanhCong, laThatBai, layDuLieu, layMeta, layMessage };
+module.exports = { 
+    chuanHoaApiResponse, 
+    laThanhCong, 
+    laThatBai, 
+    layDuLieu, 
+    layMeta, 
+    layMessage 
+};

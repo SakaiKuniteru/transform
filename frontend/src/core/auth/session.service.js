@@ -1,5 +1,5 @@
 'use strict';
-const TEN_TRANG_THAI = 'auth';
+const TEN_AUTH = 'auth';
 const TEN_COOKIE_BACKEND = 'backendCookies';
 
 function batBuocSession(req) {
@@ -9,6 +9,7 @@ function batBuocSession(req) {
 
 function laySetCookie(headers) {
     if (!headers) { return []; }
+    if (typeof headers.getSetCookie === 'function') { return headers.getSetCookie(); }
     const value = typeof headers.get === 'function' ? headers.get('set-cookie') : headers['set-cookie'];
     if (!value) { return []; }
     return Array.isArray(value) ? value : [ value ];
@@ -16,15 +17,13 @@ function laySetCookie(headers) {
 
 function tachCookie(setCookie) {
     if (typeof setCookie !== 'string' || !setCookie) { return null; }
-    const dauChamPhay = setCookie.indexOf(';');
-    const cap = (dauChamPhay >= 0 ? setCookie.slice(0, dauChamPhay) : setCookie).trim();
-    const dauBang = cap.indexOf('=');
-    if (dauBang <= 0) { return null; }
-    const ten = cap.slice(0, dauBang).trim();
-    const giaTri = cap.slice(dauBang + 1).trim();
+    const cap = setCookie.split(';', 1)[0].trim();
+    const viTri = cap.indexOf('=');
+    if (viTri <= 0) { return null; }
+    const ten = cap.slice(0, viTri).trim();
+    const giaTri = cap.slice(viTri + 1).trim();
     if (!/^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/.test(ten) || /[\r\n]/.test(giaTri)) { return null; }
-    const xoa = giaTri === '' || /(?:^|;)\s*max-age=0(?:;|$)/i.test(setCookie);
-    return { ten, giaTri, xoa };
+    return { ten, giaTri, xoa: giaTri === '' || /(?:^|;)\s*max-age=0(?:;|$)/i.test(setCookie) };
 }
 
 function dongBoCookieBackend(req, headers) {
@@ -41,7 +40,7 @@ function layCookieBackend(req) {
     return danhSach.length ? danhSach.join('; ') : null;
 }
 
-function layAuth(req) { return batBuocSession(req)[TEN_TRANG_THAI] || null; }
+function layAuth(req) { return batBuocSession(req)[TEN_AUTH] || null; }
 
 function layNguoiDung(req) { return layAuth(req)?.nguoiDung || null; }
 
@@ -72,25 +71,25 @@ async function luuDangNhap(req, ketQua, headers = null) {
     if (!ketQua?.nguoiDung?.id || !ketQua?.accessToken) { throw new TypeError('Dữ liệu đăng nhập không hợp lệ.'); }
     await regenerate(req);
     const session = batBuocSession(req);
-    session[TEN_TRANG_THAI] = { nguoiDung: ketQua.nguoiDung, accessToken: ketQua.accessToken, accessTokenExpiresAt: ketQua.accessTokenExpiresAt || null };
-    dongBoCookieBackend(req, headers);
+    session[TEN_AUTH] = { nguoiDung: ketQua.nguoiDung, accessToken: ketQua.accessToken, accessTokenExpiresAt: ketQua.accessTokenExpiresAt || null };
+    if (headers) { dongBoCookieBackend(req, headers); }
     await save(req);
-    return session[TEN_TRANG_THAI];
+    return session[TEN_AUTH];
 }
 
 async function capNhatDangNhap(req, ketQua, headers = null) {
     if (!ketQua?.nguoiDung?.id || !ketQua?.accessToken) { throw new TypeError('Dữ liệu làm mới đăng nhập không hợp lệ.'); }
     const session = batBuocSession(req);
-    session[TEN_TRANG_THAI] = { nguoiDung: ketQua.nguoiDung, accessToken: ketQua.accessToken, accessTokenExpiresAt: ketQua.accessTokenExpiresAt || null };
-    dongBoCookieBackend(req, headers);
+    session[TEN_AUTH] = { nguoiDung: ketQua.nguoiDung, accessToken: ketQua.accessToken, accessTokenExpiresAt: ketQua.accessTokenExpiresAt || null };
+    if (headers) { dongBoCookieBackend(req, headers); }
     await save(req);
-    return session[TEN_TRANG_THAI];
+    return session[TEN_AUTH];
 }
 
 async function xoaDangNhap(req, headers = null) {
     const session = batBuocSession(req);
     if (headers) { dongBoCookieBackend(req, headers); }
-    delete session[TEN_TRANG_THAI];
+    delete session[TEN_AUTH];
     delete session[TEN_COOKIE_BACKEND];
     await save(req);
 }
@@ -100,4 +99,17 @@ function huySession(req) {
     return new Promise((resolve, reject) => session.destroy((error) => error ? reject(error) : resolve()));
 }
 
-module.exports = { layAuth, layNguoiDung, layAccessToken, layCookieBackend, daDangNhap, accessTokenSapHetHan, coTheLamMoi, dongBoCookieBackend, luuDangNhap, capNhatDangNhap, xoaDangNhap, huySession };
+module.exports = { 
+    layAuth, 
+    layNguoiDung, 
+    layAccessToken, 
+    layCookieBackend, 
+    daDangNhap, 
+    accessTokenSapHetHan, 
+    coTheLamMoi, 
+    dongBoCookieBackend, 
+    luuDangNhap, 
+    capNhatDangNhap, 
+    xoaDangNhap, 
+    huySession 
+};

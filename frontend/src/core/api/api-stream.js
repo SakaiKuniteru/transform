@@ -32,4 +32,10 @@ async function chuyenStreamTuBackend(options, res) {
     await chuyenStream(response, res);
 }
 
-module.exports = { CAC_HEADER_CHUYEN_TIEP, layStream, chuyenTiepHeaders, chuyenStream, chuyenStreamTuBackend };
+module.exports = { 
+    CAC_HEADER_CHUYEN_TIEP, 
+    layStream, 
+    chuyenTiepHeaders, 
+    chuyenStream, 
+    chuyenStreamTuBackend 
+};

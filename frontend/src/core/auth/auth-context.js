@@ -4,7 +4,7 @@ const permissionService = require('./permission.service');
 
 function taoNguoiDungAnToan(nguoiDung) {
     if (!nguoiDung) { return null; }
-    return { id: nguoiDung.id, email: nguoiDung.email || null, tenDangNhap: nguoiDung.tenDangNhap || null, hoTen: nguoiDung.hoTen || null, loaiTaiKhoan: nguoiDung.loaiTaiKhoan || null, trangThai: nguoiDung.trangThai || null, emailXacThucLuc: nguoiDung.emailXacThucLuc || null, caiDat: nguoiDung.caiDat || null };
+    return { id: nguoiDung.id, email: nguoiDung.email || null, tenDangNhap: nguoiDung.tenDangNhap || null, hoTen: nguoiDung.hoTen || null, loaiTaiKhoan: nguoiDung.loaiTaiKhoan || null, trangThai: nguoiDung.trangThai || null, emailXacThucLuc: nguoiDung.emailXacThucLuc || null, lanDangNhapCuoiLuc: nguoiDung.lanDangNhapCuoiLuc || null, caiDat: nguoiDung.caiDat || null };
 }
 
 function taoAuthContext(req) {
@@ -19,4 +19,7 @@ function ganAuthContext(req, res) {
     return context;
 }
 
-module.exports = { taoAuthContext, ganAuthContext };
+module.exports = { 
+    taoAuthContext, 
+    ganAuthContext 
+};

@@ -50,4 +50,12 @@ function patch(url, data, options = {}) { return thucThi({ ...options, method: '
 
 function del(url, options = {}) { return thucThi({ ...options, method: 'DELETE', url }); }
 
-module.exports = { thucThi, thucThiRaw, get, post, put, patch, delete: del };
+module.exports = { 
+    thucThi, 
+    thucThiRaw, 
+    get, 
+    post, 
+    put, 
+    patch, 
+    delete: del 
+};

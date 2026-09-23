@@ -44,4 +44,7 @@ class ApiError extends Error {
 
 function laApiError(error) { return error instanceof ApiError; }
 
-module.exports = { ApiError, laApiError };
+module.exports = { 
+    ApiError, 
+    laApiError 
+};
