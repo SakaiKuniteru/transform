@@ -67,15 +67,48 @@ async function layTepNguon(req) {
 }
 
 async function layTrang(req, query = {}) {
-    const [teps, hoTro] = await Promise.all([
-        layTepNguon(req),
-        layHoTro(req, query)
-    ]);
+    const teps = await layTepNguon(req);
+    const tepDaChonId = chuanHoaSo(query.tepId) || teps[0]?.id || null;
+    const tepDaChon = teps.find((tep) => Number(tep.id) === Number(tepDaChonId)) || null;
+    const hoTro = tepDaChon ? await layHoTro(req, { loaiChuyenDoi: 'CHUYEN_DINH_DANG', dinhDangNguon: tepDaChon.dinhDang }) : [];
     return {
         teps,
         hoTro,
-        tepDaChonId: chuanHoaSo(query.tepId)
+        tepDaChonId,
+        tepDaChon
     };
+}
+
+function coGiaTri(value) { return value !== undefined && value !== null && value !== ''; }
+
+function themNeuCo(target, key, value) {
+    if (coGiaTri(value)) { target[key] = value; }
+    return target;
+}
+
+function taoTuyChon(values = {}) {
+    const formKey = String(values.formKey || '').trim();
+    const tuyChon = {};
+    if (formKey === 'chuyen-dinh-dang') { return themNeuCo(tuyChon, 'soBuocToiDa', chuanHoaSo(values.soBuocToiDa)); }
+    if (formKey === 'hinh-anh') { return { chatLuong: chuanHoaSo(values.chatLuong, 85), giuMetadata: values.giuMetadata === true, mauNen: values.mauNen || '#ffffff' }; }
+    if (formKey === 'resize') { themNeuCo(tuyChon, 'chieuRong', chuanHoaSo(values.chieuRong)); themNeuCo(tuyChon, 'chieuCao', chuanHoaSo(values.chieuCao)); return { ...tuyChon, cheDo: values.cheDo || 'cover', viTri: values.viTri || 'centre', khongPhongTo: values.khongPhongTo === true }; }
+    if (formKey === 'crop') { return { x: chuanHoaSo(values.x, 0), y: chuanHoaSo(values.y, 0), chieuRong: chuanHoaSo(values.chieuRong), chieuCao: chuanHoaSo(values.chieuCao) }; }
+    if (formKey === 'rotate') { return { goc: Number(values.goc), mauNen: values.mauNen || '#ffffff' }; }
+    if (formKey === 'optimize') { return { chatLuong: chuanHoaSo(values.chatLuong, 85), mucNen: chuanHoaSo(values.mucNen, 9), giuMetadata: values.giuMetadata === true, progressive: values.progressive === true, lossless: values.lossless === true }; }
+    if (formKey === 'ma-hoa') { return { urlSafe: values.urlSafe === true, padding: values.padding === true, dataUri: values.dataUri === true, lineLength: chuanHoaSo(values.lineLength, 0) }; }
+    if (formKey === 'giai-ma') { return { urlSafe: values.urlSafe === true, choPhepKhoangTrang: values.choPhepKhoangTrang === true }; }
+    if (formKey === 'nen') { return { level: chuanHoaSo(values.level, 6) }; }
+    if (formKey === 'giai-nen') { return {}; }
+    if (formKey === 'ocr') { themNeuCo(tuyChon, 'psm', chuanHoaSo(values.psm)); themNeuCo(tuyChon, 'oem', chuanHoaSo(values.oem)); return { ...tuyChon, ngonNgu: values.ngonNgu || 'vie+eng', preserveInterwordSpaces: values.preserveInterwordSpaces === true }; }
+    if (formKey === 'trich-xuat') { return { kieu: values.kieu || 'VAN_BAN', giuNguyenMarkup: values.giuNguyenMarkup === true, delimiter: values.delimiter || ',', maxRows: chuanHoaSo(values.maxRows, 100000) }; }
+    if (formKey === 'dich') { return { ngonNguNguon: values.ngonNguNguon || 'auto', ngonNguDich: values.ngonNguDich, maxChars: chuanHoaSo(values.maxChars, 4000) }; }
+    if (formKey === 'ai-text') { return { chiDan: String(values.chiDan || '').trim() || null }; }
+    return chuanHoaTuyChon(values.tuyChon);
+}
+
+function layDinhDangDich(values = {}) {
+    if (values.formKey === 'trich-xuat') { return String(values.kieu || '').toUpperCase() === 'VAN_BAN' ? 'txt' : 'json'; }
+    return String(values.dinhDangDich || '').trim() || null;
 }
 
 async function tao(req, values = {}) {
@@ -83,12 +116,12 @@ async function tao(req, values = {}) {
         tepNguonId: chuanHoaSo(values.tepNguonId),
         phienBanNguonId: chuanHoaSo(values.phienBanNguonId),
         loaiChuyenDoi: String(values.loaiChuyenDoi || '').trim().toUpperCase(),
-        dinhDangDich: String(values.dinhDangDich || '').trim() || null,
+        dinhDangDich: layDinhDangDich(values),
         converterKey: String(values.converterKey || '').trim() || undefined,
         mucDoUuTien: chuanHoaSo(values.mucDoUuTien, 5),
         soLanThuToiDa: chuanHoaSo(values.soLanThuToiDa, 3),
         khoaIdempotency: String(values.khoaIdempotency || '').trim() || crypto.randomUUID(),
-        tuyChon: chuanHoaTuyChon(values.tuyChon)
+        tuyChon: taoTuyChon(values)
     };
     const payload = await backendClient.post('/chuyen-doi', data, taoAuthOptions(req, { headers: { 'Idempotency-Key': data.khoaIdempotency } }));
     return {
@@ -110,5 +143,7 @@ module.exports = {
     layTepNguon,
     layTrang,
     tao,
-    layChiTiet
+    layChiTiet,
+    taoTuyChon,
+    layDinhDangDich
 };

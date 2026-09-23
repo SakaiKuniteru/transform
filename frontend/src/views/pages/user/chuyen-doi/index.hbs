@@ -1,0 +1,35 @@
+<section class="user-page conversion-page">
+    <header class="user-page__header">
+        <div>
+            <h1 class="user-page__title">Chuyển đổi</h1>
+            <p class="user-page__description">Chọn công cụ và tệp cần xử lý.</p>
+        </div>
+    </header>
+    <div class="conversion-layout">
+        <aside class="conversion-tools">
+            <nav class="conversion-tools__nav" aria-label="Công cụ chuyển đổi">
+                <a href="/user/chuyen-doi?tool=chuyen-dinh-dang{{#if tepDaChonId}}&tepId={{tepDaChonId}}{{/if}}" class="conversion-tools__item{{#if (eq tool "chuyen-dinh-dang")}} is-active{{/if}}">Chuyển định dạng</a>
+                <a href="/user/chuyen-doi?tool=hinh-anh{{#if tepDaChonId}}&tepId={{tepDaChonId}}{{/if}}" class="conversion-tools__item{{#if (eq tool "hinh-anh")}} is-active{{/if}}">Chuyển ảnh</a>
+                <a href="/user/chuyen-doi?tool=resize{{#if tepDaChonId}}&tepId={{tepDaChonId}}{{/if}}" class="conversion-tools__item{{#if (eq tool "resize")}} is-active{{/if}}">Đổi kích thước</a>
+                <a href="/user/chuyen-doi?tool=crop{{#if tepDaChonId}}&tepId={{tepDaChonId}}{{/if}}" class="conversion-tools__item{{#if (eq tool "crop")}} is-active{{/if}}">Cắt ảnh</a>
+                <a href="/user/chuyen-doi?tool=rotate{{#if tepDaChonId}}&tepId={{tepDaChonId}}{{/if}}" class="conversion-tools__item{{#if (eq tool "rotate")}} is-active{{/if}}">Xoay ảnh</a>
+                <a href="/user/chuyen-doi?tool=optimize{{#if tepDaChonId}}&tepId={{tepDaChonId}}{{/if}}" class="conversion-tools__item{{#if (eq tool "optimize")}} is-active{{/if}}">Tối ưu ảnh</a>
+                <a href="/user/chuyen-doi?tool=ma-hoa{{#if tepDaChonId}}&tepId={{tepDaChonId}}{{/if}}" class="conversion-tools__item{{#if (eq tool "ma-hoa")}} is-active{{/if}}">Mã hóa Base64</a>
+                <a href="/user/chuyen-doi?tool=giai-ma{{#if tepDaChonId}}&tepId={{tepDaChonId}}{{/if}}" class="conversion-tools__item{{#if (eq tool "giai-ma")}} is-active{{/if}}">Giải mã Base64</a>
+                <a href="/user/chuyen-doi?tool=nen{{#if tepDaChonId}}&tepId={{tepDaChonId}}{{/if}}" class="conversion-tools__item{{#if (eq tool "nen")}} is-active{{/if}}">Nén GZIP</a>
+                <a href="/user/chuyen-doi?tool=giai-nen{{#if tepDaChonId}}&tepId={{tepDaChonId}}{{/if}}" class="conversion-tools__item{{#if (eq tool "giai-nen")}} is-active{{/if}}">Giải nén</a>
+                <a href="/user/chuyen-doi?tool=ocr{{#if tepDaChonId}}&tepId={{tepDaChonId}}{{/if}}" class="conversion-tools__item{{#if (eq tool "ocr")}} is-active{{/if}}">OCR</a>
+                <a href="/user/chuyen-doi?tool=trich-xuat{{#if tepDaChonId}}&tepId={{tepDaChonId}}{{/if}}" class="conversion-tools__item{{#if (eq tool "trich-xuat")}} is-active{{/if}}">Trích xuất</a>
+                <a href="/user/chuyen-doi?tool=dich{{#if tepDaChonId}}&tepId={{tepDaChonId}}{{/if}}" class="conversion-tools__item{{#if (eq tool "dich")}} is-active{{/if}}">Dịch</a>
+                <a href="/user/chuyen-doi?tool=ai-text{{#if tepDaChonId}}&tepId={{tepDaChonId}}{{/if}}" class="conversion-tools__item{{#if (eq tool "ai-text")}} is-active{{/if}}">AI văn bản</a>
+            </nav>
+        </aside>
+        <div class="conversion-content">
+            {{#if teps.length}}
+                {{> forms/form form}}
+            {{else}}
+                {{> common/empty-state title="Chưa có tệp để xử lý" message="Hãy tải tệp lên trước khi sử dụng công cụ chuyển đổi." action=uploadAction}}
+            {{/if}}
+        </div>
+    </div>
+</section>

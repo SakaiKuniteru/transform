@@ -2,6 +2,48 @@
 const { apiResponse } = require('@transform/shared');
 const service = require('./chuyen-doi.service');
 const { taoViewContext } = require('../../../core/views/view-context');
+const { renderForm } = require('../../../core/forms/form-renderer');
+const { taoChuyenDinhDangForm } = require('./forms/chuyen-dinh-dang.form');
+const { taoHinhAnhForm } = require('./forms/hinh-anh.form');
+const { taoResizeForm } = require('./forms/resize.form');
+const { taoCropForm } = require('./forms/crop.form');
+const { taoRotateForm } = require('./forms/rotate.form');
+const { taoOptimizeForm } = require('./forms/optimize.form');
+const { taoMaHoaForm } = require('./forms/ma-hoa.form');
+const { taoGiaiMaForm } = require('./forms/giai-ma.form');
+const { taoNenForm } = require('./forms/nen.form');
+const { taoGiaiNenForm } = require('./forms/giai-nen.form');
+const { taoOcrForm } = require('./forms/ocr.form');
+const { taoTrichXuatForm } = require('./forms/trich-xuat.form');
+const { taoDichForm } = require('./forms/dich.form');
+const { taoAiTextForm } = require('./forms/ai-text.form');
+
+const FORM_FACTORY = Object.freeze({
+    'chuyen-dinh-dang': taoChuyenDinhDangForm,
+    'hinh-anh': taoHinhAnhForm,
+    resize: taoResizeForm,
+    crop: taoCropForm,
+    rotate: taoRotateForm,
+    optimize: taoOptimizeForm,
+    'ma-hoa': taoMaHoaForm,
+    'giai-ma': taoGiaiMaForm,
+    nen: taoNenForm,
+    'giai-nen': taoGiaiNenForm,
+    ocr: taoOcrForm,
+    'trich-xuat': taoTrichXuatForm,
+    dich: taoDichForm,
+    'ai-text': taoAiTextForm
+});
+
+function chuanHoaTool(value) {
+    const tool = String(value || 'chuyen-dinh-dang').trim().toLowerCase();
+    return FORM_FACTORY[tool] ? tool : 'chuyen-dinh-dang';
+}
+
+function taoFormTheoTool(tool, context, state = {}) {
+    const factory = FORM_FACTORY[chuanHoaTool(tool)];
+    return renderForm(factory(context), state, { csrfToken: context.csrfToken });
+}
 
 function laJsonRequest(req) {
     if (req.xhr) { return true; }
@@ -10,7 +52,9 @@ function laJsonRequest(req) {
 
 async function index(req, res, next) {
     try {
+        const tool = chuanHoaTool(req.query.tool);
         const dataTrang = await service.layTrang(req, req.query);
+        const context = { ...dataTrang, csrfToken: res.locals.csrfToken };
         const data = taoViewContext(req, res, {
             layout: 'user',
             page: {
@@ -27,7 +71,9 @@ async function index(req, res, next) {
                     current: true
                 }
             ],
-            ...dataTrang
+            ...dataTrang,
+            tool,
+            form: taoFormTheoTool(tool, context)
         });
         return res.render('pages/user/chuyen-doi/index', data);
     } catch (error) { return next(error); }
@@ -79,5 +125,7 @@ module.exports = {
     index,
     hoTro,
     taoPost,
-    chiTiet
+    chiTiet,
+    chuanHoaTool,
+    taoFormTheoTool
 };
