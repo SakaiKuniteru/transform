@@ -638,6 +638,100 @@ async function capNhatBuoc(id, data, db = null) {
     return mapBuoc(result.rows[0]);
 }
 
+async function getChiTietQuanTri(id, db = null) {
+    const result = await thucThi(`
+        ${selectCoBan()}
+        WHERE cv.id = $1
+        LIMIT 1
+    `, [id], db);
+    return mapCongViec(result.rows[0]);
+}
+
+function taoDieuKienQuanTri(filters = {}) {
+    const values = [];
+    const conditions = [];
+    if (filters.nguoiDungId) {
+        values.push(filters.nguoiDungId);
+        conditions.push(`cv.nguoi_dung_id = $${values.length}`);
+    }
+    if (filters.trangThai) {
+        values.push(filters.trangThai);
+        conditions.push(`cv.trang_thai = $${values.length}`);
+    }
+    if (filters.loaiCongViec) {
+        values.push(filters.loaiCongViec);
+        conditions.push(`cv.loai_cong_viec = $${values.length}`);
+    }
+    if (filters.tuKhoa) {
+        values.push(`%${filters.tuKhoa}%`);
+        conditions.push(`(
+            cv.id::TEXT ILIKE $${values.length}
+            OR cv.request_id::TEXT ILIKE $${values.length}
+            OR cv.loai_cong_viec ILIKE $${values.length}
+            OR COALESCE(cv.dinh_dang_nguon, '') ILIKE $${values.length}
+            OR COALESCE(cv.dinh_dang_dich, '') ILIKE $${values.length}
+            OR COALESCE(tn.ten_tep, '') ILIKE $${values.length}
+            OR COALESCE(tkq.ten_tep, '') ILIKE $${values.length}
+        )`);
+    }
+    if (filters.tuNgay) {
+        values.push(filters.tuNgay);
+        conditions.push(`cv.created_at >= $${values.length}`);
+    }
+    if (filters.denNgay) {
+        values.push(filters.denNgay);
+        conditions.push(`cv.created_at <= $${values.length}`);
+    }
+    return { values, conditions };
+}
+
+async function getDanhSachQuanTri(filters = {}, db = null) {
+    const { values, conditions } = taoDieuKienQuanTri(filters);
+    values.push(filters.pageSize);
+    const limitIndex = values.length;
+    values.push(filters.offset);
+    const offsetIndex = values.length;
+    const result = await thucThi(`
+        ${selectCoBan()}
+        WHERE ${conditions.length ? conditions.join('\n        AND ') : 'TRUE'}
+        ORDER BY cv.created_at DESC, cv.id DESC
+        LIMIT $${limitIndex}
+        OFFSET $${offsetIndex}
+    `, values, db);
+    return result.rows.map(mapCongViec);
+}
+
+async function demDanhSachQuanTri(filters = {}, db = null) {
+    const { values, conditions } = taoDieuKienQuanTri(filters);
+    const result = await thucThi(`
+        SELECT COUNT(*)::INTEGER AS tong_so
+        FROM cong_viec cv
+        LEFT JOIN tep tn ON tn.id = cv.tep_nguon_id
+        LEFT JOIN tep tkq ON tkq.id = cv.tep_ket_qua_id
+        WHERE ${conditions.length ? conditions.join('\n        AND ') : 'TRUE'}
+    `, values, db);
+    return Number(result.rows[0]?.tong_so || 0);
+}
+
+async function yeuCauHuyQuanTri(id, db) {
+    const result = await thucThi(`
+        UPDATE cong_viec cv
+        SET
+            trang_thai = CASE
+                WHEN cv.trang_thai = 'CHO_XU_LY' THEN 'DA_HUY'
+                ELSE 'DANG_HUY'
+            END,
+            huy_luc = CASE
+                WHEN cv.trang_thai = 'CHO_XU_LY' THEN NOW()
+                ELSE cv.huy_luc
+            END
+        WHERE cv.id = $1
+        AND cv.trang_thai NOT IN ('HOAN_THANH', 'THAT_BAI', 'DA_HUY', 'DANG_HUY')
+        RETURNING *
+    `, [id], db);
+    return mapCongViec(result.rows[0]);
+}
+
 module.exports = {
     getNguonHopLe,
     getByIdempotency,
@@ -656,5 +750,9 @@ module.exports = {
     hoanThanh,
     thatBai,
     danhDauDaHuy,
-    capNhatBuoc
+    capNhatBuoc,
+    getChiTietQuanTri,
+    getDanhSachQuanTri,
+    demDanhSachQuanTri,
+    yeuCauHuyQuanTri
 };

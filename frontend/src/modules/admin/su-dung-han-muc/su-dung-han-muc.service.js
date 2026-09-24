@@ -132,24 +132,11 @@ async function layTongQuanNguoiDung(req, nguoiDungId) {
     return mapTongQuan(payload.data);
 }
 
-async function layChiTiet(req, nguoiDungId, maHanhDong) {
-    const id = chuanHoaId(nguoiDungId);
-    const ma = String(maHanhDong || '').trim().toUpperCase();
-    if (!id) { throw new TypeError('ID người dùng không hợp lệ.'); }
-    if (!MA_HAN_MUC[ma]) { throw new TypeError('Mã hành động hạn mức không hợp lệ.'); }
-    const payload = await backendClient.get(`/han-muc/nguoi-dung/${id}/${ma}`, taoAuthOptions(req));
-    return {
-        ...payload.data,
-        hanMuc: mapHanMuc(payload.data?.hanMuc)
-    };
-}
-
 module.exports = {
     MA_HAN_MUC,
     chuanHoaId,
     mapHanMuc,
     mapTongQuan,
     layNguoiDungOptions,
-    layTongQuanNguoiDung,
-    layChiTiet
+    layTongQuanNguoiDung
 };

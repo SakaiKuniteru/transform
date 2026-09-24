@@ -1,7 +1,5 @@
 'use strict';
-
 const { qa, onReady } = require('../core/dom');
-
 const timers = new WeakMap();
 
 function layInterval(element) {
@@ -11,10 +9,7 @@ function layInterval(element) {
 
 function dungTheoDoi(element) {
     const timer = timers.get(element);
-    if (timer) {
-        clearTimeout(timer);
-        timers.delete(element);
-    }
+    if (timer) { clearTimeout(timer); timers.delete(element); }
 }
 
 function henLamMoi(element) {
@@ -22,8 +17,7 @@ function henLamMoi(element) {
     dungTheoDoi(element);
     const timer = setTimeout(() => {
         if (element.dataset.jobRefreshEnabled !== 'true') { return; }
-        const url = element.dataset.jobRefreshUrl || window.location.href;
-        const target = new URL(url, window.location.origin);
+        const target = new URL(element.dataset.jobRefreshUrl || window.location.href, window.location.origin);
         if (target.origin !== window.location.origin) { return; }
         window.location.replace(target.href);
     }, layInterval(element));
@@ -46,15 +40,11 @@ function initJob(element) {
     element.dataset.jobInitialized = 'true';
     capNhatProgress(element);
     henLamMoi(element);
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') { henLamMoi(element); } else { dungTheoDoi(element); }
-    });
-    window.addEventListener('beforeunload', () => dungTheoDoi(element), {
-        once: true
-    });
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { henLamMoi(element); } else { dungTheoDoi(element); } });
+    window.addEventListener('beforeunload', () => dungTheoDoi(element), { once: true });
 }
 
-function initJobs(root = document) { for (const element of qa('[data-job-refresh-enabled], .job-detail, .conversion-result', root)) { initJob(element); } }
+function initJobs(root = document) { for (const element of qa('[data-job-refresh-enabled]', root)) { initJob(element); } }
 
 function init() { onReady(() => initJobs()); }
 

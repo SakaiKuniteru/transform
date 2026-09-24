@@ -374,6 +374,132 @@ async function xoaMem(id, chuThe, db) {
     return true;
 }
 
+async function getChiTietQuanTri(id, db = null) {
+    const result = await thucThi(`
+        ${selectCoBan()}
+        WHERE t.id = $1
+        LIMIT 1
+    `, [id], db);
+    return mapTep(result.rows[0]);
+}
+
+function taoDieuKienQuanTri(filters = {}) {
+    const values = [];
+    const conditions = [];
+    if (filters.trangThai) {
+        values.push(filters.trangThai);
+        conditions.push(`t.trang_thai = $${values.length}`);
+    } else {
+        conditions.push(`t.trang_thai <> 'DA_XOA'`);
+        conditions.push('t.xoa_luc IS NULL');
+    }
+    if (filters.nguoiDungId) {
+        values.push(filters.nguoiDungId);
+        conditions.push(`t.nguoi_dung_id = $${values.length}`);
+    }
+    if (filters.dinhDang) {
+        values.push(filters.dinhDang);
+        conditions.push(`LOWER(COALESCE(pb.dinh_dang, pb.phan_mo_rong, '')) = LOWER($${values.length})`);
+    }
+    if (filters.tuKhoa) {
+        values.push(`%${filters.tuKhoa}%`);
+        conditions.push(`(
+            t.id::TEXT ILIKE $${values.length}
+            OR t.ten_tep ILIKE $${values.length}
+            OR COALESCE(pb.ten_tep, '') ILIKE $${values.length}
+            OR COALESCE(pb.dinh_dang, '') ILIKE $${values.length}
+        )`);
+    }
+    if (filters.tuNgay) {
+        values.push(filters.tuNgay);
+        conditions.push(`t.created_at >= $${values.length}`);
+    }
+    if (filters.denNgay) {
+        values.push(filters.denNgay);
+        conditions.push(`t.created_at <= $${values.length}`);
+    }
+    return { values, conditions };
+}
+
+async function getDanhSachQuanTri(filters = {}, db = null) {
+    const { values, conditions } = taoDieuKienQuanTri(filters);
+    values.push(filters.pageSize);
+    const limitIndex = values.length;
+    values.push(filters.offset);
+    const offsetIndex = values.length;
+    const result = await thucThi(`
+        ${selectCoBan()}
+        WHERE ${conditions.length ? conditions.join('\n        AND ') : 'TRUE'}
+        ORDER BY t.created_at DESC, t.id DESC
+        LIMIT $${limitIndex}
+        OFFSET $${offsetIndex}
+    `, values, db);
+    return result.rows.map(mapTep);
+}
+
+async function demDanhSachQuanTri(filters = {}, db = null) {
+    const { values, conditions } = taoDieuKienQuanTri(filters);
+    const result = await thucThi(`
+        SELECT COUNT(*)::INTEGER AS tong_so
+        FROM tep t
+        LEFT JOIN LATERAL (
+            SELECT *
+            FROM phien_ban_tep x
+            WHERE x.tep_id = t.id
+            AND x.xoa_luc IS NULL
+            AND x.trang_thai <> 'DA_XOA'
+            ORDER BY x.so_phien_ban DESC
+            LIMIT 1
+        ) pb ON TRUE
+        WHERE ${conditions.length ? conditions.join('\n        AND ') : 'TRUE'}
+    `, values, db);
+    return Number(result.rows[0]?.tong_so || 0);
+}
+
+async function getDanhSachStorageKeyQuanTri(id, db = null) {
+    const result = await thucThi(`
+        SELECT
+            pb.id,
+            pb.storage_driver,
+            pb.storage_bucket,
+            pb.storage_key
+        FROM phien_ban_tep pb
+        INNER JOIN tep t ON t.id = pb.tep_id
+        WHERE t.id = $1
+        AND t.xoa_luc IS NULL
+        AND pb.xoa_luc IS NULL
+        ORDER BY pb.id
+    `, [id], db);
+    return result.rows.map((row) => ({
+        id: row.id,
+        storageDriver: row.storage_driver,
+        storageBucket: row.storage_bucket,
+        storageKey: row.storage_key
+    }));
+}
+
+async function xoaMemQuanTri(id, db) {
+    const tepResult = await thucThi(`
+        UPDATE tep
+        SET
+            trang_thai = 'DA_XOA',
+            xoa_luc = NOW()
+        WHERE id = $1
+        AND xoa_luc IS NULL
+        RETURNING id
+    `, [id], db);
+    if (tepResult.rowCount === 0) { return false; }
+    await thucThi(`
+        UPDATE phien_ban_tep
+        SET
+            trang_thai = 'DA_XOA',
+            xoa_luc = NOW()
+        WHERE tep_id = $1
+        AND xoa_luc IS NULL
+    `, [id], db);
+    return true;
+}
+
 module.exports = {
     taoTep,
     taoPhienBan,
@@ -382,5 +508,10 @@ module.exports = {
     demDanhSach,
     capNhat,
     getDanhSachStorageKey,
-    xoaMem
+    xoaMem,
+    getChiTietQuanTri,
+    getDanhSachQuanTri,
+    demDanhSachQuanTri,
+    getDanhSachStorageKeyQuanTri,
+    xoaMemQuanTri
 };

@@ -5,9 +5,12 @@
             <p class="user-page__description">Quản lý các tệp đã tải lên Transform.</p>
         </div>
     </header>
-    <section class="user-section">
+    <section class="user-section upload-workspace" data-upload-workspace>
         <h2 class="user-section__title">Tải tệp lên</h2>
+        {{> upload/dropzone}}
         {{> forms/form uploadForm}}
+        {{> upload/file-item}}
+        {{> upload/progress}}
     </section>
     <section class="user-section">
         <form action="/user/tep" method="GET" class="user-toolbar">

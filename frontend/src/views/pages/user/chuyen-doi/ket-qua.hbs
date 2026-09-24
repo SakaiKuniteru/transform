@@ -1,4 +1,4 @@
-<section class="user-page conversion-result">
+<section class="user-page conversion-result" data-job-refresh-enabled="{{#if ketQua.congViec.canLamMoi}}true{{else}}false{{/if}}" data-job-refresh-url="/user/chuyen-doi/{{ketQua.congViec.id}}" data-job-refresh-interval="{{ketQua.congViec.lamMoiSauMs}}">
     <header class="user-page__header">
         <div>
             <h1 class="user-page__title">Kết quả chuyển đổi</h1>
@@ -12,14 +12,9 @@
                 <span class="conversion-result__label">Công việc</span>
                 <strong>#{{ketQua.congViec.id}}</strong>
             </div>
-            <span class="conversion-status conversion-status--{{ketQua.congViec.trangThai}}">{{ketQua.congViec.trangThaiHienThi}}</span>
+            {{> job/status trangThai=ketQua.congViec.trangThai trangThaiHienThi=ketQua.congViec.trangThaiHienThi}}
         </div>
-        <div class="conversion-progress">
-            <div class="conversion-progress__track">
-                <div class="conversion-progress__bar" style="width: {{ketQua.congViec.tienTrinh}}%;"></div>
-            </div>
-            <span>{{ketQua.congViec.tienTrinh}}%</span>
-        </div>
+        {{> job/progress tienTrinh=ketQua.congViec.tienTrinh}}
         {{#if ketQua.congViec.thongBao}}<p class="conversion-result__message">{{ketQua.congViec.thongBao}}</p>{{/if}}
     </section>
     <section class="user-section">
@@ -36,10 +31,7 @@
     {{#if ketQua.congViec.tepKetQuaId}}
         <section class="user-section">
             <h2 class="user-section__title">Tệp kết quả</h2>
-            <div class="conversion-result__actions">
-                <a href="/user/tep/{{ketQua.congViec.tepKetQuaId}}" class="btn btn-secondary">Xem tệp</a>
-                <a href="/user/tep/{{ketQua.congViec.tepKetQuaId}}/tai-xuong" class="btn btn-primary">Tải xuống</a>
-            </div>
+            {{> job/result tepKetQua=ketQua.congViec.tepKetQua tepKetQuaId=ketQua.congViec.tepKetQuaId phienBanKetQua=ketQua.congViec.phienBanKetQua tepKetQuaKichThuocHienThi=ketQua.congViec.tepKetQuaKichThuocHienThi}}
         </section>
     {{/if}}
     {{#if ketQua.congViec.maLoi}}

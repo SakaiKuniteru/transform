@@ -1,0 +1,172 @@
+<section class="admin-page admin-subscriptions">
+    <header class="admin-page__header">
+        <div>
+            <h1 class="admin-page__title">Đăng ký gói</h1>
+            <p class="admin-page__description">Quản lý gói dịch vụ đang được gán cho người dùng và trạng thái đăng ký.</p>
+        </div>
+    </header>
+    <details class="admin-section admin-create">
+        <summary class="admin-section__summary">Gán gói cho người dùng</summary>
+        <div class="admin-section__body">
+            <form action="/admin/dang-ky-goi/gan-goi" method="POST" class="form">
+                {{#if csrfToken}}<input type="hidden" name="_csrf" value="{{csrfToken}}">{{/if}}
+                <div class="form-fields">
+                    <div class="form-field">
+                        <label for="gan-goi-nguoi-dung">Người dùng</label>
+                        <select id="gan-goi-nguoi-dung" name="nguoiDungId" class="form-control form-select" required>
+                            <option value="">Chọn người dùng</option>
+                            {{#each nguoiDungOptions}}<option value="{{value}}">{{label}}</option>{{/each}}
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="gan-goi-goi">Gói dịch vụ</label>
+                        <select id="gan-goi-goi" name="goiDichVuId" class="form-control form-select" required>
+                            <option value="">Chọn gói</option>
+                            {{#each goiOptions}}<option value="{{value}}">{{label}}</option>{{/each}}
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="gan-goi-bat-dau">Bắt đầu lúc</label>
+                        <input type="datetime-local" id="gan-goi-bat-dau" name="batDauLuc" class="form-control">
+                    </div>
+                    <label class="form-toggle">
+                        <input type="checkbox" name="thayTheGoiHienTai" value="true">
+                        <span>Thay thế gói hiện tại nếu người dùng đang có gói hoạt động</span>
+                    </label>
+                </div>
+                <div class="form-actions"><button type="submit" class="btn btn-primary">Gán gói</button></div>
+            </form>
+        </div>
+    </details>
+    {{#if dangKyDangChon}}
+        <section class="admin-section">
+            <div class="admin-section__header">
+                <div>
+                    <h2 class="admin-section__title">Đăng ký #{{dangKyDangChon.id}}</h2>
+                    <p class="admin-section__description">{{dangKyDangChon.nguoiDung.email}} · {{dangKyDangChon.goiDichVu.ten}}</p>
+                </div>
+                <a href="/admin/dang-ky-goi" class="btn btn-secondary">Đóng</a>
+            </div>
+            <dl class="detail-list">
+                <div><dt>Người dùng</dt><dd>{{#if dangKyDangChon.nguoiDung.hoTen}}{{dangKyDangChon.nguoiDung.hoTen}} · {{/if}}{{dangKyDangChon.nguoiDung.email}}</dd></div>
+                <div><dt>Gói dịch vụ</dt><dd>{{dangKyDangChon.goiDichVu.ten}} ({{dangKyDangChon.goiDichVu.ma}})</dd></div>
+                <div><dt>Trạng thái</dt><dd>{{dangKyDangChon.trangThaiHienThi}}</dd></div>
+                <div><dt>Nguồn kích hoạt</dt><dd>{{dangKyDangChon.nguonKichHoatHienThi}}</dd></div>
+                <div><dt>Giá thanh toán</dt><dd>{{dangKyDangChon.giaThanhToanHienThi}}</dd></div>
+                <div><dt>Mã giao dịch</dt><dd>{{#if dangKyDangChon.maGiaoDich}}{{dangKyDangChon.maGiaoDich}}{{else}}-{{/if}}</dd></div>
+                <div><dt>Bắt đầu</dt><dd>{{dangKyDangChon.batDauLucHienThi}}</dd></div>
+                <div><dt>Hết hạn</dt><dd>{{dangKyDangChon.hetHanLucHienThi}}</dd></div>
+                <div><dt>Tự động gia hạn</dt><dd>{{#if dangKyDangChon.tuDongGiaHan}}Có{{else}}Không{{/if}}</dd></div>
+            </dl>
+            <div class="table-actions">
+                {{#if dangKyDangChon.coTheKichHoat}}
+                    <form action="/admin/dang-ky-goi/{{dangKyDangChon.id}}/kich-hoat" method="POST" class="admin-inline-form">
+                        {{#if csrfToken}}<input type="hidden" name="_csrf" value="{{csrfToken}}">{{/if}}
+                        <input type="text" name="maGiaoDich" class="form-control" placeholder="Mã giao dịch (không bắt buộc)">
+                        <input type="datetime-local" name="batDauLuc" class="form-control">
+                        <label class="form-toggle"><input type="checkbox" name="thayTheGoiHienTai" value="true"><span>Thay gói hiện tại</span></label>
+                        <button type="submit" class="btn btn-primary">Kích hoạt</button>
+                    </form>
+                {{/if}}
+                {{#if dangKyDangChon.coTheTamDung}}
+                    <form action="/admin/dang-ky-goi/{{dangKyDangChon.id}}/tam-dung" method="POST">
+                        {{#if csrfToken}}<input type="hidden" name="_csrf" value="{{csrfToken}}">{{/if}}
+                        <button type="submit" class="btn btn-secondary">Tạm dừng</button>
+                    </form>
+                {{/if}}
+                {{#if dangKyDangChon.coTheTiepTuc}}
+                    <form action="/admin/dang-ky-goi/{{dangKyDangChon.id}}/tiep-tuc" method="POST">
+                        {{#if csrfToken}}<input type="hidden" name="_csrf" value="{{csrfToken}}">{{/if}}
+                        <button type="submit" class="btn btn-primary">Tiếp tục</button>
+                    </form>
+                {{/if}}
+            </div>
+            {{#if dangKyDangChon.coTheHuy}}
+                <form action="/admin/dang-ky-goi/{{dangKyDangChon.id}}/huy" method="POST" class="admin-inline-form">
+                    {{#if csrfToken}}<input type="hidden" name="_csrf" value="{{csrfToken}}">{{/if}}
+                    <input type="text" name="lyDo" maxlength="500" class="form-control" placeholder="Lý do hủy (không bắt buộc)">
+                    <button type="submit" class="btn btn-danger">Hủy đăng ký</button>
+                </form>
+            {{/if}}
+        </section>
+    {{/if}}
+    <section class="admin-section">
+        <form action="/admin/dang-ky-goi" method="GET" class="admin-filter">
+            <div class="admin-filter__search">
+                <label for="dang-ky-tu-khoa">Tìm kiếm</label>
+                <input type="search" id="dang-ky-tu-khoa" name="tuKhoa" value="{{filters.tuKhoa}}" class="form-control" placeholder="Email, tên người dùng, mã hoặc tên gói">
+            </div>
+            <div class="admin-filter__field">
+                <label for="dang-ky-trang-thai">Trạng thái</label>
+                <select id="dang-ky-trang-thai" name="trangThai" class="form-control form-select">
+                    <option value="">Tất cả</option>
+                    {{#each trangThaiOptions}}<option value="{{value}}"{{#if (eq @root.filters.trangThai value)}} selected{{/if}}>{{label}}</option>{{/each}}
+                </select>
+            </div>
+            <div class="admin-filter__field">
+                <label for="dang-ky-nguon">Nguồn kích hoạt</label>
+                <select id="dang-ky-nguon" name="nguonKichHoat" class="form-control form-select">
+                    <option value="">Tất cả</option>
+                    {{#each nguonKichHoatOptions}}<option value="{{value}}"{{#if (eq @root.filters.nguonKichHoat value)}} selected{{/if}}>{{label}}</option>{{/each}}
+                </select>
+            </div>
+            <div class="admin-filter__field">
+                <label for="dang-ky-user-id">ID người dùng</label>
+                <input type="number" id="dang-ky-user-id" name="nguoiDungId" value="{{filters.nguoiDungId}}" min="1" class="form-control">
+            </div>
+            <div class="admin-filter__field">
+                <label for="dang-ky-goi-id">ID gói</label>
+                <input type="number" id="dang-ky-goi-id" name="goiDichVuId" value="{{filters.goiDichVuId}}" min="1" class="form-control">
+            </div>
+            <div class="admin-filter__field">
+                <label for="dang-ky-tu-ngay">Từ ngày</label>
+                <input type="date" id="dang-ky-tu-ngay" name="tuNgay" value="{{filters.tuNgay}}" class="form-control">
+            </div>
+            <div class="admin-filter__field">
+                <label for="dang-ky-den-ngay">Đến ngày</label>
+                <input type="date" id="dang-ky-den-ngay" name="denNgay" value="{{filters.denNgay}}" class="form-control">
+            </div>
+            <div class="admin-filter__actions">
+                <button type="submit" class="btn btn-secondary">Tìm kiếm</button>
+                <a href="/admin/dang-ky-goi" class="btn btn-link">Xóa lọc</a>
+            </div>
+        </form>
+        {{#if danhSach.length}}
+            <div class="admin-table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Người dùng</th>
+                            <th>Gói</th>
+                            <th>Trạng thái</th>
+                            <th>Nguồn</th>
+                            <th>Thanh toán</th>
+                            <th>Bắt đầu</th>
+                            <th>Hết hạn</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each danhSach}}
+                            <tr>
+                                <td>#{{id}}</td>
+                                <td><strong>{{#if nguoiDung.hoTen}}{{nguoiDung.hoTen}}{{else}}{{nguoiDung.email}}{{/if}}</strong><span>{{nguoiDung.email}}</span></td>
+                                <td><strong>{{goiDichVu.ten}}</strong><span>{{goiDichVu.ma}}</span></td>
+                                <td><span class="service-plan-status service-plan-status--{{trangThai}}">{{trangThaiHienThi}}</span></td>
+                                <td>{{nguonKichHoatHienThi}}</td>
+                                <td>{{giaThanhToanHienThi}}</td>
+                                <td>{{batDauLucHienThi}}</td>
+                                <td>{{hetHanLucHienThi}}</td>
+                                <td><a href="/admin/dang-ky-goi/{{id}}" class="btn btn-sm btn-secondary">Chi tiết</a></td>
+                            </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+            {{> common/pagination pagination=pagination}}
+        {{else}}
+            {{> common/empty-state title="Không có đăng ký gói" message="Không tìm thấy đăng ký phù hợp với điều kiện hiện tại."}}
+        {{/if}}
+    </section>
+</section>

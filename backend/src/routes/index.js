@@ -50,6 +50,10 @@ const ROUTE_MODULES = Object.freeze([
     {
         path: '/han-muc',
         modulePath: '../modules/han-muc/han-muc.route'
+    },
+    {
+        path: '/nhat-ky',
+        modulePath: '../modules/nhat-ky/nhat-ky.route'
     }
 ]);
 

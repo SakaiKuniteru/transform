@@ -67,7 +67,11 @@ async function validateField(field, value, values, context = {}) {
 async function validateForm(form, input = {}, context = {}) {
     if (!form || !Array.isArray(form.fields)) { throw new TypeError('Form không hợp lệ.'); }
     const values = {};
-    for (const field of form.fields) { values[field.name] = chuanHoaGiaTri(field, Object.hasOwn(input, field.name) ? input[field.name] : field.defaultValue ?? ''); }
+    for (const field of form.fields) {
+        const coGiaTri = Object.hasOwn(input, field.name);
+        const macDinh = field.type === 'checkbox' || field.type === 'toggle' ? false : field.defaultValue ?? '';
+        values[field.name] = chuanHoaGiaTri(field, coGiaTri ? input[field.name] : macDinh);
+    }
     const errors = {};
     for (const field of form.fields) { const fieldErrors = await validateField(field, values[field.name], values, context); if (fieldErrors.length) { errors[field.name] = fieldErrors; } }
     const globalErrors = [];

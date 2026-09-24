@@ -46,35 +46,6 @@ async function index(req, res, next) {
     try { return await renderTrang(req, res); } catch (error) { return next(error); }
 }
 
-async function chiTiet(req, res, next) {
-    try {
-        const chiTietHanMuc = await service.layChiTiet(req, req.params.nguoiDungId, req.params.maHanhDong);
-        const data = taoViewContext(req, res, {
-            layout: 'admin',
-            page: {
-                title: `${chiTietHanMuc.hanMuc.maHanhDongHienThi} | Transform Admin`
-            },
-            breadcrumb: [
-                {
-                    label: 'Quản trị',
-                    url: '/admin'
-                },
-                {
-                    label: 'Sử dụng hạn mức',
-                    url: `/admin/su-dung-han-muc?nguoiDungId=${req.params.nguoiDungId}`
-                },
-                {
-                    label: chiTietHanMuc.hanMuc.maHanhDongHienThi,
-                    current: true
-                }
-            ],
-            chiTietHanMuc
-        });
-        return res.render('pages/admin/su-dung-han-muc/chi-tiet', data);
-    } catch (error) { return next(error); }
-}
-
 module.exports = {
-    index,
-    chiTiet
+    index
 };

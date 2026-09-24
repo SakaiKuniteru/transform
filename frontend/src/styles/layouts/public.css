@@ -32,6 +32,112 @@
     padding: var(--space-8) 0 var(--space-12);
 }
 
+.public-header__nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.public-home {
+    display: grid;
+    gap: var(--space-8);
+}
+
+.public-home__hero {
+    display: flex;
+    min-height: 420px;
+    align-items: center;
+    padding: var(--space-10);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+}
+
+.public-home__content {
+    display: grid;
+    max-width: 760px;
+    gap: var(--space-4);
+}
+
+.public-home__eyebrow {
+    color: var(--color-primary-600);
+    font-size: var(--text-sm);
+    font-weight: 750;
+    text-transform: uppercase;
+}
+
+.public-home__title {
+    max-width: 720px;
+    font-size: clamp(36px, 6vw, 64px);
+    letter-spacing: -0.04em;
+}
+
+.public-home__description {
+    max-width: 680px;
+    color: var(--color-text-muted);
+    font-size: var(--text-lg);
+    line-height: var(--line-relaxed);
+}
+
+.public-home__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-2);
+}
+
+.public-home__features {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-4);
+}
+
+.public-feature {
+    display: grid;
+    gap: var(--space-2);
+    padding: var(--space-5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+}
+
+.public-feature h2 {
+    font-size: var(--text-lg);
+}
+
+.public-feature p {
+    color: var(--color-text-muted);
+    line-height: var(--line-relaxed);
+}
+
+@media (max-width: 760px) {
+    .public-home__hero {
+        min-height: auto;
+        padding: var(--space-7) var(--space-5);
+    }
+
+    .public-home__features {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 540px) {
+    .public-header {
+        height: auto;
+        min-height: var(--header-height);
+        align-items: flex-start;
+        gap: var(--space-3);
+        padding-top: var(--space-3);
+        padding-bottom: var(--space-3);
+    }
+
+    .public-header__nav {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+}
+
 @media (max-width: 640px) {
     .public-header {
         padding: 0 var(--space-4);

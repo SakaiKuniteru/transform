@@ -1,0 +1,29 @@
+<section class="admin-page admin-audit-log">
+    <header class="admin-page__header">
+        <div>
+            <h1 class="admin-page__title">Nhật ký hệ thống</h1>
+            <p class="admin-page__description">Theo dõi và tra cứu các sự kiện kỹ thuật của hệ thống.</p>
+        </div>
+    </header>
+    {{#unless khaNang.hoTro}}
+        <section class="admin-section">
+            {{> common/error-state title=khaNang.tieuDe message=khaNang.thongBao}}
+            <div class="admin-capability">
+                <div>
+                    <h2 class="admin-section__title">Khả năng Backend hiện có</h2>
+                    <ul class="admin-capability__list">
+                        {{#each khaNang.khaNangBackend}}<li>{{this}}</li>{{/each}}
+                    </ul>
+                </div>
+                <div>
+                    <h2 class="admin-section__title">Service nội bộ đã có</h2>
+                    <ul class="admin-capability__list">
+                        {{#each khaNang.serviceNoiBo}}<li><code>{{this}}</code></li>{{/each}}
+                    </ul>
+                </div>
+                <p>Frontend không gọi trực tiếp service nội bộ của Backend và không tạo dữ liệu nhật ký giả. Khi Backend expose API quản trị, màn hình này sẽ được nối vào API đó.</p>
+                <p><strong>Mã trạng thái:</strong> <code>{{khaNang.ma}}</code></p>
+            </div>
+        </section>
+    {{/unless}}
+</section>

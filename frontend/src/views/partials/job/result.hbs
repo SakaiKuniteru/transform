@@ -1,0 +1,16 @@
+{{#if tepKetQuaId}}
+    <div class="job-result">
+        {{#if tepKetQua}}
+            <div class="job-result__meta">
+                <strong>{{tepKetQua.tenTep}}</strong>
+                {{#if phienBanKetQua}}<span>{{phienBanKetQua.dinhDang}}{{#if tepKetQuaKichThuocHienThi}} · {{tepKetQuaKichThuocHienThi}}{{/if}}</span>{{/if}}
+            </div>
+        {{/if}}
+        <div class="job-result__actions">
+            <a href="/user/tep/{{tepKetQuaId}}" class="btn btn-secondary">Xem tệp</a>
+            <a href="/user/tep/{{tepKetQuaId}}/tai-xuong" class="btn btn-primary">Tải xuống</a>
+        </div>
+    </div>
+{{else}}
+    {{> common/empty-state title="Chưa có tệp kết quả" message="Tệp kết quả sẽ xuất hiện khi công việc hoàn thành."}}
+{{/if}}

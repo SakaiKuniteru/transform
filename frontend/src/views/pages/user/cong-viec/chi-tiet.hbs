@@ -1,4 +1,4 @@
-<section class="user-page job-detail">
+<section class="user-page job-detail" data-job-refresh-enabled="{{#if congViec.canLamMoi}}true{{else}}false{{/if}}" data-job-refresh-url="/user/cong-viec/{{congViec.id}}" data-job-refresh-interval="{{congViec.lamMoiSauMs}}">
     <header class="user-page__header">
         <div>
             <h1 class="user-page__title">Công việc #{{congViec.id}}</h1>
@@ -16,11 +16,8 @@
     </header>
     <section class="user-section">
         <div class="job-detail__status">
-            <span class="job-status job-status--{{congViec.trangThai}}">{{congViec.trangThaiHienThi}}</span>
-            <div class="job-progress">
-                <progress value="{{congViec.tienTrinh}}" max="100">{{congViec.tienTrinh}}%</progress>
-                <span>{{congViec.tienTrinh}}%</span>
-            </div>
+            {{> job/status trangThai=congViec.trangThai trangThaiHienThi=congViec.trangThaiHienThi}}
+            {{> job/progress tienTrinh=congViec.tienTrinh}}
             {{#if congViec.buocHienTai}}<span>Đang thực hiện: {{congViec.buocHienTai}}</span>{{/if}}
         </div>
     </section>
@@ -41,51 +38,13 @@
             </dl>
         </section>
         <section class="user-section">
-            <h2 class="user-section__title">Tệp</h2>
-            <div class="job-files">
-                <article class="job-file">
-                    <span class="job-file__label">Tệp nguồn</span>
-                    {{#if congViec.tepNguon}}
-                        <a href="/user/tep/{{congViec.tepNguon.id}}"><strong>{{congViec.tepNguon.tenTep}}</strong></a>
-                        {{#if congViec.phienBanNguon}}<span>{{congViec.phienBanNguon.dinhDang}} · {{congViec.tepNguonKichThuocHienThi}}</span>{{/if}}
-                    {{else}}
-                        <span>-</span>
-                    {{/if}}
-                </article>
-                <article class="job-file">
-                    <span class="job-file__label">Tệp kết quả</span>
-                    {{#if congViec.tepKetQua}}
-                        <a href="/user/tep/{{congViec.tepKetQua.id}}"><strong>{{congViec.tepKetQua.tenTep}}</strong></a>
-                        {{#if congViec.phienBanKetQua}}<span>{{congViec.phienBanKetQua.dinhDang}} · {{congViec.tepKetQuaKichThuocHienThi}}</span>{{/if}}
-                    {{else}}
-                        <span>Chưa có kết quả</span>
-                    {{/if}}
-                </article>
-            </div>
+            <h2 class="user-section__title">Tệp kết quả</h2>
+            {{> job/result tepKetQua=congViec.tepKetQua tepKetQuaId=congViec.tepKetQuaId phienBanKetQua=congViec.phienBanKetQua tepKetQuaKichThuocHienThi=congViec.tepKetQuaKichThuocHienThi}}
         </section>
     </div>
     <section class="user-section">
-        <h2 class="user-section__title">Các bước xử lý</h2>
-        {{#if congViec.cacBuoc.length}}
-            <div class="job-steps">
-                {{#each congViec.cacBuoc}}
-                    <article class="job-step">
-                        <div class="job-step__order">{{thuTu}}</div>
-                        <div class="job-step__content">
-                            <div class="job-step__header">
-                                <strong>{{tenBuoc}}</strong>
-                                <span class="job-status job-status--{{trangThai}}">{{trangThaiHienThi}}</span>
-                            </div>
-                            <div class="job-progress"><progress value="{{tienTrinh}}" max="100">{{tienTrinh}}%</progress><span>{{tienTrinh}}%</span></div>
-                            {{#if boXuLy}}<span>Bộ xử lý: {{boXuLy}}{{#if congCu}} · {{congCu}}{{/if}}</span>{{/if}}
-                            {{#if maLoi}}<div class="job-step__error"><strong>{{maLoi}}</strong>{{#if thongBaoLoi}}<span>{{thongBaoLoi}}</span>{{/if}}</div>{{/if}}
-                        </div>
-                    </article>
-                {{/each}}
-            </div>
-        {{else}}
-            {{> common/empty-state title="Chưa có bước xử lý" message="Công việc này chưa có thông tin bước xử lý."}}
-        {{/if}}
+    <h2 class="user-section__title">Các bước xử lý</h2>
+        {{> job/steps steps=congViec.cacBuoc}}
     </section>
     {{#if congViec.maLoi}}
         <section class="user-section user-section--danger">

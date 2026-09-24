@@ -4,13 +4,15 @@ const express = require('express');
 const controller = require('./cong-viec.controller');
 const {
     paramsIdSchema,
-    danhSachSchema
+    danhSachSchema,
+    danhSachQuanTriSchema
 } = require('./cong-viec.validation');
 const {
     validateParams,
     validateQuery
 } = require('../../middlewares/validate');
-const { xacThucTuyChon } = require('../../middlewares/xac-thuc');
+const { yeuCauXacThuc, xacThucTuyChon } = require('../../middlewares/xac-thuc');
+const { yeuCauQuanTri } = require('../../middlewares/phan-quyen');
 const { damBaoPhienKhach } = require('../../middlewares/phien-khach');
 
 const router = express.Router();
@@ -18,6 +20,14 @@ const router = express.Router();
 router.use(
     xacThucTuyChon,
     damBaoPhienKhach
+);
+
+router.get(
+    '/',
+    yeuCauXacThuc,
+    yeuCauQuanTri,
+    validateQuery(danhSachQuanTriSchema),
+    controller.getDanhSachQuanTri
 );
 
 router.get(

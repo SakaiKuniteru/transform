@@ -2,20 +2,72 @@
     <header class="admin-page__header">
         <div>
             <h1 class="admin-page__title">Quản lý tệp</h1>
-            <p class="admin-page__description">Quản lý tệp trên toàn hệ thống Transform.</p>
+            <p class="admin-page__description">Tra cứu và quản lý tệp trên toàn hệ thống Transform.</p>
         </div>
     </header>
-    {{#unless khaNang.hoTro}}
+    {{#if tepDangChon}}
         <section class="admin-section">
-            {{> common/error-state title=khaNang.tieuDe message=khaNang.thongBao}}
-            <div class="admin-capability">
-                <h2 class="admin-section__title">API hiện có</h2>
-                <ul class="admin-capability__list">
-                    {{#each khaNang.endpointHienTai}}<li><code>{{this}}</code></li>{{/each}}
-                </ul>
-                <p>Những endpoint trên chỉ thao tác với tệp thuộc chủ sở hữu của request hiện tại, nên không được dùng để giả lập chức năng quản trị toàn hệ thống.</p>
-                <a href="/user/tep" class="btn btn-secondary">Xem tệp của tài khoản hiện tại</a>
+            <div class="admin-section__header">
+                <div>
+                    <h2 class="admin-section__title">Tệp #{{tepDangChon.id}}</h2>
+                    <p class="admin-section__description">{{tepDangChon.tenTep}}</p>
+                </div>
+                <a href="/admin/tep" class="btn btn-secondary">Đóng</a>
             </div>
+            <dl class="detail-list">
+                <div><dt>Chủ sở hữu</dt><dd>{{tepDangChon.chuSoHuuHienThi}}</dd></div>
+                <div><dt>Tên tệp</dt><dd>{{tepDangChon.tenTep}}</dd></div>
+                <div><dt>Mô tả</dt><dd>{{#if tepDangChon.moTa}}{{tepDangChon.moTa}}{{else}}-{{/if}}</dd></div>
+                <div><dt>Nguồn tạo</dt><dd>{{tepDangChon.nguonTao}}</dd></div>
+                <div><dt>Trạng thái</dt><dd>{{tepDangChon.trangThai}}</dd></div>
+                <div><dt>Định dạng</dt><dd>{{tepDangChon.dinhDangHienThi}}</dd></div>
+                <div><dt>MIME type</dt><dd>{{tepDangChon.mimeTypeHienThi}}</dd></div>
+                <div><dt>Kích thước</dt><dd>{{tepDangChon.kichThuocHienThi}}</dd></div>
+                <div><dt>Ngày tạo</dt><dd>{{tepDangChon.createdAtHienThi}}</dd></div>
+                <div><dt>Cập nhật</dt><dd>{{tepDangChon.updatedAtHienThi}}</dd></div>
+                <div><dt>Hết hạn</dt><dd>{{tepDangChon.hetHanLucHienThi}}</dd></div>
+            </dl>
+            {{#if tepDangChon.coTheXoa}}
+                <form action="/admin/tep/{{tepDangChon.id}}/xoa" method="POST">
+                    {{#if csrfToken}}<input type="hidden" name="_csrf" value="{{csrfToken}}">{{/if}}
+                    <button type="submit" class="btn btn-danger">Xóa tệp</button>
+                </form>
+            {{/if}}
         </section>
-    {{/unless}}
+    {{/if}}
+    <section class="admin-section">
+        <form action="/admin/tep" method="GET" class="admin-filter">
+            <div class="admin-filter__search"><label for="admin-file-search">Tìm kiếm</label><input type="search" id="admin-file-search" name="tuKhoa" value="{{filters.tuKhoa}}" class="form-control" placeholder="ID, tên tệp hoặc định dạng"></div>
+            <div class="admin-filter__field"><label for="admin-file-user">ID người dùng</label><input type="number" id="admin-file-user" name="nguoiDungId" value="{{filters.nguoiDungId}}" min="1" class="form-control"></div>
+            <div class="admin-filter__field"><label for="admin-file-status">Trạng thái</label><select id="admin-file-status" name="trangThai" class="form-control form-select"><option value="">Tất cả chưa xóa</option>{{#each trangThaiOptions}}<option value="{{value}}"{{#if (eq @root.filters.trangThai value)}} selected{{/if}}>{{label}}</option>{{/each}}</select></div>
+            <div class="admin-filter__field"><label for="admin-file-format">Định dạng</label><input type="text" id="admin-file-format" name="dinhDang" value="{{filters.dinhDang}}" class="form-control" placeholder="pdf, docx, png..."></div>
+            <div class="admin-filter__field"><label for="admin-file-from">Từ ngày</label><input type="date" id="admin-file-from" name="tuNgay" value="{{filters.tuNgay}}" class="form-control"></div>
+            <div class="admin-filter__field"><label for="admin-file-to">Đến ngày</label><input type="date" id="admin-file-to" name="denNgay" value="{{filters.denNgay}}" class="form-control"></div>
+            <div class="admin-filter__actions"><button type="submit" class="btn btn-secondary">Tìm kiếm</button><a href="/admin/tep" class="btn btn-link">Xóa lọc</a></div>
+        </form>
+        {{#if danhSach.length}}
+            <div class="admin-table-wrapper">
+                <table class="admin-table">
+                    <thead><tr><th>ID</th><th>Tệp</th><th>Chủ sở hữu</th><th>Định dạng</th><th>Kích thước</th><th>Trạng thái</th><th>Ngày tạo</th><th></th></tr></thead>
+                    <tbody>
+                        {{#each danhSach}}
+                            <tr>
+                                <td>#{{id}}</td>
+                                <td><strong>{{tenTep}}</strong><span>{{mimeTypeHienThi}}</span></td>
+                                <td>{{chuSoHuuHienThi}}</td>
+                                <td>{{dinhDangHienThi}}</td>
+                                <td>{{kichThuocHienThi}}</td>
+                                <td>{{trangThai}}</td>
+                                <td>{{createdAtHienThi}}</td>
+                                <td><a href="/admin/tep?id={{id}}" class="btn btn-sm btn-secondary">Chi tiết</a></td>
+                            </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+            {{> common/pagination pagination=pagination}}
+        {{else}}
+            {{> common/empty-state title="Không có tệp" message="Không tìm thấy tệp phù hợp với điều kiện hiện tại."}}
+        {{/if}}
+    </section>
 </section>

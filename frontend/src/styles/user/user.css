@@ -430,6 +430,23 @@
     font-size: var(--text-sm);
 }
 
+.job-result {
+    display: grid;
+    gap: var(--space-3);
+}
+
+.job-result__meta {
+    display: grid;
+    gap: var(--space-1);
+    color: var(--color-text-muted);
+}
+
+.job-result__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
 @media (max-width: 900px) {
     .dashboard-stats,
     .dashboard-grid,

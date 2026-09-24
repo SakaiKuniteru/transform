@@ -46,7 +46,9 @@ function mapCongViec(congViec) {
     return {
         ...congViec,
         trangThaiHienThi: thongTinTrangThai?.ten || congViec?.trangThai || '-',
-        loaiHienThi: thongTinLoai?.ten || congViec?.loaiCongViec || '-'
+        loaiHienThi: thongTinLoai?.ten || congViec?.loaiCongViec || '-',
+        canLamMoi: Boolean(congViec?.id && !trangThaiCongViec.laTrangThaiKetThuc(congViec.trangThai)),
+        lamMoiSauMs: 5000
     };
 }
 

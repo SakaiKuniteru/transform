@@ -1,5 +1,4 @@
 'use strict';
-
 const { qa, datBusy, datDisabled, onReady } = require('./dom');
 
 function laySubmitButtons(form) { return qa('button[type="submit"], input[type="submit"]', form); }
@@ -15,7 +14,7 @@ function khoiPhucForm(form) { datSubmitting(form, false); }
 
 function initRange(form) {
     for (const input of qa('input[type="range"]', form)) {
-        const output = form.querySelector(`[data-range-output="${input.name}"]`) || input.parentElement?.querySelector?.('[data-range-output]');
+        const output = form.querySelector(`[data-range-output="${input.id}"]`) || input.parentElement?.querySelector?.('[data-range-output]');
         if (!output) { continue; }
         const capNhat = () => { output.textContent = input.value; };
         input.addEventListener('input', capNhat);
@@ -23,10 +22,25 @@ function initRange(form) {
     }
 }
 
+function initPasswordToggle(button) {
+    if (!button || button.dataset.passwordToggleInitialized === 'true') { return; }
+    const input = document.getElementById(button.dataset.passwordToggle || '');
+    if (!input || input.tagName !== 'INPUT') { return; }
+    button.dataset.passwordToggleInitialized = 'true';
+    button.addEventListener('click', () => {
+        const dangHien = input.type === 'text';
+        input.type = dangHien ? 'password' : 'text';
+        button.textContent = dangHien ? 'Hiện' : 'Ẩn';
+        button.setAttribute('aria-pressed', dangHien ? 'false' : 'true');
+        button.setAttribute('aria-label', dangHien ? 'Hiển thị mật khẩu' : 'Ẩn mật khẩu');
+    });
+}
+
 function initForm(form) {
     if (!form || form.dataset.formUiInitialized === 'true') { return; }
     form.dataset.formUiInitialized = 'true';
     initRange(form);
+    for (const button of qa('[data-password-toggle]', form)) { initPasswordToggle(button); }
     form.addEventListener('submit', () => { requestAnimationFrame(() => datSubmitting(form, true)); });
 }
 
@@ -41,6 +55,7 @@ module.exports = {
     datSubmitting,
     khoiPhucForm,
     initRange,
+    initPasswordToggle,
     initForm,
     initForms,
     init

@@ -121,11 +121,78 @@ async function xoaHetHan(gioiHan = 5000, db = null) {
     return result.rowCount;
 }
 
+function taoDieuKienDanhSach(filters = {}) {
+    const values = [];
+    const conditions = [];
+    if (filters.requestId) {
+        values.push(filters.requestId);
+        conditions.push(`request_id = $${values.length}`);
+    }
+    if (filters.traceId) {
+        values.push(filters.traceId);
+        conditions.push(`trace_id = $${values.length}`);
+    }
+    if (filters.congViecId) {
+        values.push(filters.congViecId);
+        conditions.push(`cong_viec_id = $${values.length}`);
+    }
+    if (filters.nguoiDungId) {
+        values.push(filters.nguoiDungId);
+        conditions.push(`nguoi_dung_id = $${values.length}`);
+    }
+    if (filters.event) {
+        values.push(filters.event);
+        conditions.push(`ma_su_kien = $${values.length}`);
+    }
+    if (filters.level) {
+        values.push(filters.level);
+        conditions.push(`muc_do = $${values.length}`);
+    }
+    if (filters.tuNgay) {
+        values.push(filters.tuNgay);
+        conditions.push(`created_at >= $${values.length}`);
+    }
+    if (filters.denNgay) {
+        values.push(filters.denNgay);
+        conditions.push(`created_at <= $${values.length}`);
+    }
+    return { values, conditions };
+}
+
+async function getDanhSach(filters = {}, db = null) {
+    const { values, conditions } = taoDieuKienDanhSach(filters);
+    values.push(filters.pageSize);
+    const limitIndex = values.length;
+    values.push(filters.offset);
+    const offsetIndex = values.length;
+    const result = await thucThi(`
+        SELECT *
+        FROM nhat_ky
+        WHERE ${conditions.length ? conditions.join('\n        AND ') : 'TRUE'}
+        ORDER BY created_at DESC, id DESC
+        LIMIT $${limitIndex}
+        OFFSET $${offsetIndex}
+    `, values, db);
+    return result.rows.map(mapNhatKy);
+}
+
+async function demDanhSach(filters = {}, db = null) {
+    const { values, conditions } = taoDieuKienDanhSach(filters);
+    const result = await thucThi(`
+        SELECT COUNT(*)::BIGINT AS tong_so
+        FROM nhat_ky
+        WHERE ${conditions.length ? conditions.join('\n        AND ') : 'TRUE'}
+    `, values, db);
+    return Number(result.rows[0]?.tong_so || 0);
+}
+
 module.exports = {
     ghi,
     getTheoId,
     getTheoRequestId,
     getTheoTraceId,
     getTheoCongViec,
-    xoaHetHan
+    xoaHetHan,
+    getDanhSach,
+    demDanhSach
 };

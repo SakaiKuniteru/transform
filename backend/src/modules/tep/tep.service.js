@@ -249,11 +249,70 @@ async function xoa(id, chuThe) {
     };
 }
 
+async function getDanhSachQuanTri(query = {}) {
+    const page = Number(query.page || 1);
+    const pageSize = Number(query.pageSize || 20);
+    const filters = {
+        page,
+        pageSize,
+        offset: (page - 1) * pageSize,
+        tuKhoa: String(query.tuKhoa || '').trim(),
+        nguoiDungId: query.nguoiDungId ? parseId(query.nguoiDungId) : null,
+        trangThai: query.trangThai || null,
+        dinhDang: String(query.dinhDang || '').trim() || null,
+        tuNgay: query.tuNgay || null,
+        denNgay: query.denNgay || null
+    };
+    const [ danhSach, tongSo ] = await Promise.all([
+        repository.getDanhSachQuanTri(filters),
+        repository.demDanhSachQuanTri(filters)
+    ]);
+    return {
+        danhSach,
+        phanTrang: {
+            page,
+            pageSize,
+            tongSo,
+            tongTrang: Math.max(1, Math.ceil(tongSo / pageSize))
+        }
+    };
+}
+
+async function getChiTietQuanTri(id) {
+    const tepId = parseId(id);
+    const tep = await repository.getChiTietQuanTri(tepId);
+    if (!tep) { throw taoLoi(404, 'Tệp không tồn tại.', MA_LOI.TEP_KHONG_TIM_THAY); }
+    return tep;
+}
+
+async function xoaQuanTri(id) {
+    const tepId = parseId(id);
+    await getChiTietQuanTri(tepId);
+    const danhSachStorage = await repository.getDanhSachStorageKeyQuanTri(tepId);
+    const daXoa = await giaoDich(async (db) => repository.xoaMemQuanTri(tepId, db), {
+        isolationLevel: ISOLATION_LEVEL.READ_COMMITTED
+    });
+    if (!daXoa) { throw taoLoi(404, 'Tệp không tồn tại hoặc đã bị xóa.', MA_LOI.TEP_KHONG_TIM_THAY); }
+    const ketQuaXoaStorage = await Promise.allSettled(danhSachStorage.map((item) => storageService.xoa(item.storageKey)));
+    return {
+        id: tepId,
+        daXoa: true,
+        storage: {
+            tongSo: danhSachStorage.length,
+            daXuLy: ketQuaXoaStorage.filter((item) => item.status === 'fulfilled').length,
+            loi: ketQuaXoaStorage.filter((item) => item.status === 'rejected').length
+        }
+    };
+}
+
 module.exports = {
     upload,
     getDanhSach,
     getChiTiet,
     capNhat,
     getTaiXuong,
-    xoa
+    xoa,
+    getDanhSachQuanTri,
+    getChiTietQuanTri,
+    xoaQuanTri
 };

@@ -1,0 +1,143 @@
+<section class="admin-page admin-limit-policies">
+    <header class="admin-page__header">
+        <div>
+            <h1 class="admin-page__title">Chính sách hạn mức</h1>
+            <p class="admin-page__description">Quản lý giới hạn sử dụng theo đối tượng, gói dịch vụ và hành động.</p>
+        </div>
+    </header>
+    <details class="admin-section admin-create"{{#if taoChinhSachForm.hasErrors}} open{{/if}}>
+        <summary class="admin-section__summary">Tạo chính sách hạn mức</summary>
+        <div class="admin-section__body">{{> forms/form taoChinhSachForm}}</div>
+    </details>
+    {{#if chinhSachDangChon}}
+        <section class="admin-section">
+            <div class="admin-section__header">
+                <div>
+                    <h2 class="admin-section__title">Cập nhật {{chinhSachDangChon.ten}}</h2>
+                    <p class="admin-section__description">{{chinhSachDangChon.ma}} · {{chinhSachDangChon.maHanhDongHienThi}}</p>
+                </div>
+                <a href="/admin/chinh-sach-han-muc" class="btn btn-secondary">Đóng</a>
+            </div>
+            {{> forms/form capNhatChinhSachForm}}
+        </section>
+    {{/if}}
+    <section class="admin-section">
+        <form action="/admin/chinh-sach-han-muc" method="GET" class="admin-filter">
+            <div class="admin-filter__search">
+                <label for="policy-search">Tìm kiếm</label>
+                <input type="search" id="policy-search" name="tuKhoa" value="{{filters.tuKhoa}}" class="form-control" placeholder="Mã, tên hoặc hành động">
+            </div>
+            <div class="admin-filter__field">
+                <label for="policy-target">Đối tượng</label>
+                <select id="policy-target" name="doiTuong" class="form-control form-select">
+                    <option value="">Tất cả</option>
+                    {{#each doiTuongOptions}}<option value="{{value}}"{{#if (eq @root.filters.doiTuong value)}} selected{{/if}}>{{label}}</option>{{/each}}
+                </select>
+            </div>
+            <div class="admin-filter__field">
+                <label for="policy-account">Loại tài khoản</label>
+                <select id="policy-account" name="loaiTaiKhoan" class="form-control form-select">
+                    <option value="">Tất cả</option>
+                    {{#each loaiTaiKhoanOptions}}<option value="{{value}}"{{#if (eq @root.filters.loaiTaiKhoan value)}} selected{{/if}}>{{label}}</option>{{/each}}
+                </select>
+            </div>
+            <div class="admin-filter__field">
+                <label for="policy-action">Hành động</label>
+                <select id="policy-action" name="maHanhDong" class="form-control form-select">
+                    <option value="">Tất cả</option>
+                    {{#each maHanMucOptions}}<option value="{{value}}"{{#if (eq @root.filters.maHanhDong value)}} selected{{/if}}>{{label}}</option>{{/each}}
+                </select>
+            </div>
+            <div class="admin-filter__field">
+                <label for="policy-unit">Đơn vị</label>
+                <select id="policy-unit" name="donVi" class="form-control form-select">
+                    <option value="">Tất cả</option>
+                    {{#each donViOptions}}<option value="{{value}}"{{#if (eq @root.filters.donVi value)}} selected{{/if}}>{{label}}</option>{{/each}}
+                </select>
+            </div>
+            <div class="admin-filter__field">
+                <label for="policy-cycle">Chu kỳ</label>
+                <select id="policy-cycle" name="chuKy" class="form-control form-select">
+                    <option value="">Tất cả</option>
+                    {{#each chuKyOptions}}<option value="{{value}}"{{#if (eq @root.filters.chuKy value)}} selected{{/if}}>{{label}}</option>{{/each}}
+                </select>
+            </div>
+            <div class="admin-filter__field">
+                <label for="policy-plan">ID gói</label>
+                <input type="number" id="policy-plan" name="goiDichVuId" value="{{filters.goiDichVuId}}" min="1" class="form-control">
+            </div>
+            <div class="admin-filter__field">
+                <label for="policy-active">Trạng thái</label>
+                <select id="policy-active" name="active" class="form-control form-select">
+                    <option value="">Tất cả</option>
+                    <option value="true"{{#if (eq filters.active "true")}} selected{{/if}}>Đang áp dụng</option>
+                    <option value="false"{{#if (eq filters.active "false")}} selected{{/if}}>Ngừng áp dụng</option>
+                </select>
+            </div>
+            <div class="admin-filter__field">
+                <label for="policy-effective">Hiệu lực</label>
+                <select id="policy-effective" name="dangHieuLuc" class="form-control form-select">
+                    <option value="">Tất cả</option>
+                    <option value="true"{{#if (eq filters.dangHieuLuc "true")}} selected{{/if}}>Đang hiệu lực</option>
+                    <option value="false"{{#if (eq filters.dangHieuLuc "false")}} selected{{/if}}>Ngoài hiệu lực</option>
+                </select>
+            </div>
+            <div class="admin-filter__actions">
+                <button type="submit" class="btn btn-secondary">Tìm kiếm</button>
+                <a href="/admin/chinh-sach-han-muc" class="btn btn-link">Xóa lọc</a>
+            </div>
+        </form>
+        {{#if danhSach.length}}
+            <div class="admin-table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Chính sách</th>
+                            <th>Đối tượng</th>
+                            <th>Hành động</th>
+                            <th>Giới hạn</th>
+                            <th>Chu kỳ</th>
+                            <th>Ưu tiên</th>
+                            <th>Hiệu lực</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each danhSach}}
+                            <tr>
+                                <td>#{{id}}</td>
+                                <td><strong>{{ten}}</strong><span>{{ma}}</span></td>
+                                <td>{{doiTuongHienThi}}{{#if loaiTaiKhoan}} · {{loaiTaiKhoan}}{{/if}}{{#if tenGoiDichVu}} · {{tenGoiDichVu}}{{/if}}</td>
+                                <td>{{maHanhDongHienThi}}</td>
+                                <td>{{gioiHanHienThi}}<span>{{donViHienThi}}</span></td>
+                                <td>{{chuKyHienThi}}</td>
+                                <td>{{mucDoUuTien}}</td>
+                                <td>{{hieuLucTuHienThi}}<span>→ {{hieuLucDenHienThi}}</span></td>
+                                <td><span class="account-status{{#if active}} account-status--HOAT_DONG{{else}} account-status--VO_HIEU_HOA{{/if}}">{{#if active}}Đang áp dụng{{else}}Ngừng áp dụng{{/if}}</span></td>
+                                <td>
+                                    <div class="table-actions">
+                                        <a href="/admin/chinh-sach-han-muc?id={{id}}" class="btn btn-sm btn-secondary">Sửa</a>
+                                        <form action="/admin/chinh-sach-han-muc/{{id}}/trang-thai" method="POST">
+                                            {{#if @root.csrfToken}}<input type="hidden" name="_csrf" value="{{@root.csrfToken}}">{{/if}}
+                                            <input type="hidden" name="active" value="{{#if active}}false{{else}}true{{/if}}">
+                                            <button type="submit" class="btn btn-sm btn-secondary">{{#if active}}Ngừng{{else}}Kích hoạt{{/if}}</button>
+                                        </form>
+                                        <form action="/admin/chinh-sach-han-muc/{{id}}/xoa" method="POST">
+                                            {{#if @root.csrfToken}}<input type="hidden" name="_csrf" value="{{@root.csrfToken}}">{{/if}}
+                                            <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+            {{> common/pagination pagination=pagination}}
+        {{else}}
+            {{> common/empty-state title="Không có chính sách hạn mức" message="Không tìm thấy chính sách phù hợp với điều kiện hiện tại."}}
+        {{/if}}
+    </section>
+</section>

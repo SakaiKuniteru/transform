@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    {{> common/head}}
+</head>
+<body class="layout-public{{#if page.bodyClass}} {{page.bodyClass}}{{/if}}">
+    <div class="public-layout">
+        <header class="public-header">
+            <a href="/" class="public-header__brand" aria-label="Transform - Trang chủ">Transform</a>
+            <nav class="public-header__nav" aria-label="Điều hướng chính">
+                {{#if auth.daDangNhap}}
+                    {{#if auth.coTheTruyCapKhuVucNguoiDung}}<a href="/user" class="btn btn-secondary">Khu vực người dùng</a>{{/if}}
+                    {{#if auth.coTheTruyCapKhuVucQuanTri}}<a href="/admin" class="btn btn-primary">Quản trị</a>{{/if}}
+                {{else}}
+                    <a href="/dang-nhap" class="btn btn-secondary">Đăng nhập</a>
+                    <a href="/dang-ky" class="btn btn-primary">Đăng ký</a>
+                {{/if}}
+            </nav>
+        </header>
+        <main class="public-main" id="main-content">
+            {{{body}}}
+        </main>
+    </div>
+    {{> common/toast toasts=toasts}}
+    {{> common/loading id="global-loading" text="Đang xử lý..." fullscreen=true}}
+    {{#each assets.scripts}}<script src="{{src}}"{{#if defer}} defer{{/if}}{{#if async}} async{{/if}}{{#if type}} type="{{type}}"{{/if}}></script>{{/each}}
+</body>
+</html>

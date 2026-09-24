@@ -5,7 +5,7 @@ const viewsDir = path.join(env.root, 'src', 'views');
 module.exports = Object.freeze({
     engineName: 'hbs',
     extname: '.hbs',
-    defaultLayout: 'app',
+    defaultLayout: 'public',
     viewsDir,
     layoutsDir: path.join(viewsDir, 'layouts'),
     partialsDir: path.join(viewsDir, 'partials')

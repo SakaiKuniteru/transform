@@ -103,6 +103,8 @@ function mapCongViec(congViec) {
         loaiHienThi: layLoaiHienThi(congViec),
         trangThaiHienThi: thongTinTrangThai?.ten || congViec?.trangThai || '-',
         coTheHuy,
+        canLamMoi: Boolean(congViec?.id && !trangThaiCongViec.laTrangThaiKetThuc(congViec.trangThai)),
+        lamMoiSauMs: 5000,
         createdAtHienThi: dinhDangNgay(congViec?.createdAt),
         updatedAtHienThi: dinhDangNgay(congViec?.updatedAt),
         xepHangLucHienThi: dinhDangNgay(congViec?.xepHangLuc),

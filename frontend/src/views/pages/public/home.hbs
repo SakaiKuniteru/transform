@@ -1,0 +1,32 @@
+<section class="public-home">
+    <div class="public-home__hero">
+        <div class="public-home__content">
+            <span class="public-home__eyebrow">Transform Platform</span>
+            <h1 class="public-home__title">Chuyển đổi và xử lý tệp trong một nơi.</h1>
+            <p class="public-home__description">Tải tệp lên, tạo công việc xử lý, theo dõi tiến trình và quản lý kết quả trực tiếp trên Transform.</p>
+            <div class="public-home__actions">
+                {{#if auth.daDangNhap}}
+                    {{#if auth.coTheTruyCapKhuVucNguoiDung}}<a href="/user/chuyen-doi" class="btn btn-primary">Bắt đầu chuyển đổi</a>{{/if}}
+                    {{#if auth.coTheTruyCapKhuVucQuanTri}}<a href="/admin" class="btn btn-secondary">Mở quản trị</a>{{/if}}
+                {{else}}
+                    <a href="/dang-ky" class="btn btn-primary">Tạo tài khoản</a>
+                    <a href="/dang-nhap" class="btn btn-secondary">Đăng nhập</a>
+                {{/if}}
+            </div>
+        </div>
+    </div>
+    <div class="public-home__features">
+        <article class="public-feature">
+            <h2>Quản lý tệp</h2>
+            <p>Lưu và quản lý các tệp đã tải lên trong khu vực tài khoản của bạn.</p>
+        </article>
+        <article class="public-feature">
+            <h2>Chuyển đổi</h2>
+            <p>Tạo các yêu cầu chuyển đổi và xử lý bằng những công cụ mà hệ thống đang hỗ trợ.</p>
+        </article>
+        <article class="public-feature">
+            <h2>Theo dõi công việc</h2>
+            <p>Xem trạng thái, tiến trình, từng bước xử lý và tệp kết quả khi công việc hoàn thành.</p>
+        </article>
+    </div>
+</section>

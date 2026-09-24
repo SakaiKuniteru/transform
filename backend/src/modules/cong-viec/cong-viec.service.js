@@ -335,6 +335,86 @@ async function capNhatBuoc(id, data = {}) {
     return buoc;
 }
 
+async function getDanhSachQuanTri(query = {}) {
+    const page = Number(query.page || 1);
+    const pageSize = Number(query.pageSize || 20);
+    const filters = {
+        page,
+        pageSize,
+        offset: (page - 1) * pageSize,
+        nguoiDungId: query.nguoiDungId ? parseId(query.nguoiDungId, 'ID người dùng') : null,
+        trangThai: query.trangThai || null,
+        loaiCongViec: String(query.loaiCongViec || '').trim() || null,
+        tuKhoa: String(query.tuKhoa || '').trim(),
+        tuNgay: query.tuNgay || null,
+        denNgay: query.denNgay || null
+    };
+    const [ danhSach, tongSo ] = await Promise.all([
+        repository.getDanhSachQuanTri(filters),
+        repository.demDanhSachQuanTri(filters)
+    ]);
+    return {
+        danhSach,
+        phanTrang: {
+            page,
+            pageSize,
+            tongSo,
+            tongTrang: Math.max(1, Math.ceil(tongSo / pageSize))
+        }
+    };
+}
+
+async function getChiTietQuanTri(id) {
+    const congViecId = parseId(id);
+    const congViec = await repository.getChiTietQuanTri(congViecId);
+    if (!congViec) { throw taoLoi(404, 'Công việc không tồn tại.', MA_LOI.CONG_VIEC_KHONG_TIM_THAY); }
+    return {
+        ...congViec,
+        cacBuoc: await repository.getDanhSachBuoc(congViecId)
+    };
+}
+
+async function huyQuanTri(id) {
+    const congViecId = parseId(id);
+    const hienTai = await repository.getChiTietQuanTri(congViecId);
+    if (!hienTai) { throw taoLoi(404, 'Công việc không tồn tại.', MA_LOI.CONG_VIEC_KHONG_TIM_THAY); }
+    if (hienTai.trangThai === TRANG_THAI_CONG_VIEC.DA_HUY || hienTai.trangThai === TRANG_THAI_CONG_VIEC.DANG_HUY) { return getChiTietQuanTri(congViecId); }
+    if (laTrangThaiKetThuc(hienTai.trangThai)) { throw taoLoi(409, 'Công việc đã kết thúc nên không thể hủy.', MA_LOI.CONG_VIEC_KHONG_THE_HUY); }
+    await giaoDich(async (db) => {
+        const ketQua = await repository.yeuCauHuyQuanTri(congViecId, db);
+        if (!ketQua) { throw taoLoi(409, 'Trạng thái công việc đã thay đổi nên không thể hủy.', MA_LOI.CONG_VIEC_KHONG_THE_HUY); }
+        if (ketQua.trangThai === TRANG_THAI_CONG_VIEC.DA_HUY) { await repository.huyBuocChuaXuLy(congViecId, db); }
+    }, { isolationLevel: ISOLATION_LEVEL.READ_COMMITTED });
+    const ketQua = await getChiTietQuanTri(congViecId);
+    const owner = hienTai.nguoiDungId ? { nguoiDungId: hienTai.nguoiDungId } : { phienKhachId: hienTai.phienKhachId };
+    if (hienTai.loaiCongViec === 'CHUYEN_DOI' && ketQua.trangThai === TRANG_THAI_CONG_VIEC.DA_HUY) {
+        await lichSuService.ghiNhanAnToan({
+            ...owner,
+            congViecId,
+            tepId: hienTai.tepNguonId || null,
+            phienBanTepId: hienTai.phienBanNguonId || null,
+            loaiSuKien: lichSuService.LOAI_SU_KIEN.CHUYEN_DOI_DA_HUY,
+            nguon: lichSuService.NGUON_LICH_SU.API,
+            tieuDe: 'Đã hủy chuyển đổi',
+            moTa: 'Quản trị đã hủy công việc chuyển đổi.'
+        });
+    }
+    await nhatKyService.ghiAnToan({
+        mucDo: nhatKyService.MUC_DO_NHAT_KY.AUDIT,
+        nguon: 'CONG_VIEC',
+        maSuKien: 'QUAN_TRI_HUY_CONG_VIEC',
+        ...owner,
+        congViecId,
+        tepId: hienTai.tepNguonId || null,
+        thongDiep: ketQua.trangThai === TRANG_THAI_CONG_VIEC.DA_HUY ? 'Quản trị đã hủy công việc.' : 'Quản trị đã gửi yêu cầu hủy công việc.',
+        duLieu: {
+            trangThaiTruoc: hienTai.trangThai,
+            trangThaiSau: ketQua.trangThai
+        }
+    });
+    return ketQua;
+}
+
 module.exports = {
     taoCongViec,
     getDanhSach,
@@ -346,5 +426,8 @@ module.exports = {
     hoanThanh,
     thatBai,
     danhDauDaHuy,
-    capNhatBuoc
+    capNhatBuoc,
+    getDanhSachQuanTri,
+    getChiTietQuanTri,
+    huyQuanTri
 };

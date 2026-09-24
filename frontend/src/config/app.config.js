@@ -10,6 +10,7 @@ module.exports = Object.freeze({
     trustProxy: env.trustProxy,
     jsonLimit: env.jsonLimit,
     urlencodedLimit: env.urlencodedLimit,
+    htmlMinify: env.htmlMinify,
     requestTimeoutMs: env.requestTimeoutMs,
     shutdownTimeoutMs: env.shutdownTimeoutMs
 });

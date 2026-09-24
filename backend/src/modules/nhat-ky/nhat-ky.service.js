@@ -212,6 +212,37 @@ async function audit(nguon, thongDiep, duLieu = {}, data = {}) {
     return ghi({ ...data, mucDo: MUC_DO_NHAT_KY.AUDIT, nguon, thongDiep, duLieu }); 
 }
 
+async function getDanhSach(query = {}) {
+    const page = Number(query.page || 1);
+    const pageSize = Number(query.pageSize || 20);
+    const filters = {
+        requestId: chuanHoaRequestId(query.requestId),
+        traceId: chuanHoaChuoi(query.traceId, 'Trace ID', 100),
+        congViecId: parseId(query.congViecId, 'ID công việc'),
+        nguoiDungId: parseId(query.nguoiDungId, 'ID người dùng'),
+        event: chuanHoaChuoi(query.event, 'Mã sự kiện', 100)?.toUpperCase() || null,
+        level: query.level ? chuanHoaMucDo(query.level) : null,
+        tuNgay: query.tuNgay || null,
+        denNgay: query.denNgay || null,
+        page,
+        pageSize,
+        offset: (page - 1) * pageSize
+    };
+    const [ danhSach, tongSo ] = await Promise.all([
+        repository.getDanhSach(filters),
+        repository.demDanhSach(filters)
+    ]);
+    return {
+        danhSach,
+        phanTrang: {
+            page,
+            pageSize,
+            tongSo,
+            tongTrang: Math.max(1, Math.ceil(tongSo / pageSize))
+        }
+    };
+}
+
 async function getTheoRequestId(requestId, gioiHan = 100) {
     const id = chuanHoaRequestId(requestId);
     if (!id) { throw new TypeError('Request ID phải là UUID hợp lệ.'); }
@@ -252,6 +283,7 @@ module.exports = {
     warn,
     security,
     audit,
+    getDanhSach,
     getTheoRequestId,
     getTheoTraceId,
     getTheoCongViec,

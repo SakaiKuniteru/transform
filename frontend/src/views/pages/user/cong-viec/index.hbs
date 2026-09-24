@@ -62,8 +62,8 @@
                                     {{#if dinhDangNguon}}<span>{{dinhDangNguon}}{{#if dinhDangDich}} → {{dinhDangDich}}{{/if}}</span>{{/if}}
                                 </td>
                                 <td>{{#if tepNguon}}<a href="/user/tep/{{tepNguon.id}}">{{tepNguon.tenTep}}</a>{{else}}-{{/if}}</td>
-                                <td><span class="job-status job-status--{{trangThai}}">{{trangThaiHienThi}}</span></td>
-                                <td><progress value="{{tienTrinh}}" max="100">{{tienTrinh}}%</progress><span>{{tienTrinh}}%</span></td>
+                                <td>{{> job/status trangThai=trangThai trangThaiHienThi=trangThaiHienThi}}</td>
+                                <td>{{> job/progress tienTrinh=tienTrinh}}</td>
                                 <td>{{createdAtHienThi}}</td>
                                 <td><a href="/user/cong-viec/{{id}}" class="btn btn-sm btn-secondary">Chi tiết</a></td>
                             </tr>

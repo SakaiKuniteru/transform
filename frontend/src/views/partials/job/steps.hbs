@@ -1,0 +1,20 @@
+{{#if steps.length}}
+    <div class="job-steps">
+        {{#each steps}}
+            <article class="job-step">
+                <div class="job-step__order">{{thuTu}}</div>
+                <div class="job-step__content">
+                    <div class="job-step__header">
+                        <strong>{{tenBuoc}}</strong>
+                        {{> job/status trangThai=trangThai trangThaiHienThi=trangThaiHienThi}}
+                    </div>
+                    {{> job/progress tienTrinh=tienTrinh}}
+                    {{#if boXuLy}}<span>Bộ xử lý: {{boXuLy}}{{#if congCu}} · {{congCu}}{{/if}}</span>{{/if}}
+                    {{#if maLoi}}<div class="job-step__error"><strong>{{maLoi}}</strong>{{#if thongBaoLoi}}<span>{{thongBaoLoi}}</span>{{/if}}</div>{{/if}}
+                </div>
+            </article>
+        {{/each}}
+    </div>
+{{else}}
+    {{> common/empty-state title="Chưa có bước xử lý" message="Công việc này chưa có thông tin bước xử lý."}}
+{{/if}}

@@ -5,6 +5,7 @@ const service = require('./tep.service');
 const nhatKyService = require('../nhat-ky/nhat-ky.service');
 const MA_LOI = require('../../constants/ma-loi');
 const { loiChuaXacThuc } = require('../../utils/loi');
+const { LOAI_TAI_KHOAN } = require('../../constants/loai-tai-khoan');
 const {
     layDanhSachTep,
     xoaTepTamTrongRequest
@@ -13,11 +14,12 @@ const {
     hoanTraHanMucUpload
 } = require('../../middlewares/kiem-tra-han-muc-upload');
 
-function thanhCong(res, { statusCode = 200, message = null, data = null } = {}) {
+function thanhCong(res, { statusCode = 200, message = null, data = null, meta = null } = {}) {
     return res.status(statusCode).json({
         success: true,
         message,
         data,
+        meta,
         error: null
     });
 }
@@ -44,6 +46,23 @@ function layChuThe(req) {
         };
     }
     throw loiChuaXacThuc('Không xác định được chủ sở hữu tệp.', MA_LOI.KHONG_XAC_DINH_DUOC_CHU_SO_HUU_TEP);
+}
+
+function laQuanTri(req) { return req.user?.loaiTaiKhoan === LOAI_TAI_KHOAN.QUAN_TRI; }
+
+async function getDanhSachQuanTri(req, res, next) {
+    try {
+        const result = await service.getDanhSachQuanTri(req.validated?.query || req.query);
+        return thanhCong(res, {
+            data: result.danhSach,
+            meta: {
+                page: result.phanTrang.page,
+                pageSize: result.phanTrang.pageSize,
+                total: result.phanTrang.tongSo,
+                totalPages: result.phanTrang.tongTrang
+            }
+        });
+    } catch (error) { return next(error); }
 }
 
 async function upload(req, res, next) {
@@ -91,11 +110,9 @@ async function getDanhSach(req, res, next) {
 
 async function getChiTiet(req, res, next) {
     try {
-        const data = await service.getChiTiet(req.params.id, layChuThe(req));
+        const data = laQuanTri(req) ? await service.getChiTietQuanTri(req.params.id) : await service.getChiTiet(req.params.id, layChuThe(req));
         return thanhCong(res, { data });
-    } catch (error) {
-        return next(error);
-    }
+    } catch (error) { return next(error); }
 }
 
 async function capNhat(req, res, next) {
@@ -132,19 +149,29 @@ async function taiXuong(req, res, next) {
 
 async function xoa(req, res, next) {
     try {
-        const data = await service.xoa(req.params.id, layChuThe(req));
+        const quanTri = laQuanTri(req);
+        const data = quanTri ? await service.xoaQuanTri(req.params.id) : await service.xoa(req.params.id, layChuThe(req));
+        if (quanTri) {
+            await nhatKyService.ghiTuRequestAnToan(req, {
+                mucDo: nhatKyService.MUC_DO_NHAT_KY.AUDIT,
+                nguon: 'TEP',
+                maSuKien: 'QUAN_TRI_XOA_TEP',
+                tepId: Number(req.params.id),
+                thongDiep: 'Quản trị đã xóa tệp.',
+                duLieu: data
+            });
+        }
         return thanhCong(res, {
             message: 'Xóa tệp thành công.',
             data
         });
-    } catch (error) {
-        return next(error);
-    }
+    } catch (error) { return next(error); }
 }
 
 module.exports = {
     upload,
     getDanhSach,
+    getDanhSachQuanTri,
     getChiTiet,
     capNhat,
     taiXuong,

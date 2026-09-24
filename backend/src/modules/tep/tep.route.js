@@ -5,6 +5,7 @@ const controller = require('./tep.controller');
 const {
     paramsIdSchema,
     danhSachSchema,
+    danhSachQuanTriSchema,
     capNhatSchema
 } = require('./tep.validation');
 const {
@@ -12,7 +13,8 @@ const {
     validateParams,
     validateQuery
 } = require('../../middlewares/validate');
-const { xacThucTuyChon } = require('../../middlewares/xac-thuc');
+const { yeuCauXacThuc, xacThucTuyChon } = require('../../middlewares/xac-thuc');
+const { yeuCauQuanTri } = require('../../middlewares/phan-quyen');
 const { damBaoPhienKhach } = require('../../middlewares/phien-khach');
 const { chinhSachUpload } = require('../../middlewares/chinh-sach-upload');
 const { kiemTraHanMucUpload } = require('../../middlewares/kiem-tra-han-muc-upload');
@@ -23,6 +25,14 @@ const router = express.Router();
 router.use(
     xacThucTuyChon,
     damBaoPhienKhach
+);
+
+router.get(
+    '/',
+    yeuCauXacThuc,
+    yeuCauQuanTri,
+    validateQuery(danhSachQuanTriSchema),
+    controller.getDanhSachQuanTri
 );
 
 router.post(

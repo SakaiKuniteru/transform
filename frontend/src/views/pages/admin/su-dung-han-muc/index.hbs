@@ -1,0 +1,93 @@
+<section class="admin-page admin-limit-usage">
+    <header class="admin-page__header">
+        <div>
+            <h1 class="admin-page__title">Sử dụng hạn mức</h1>
+            <p class="admin-page__description">Tra cứu gói hiện tại và mức sử dụng của từng người dùng.</p>
+        </div>
+    </header>
+    <section class="admin-section">
+        <h2 class="admin-section__title">Tra cứu người dùng</h2>
+        <form action="/admin/su-dung-han-muc" method="GET" class="admin-filter">
+            <div class="admin-filter__search">
+                <label for="usage-user-search">Tìm người dùng</label>
+                <input type="search" id="usage-user-search" name="tuKhoaNguoiDung" value="{{tuKhoaNguoiDung}}" class="form-control" placeholder="Email, tên đăng nhập hoặc họ tên">
+            </div>
+            <div class="admin-filter__field">
+                <label for="usage-user">Người dùng</label>
+                <select id="usage-user" name="nguoiDungId" class="form-control form-select" required>
+                    <option value="">Chọn người dùng</option>
+                    {{#each nguoiDungOptions}}<option value="{{value}}"{{#if (eq @root.nguoiDungId value)}} selected{{/if}}>{{label}}</option>{{/each}}
+                </select>
+            </div>
+            <div class="admin-filter__actions">
+                <button type="submit" class="btn btn-primary">Tra cứu</button>
+                <a href="/admin/su-dung-han-muc" class="btn btn-link">Xóa</a>
+            </div>
+        </form>
+        {{#if traCuuError}}{{> common/error-state title="Không thể tra cứu" message=traCuuError}}{{/if}}
+    </section>
+    {{#if tongQuan}}
+        <div class="admin-detail-grid">
+            <section class="admin-section">
+                <h2 class="admin-section__title">Người dùng</h2>
+                <dl class="detail-list">
+                    <div><dt>ID</dt><dd>#{{tongQuan.nguoiDung.id}}</dd></div>
+                    <div><dt>Họ và tên</dt><dd>{{#if tongQuan.nguoiDung.hoTen}}{{tongQuan.nguoiDung.hoTen}}{{else}}-{{/if}}</dd></div>
+                    <div><dt>Email</dt><dd>{{tongQuan.nguoiDung.email}}</dd></div>
+                    <div><dt>Tên đăng nhập</dt><dd>{{#if tongQuan.nguoiDung.tenDangNhap}}{{tongQuan.nguoiDung.tenDangNhap}}{{else}}-{{/if}}</dd></div>
+                    <div><dt>Loại tài khoản</dt><dd>{{tongQuan.nguoiDung.loaiTaiKhoan}}</dd></div>
+                    <div><dt>Trạng thái</dt><dd>{{tongQuan.nguoiDung.trangThai}}</dd></div>
+                </dl>
+            </section>
+            <section class="admin-section">
+                <h2 class="admin-section__title">Gói hiện tại</h2>
+                {{#if tongQuan.dangKyGoi}}
+                    <dl class="detail-list">
+                        <div><dt>Gói dịch vụ</dt><dd>{{tongQuan.goiDichVu.ten}} ({{tongQuan.goiDichVu.ma}})</dd></div>
+                        <div><dt>Trạng thái đăng ký</dt><dd>{{tongQuan.dangKyGoi.trangThai}}</dd></div>
+                        <div><dt>Nguồn kích hoạt</dt><dd>{{tongQuan.dangKyGoi.nguonKichHoat}}</dd></div>
+                        <div><dt>Bắt đầu</dt><dd>{{tongQuan.dangKyGoi.batDauLucHienThi}}</dd></div>
+                        <div><dt>Hết hạn</dt><dd>{{tongQuan.dangKyGoi.hetHanLucHienThi}}</dd></div>
+                        <div><dt>Tự động gia hạn</dt><dd>{{#if tongQuan.dangKyGoi.tuDongGiaHan}}Có{{else}}Không{{/if}}</dd></div>
+                    </dl>
+                {{else}}
+                    {{> common/empty-state title="Không có gói hoạt động" message="Người dùng hiện không có đăng ký gói đang hoạt động."}}
+                {{/if}}
+            </section>
+        </div>
+        <section class="admin-section">
+            <div class="admin-section__header">
+                <div>
+                    <h2 class="admin-section__title">Hạn mức</h2>
+                    <p class="admin-section__description">Giới hạn, mức đã sử dụng và phần còn lại theo từng hành động.</p>
+                </div>
+            </div>
+            {{#if tongQuan.danhSachHanMuc.length}}
+                <div class="quota-grid">
+                    {{#each tongQuan.danhSachHanMuc}}
+                        <article class="quota-card">
+                            <div class="quota-card__header">
+                                <strong>{{maHanhDongHienThi}}</strong>
+                                <span>{{trangThaiHienThi}}</span>
+                            </div>
+                            <div class="quota-card__numbers">
+                                <span>Đã dùng: {{daSuDungHienThi}}</span>
+                                <span>Còn lại: {{conLaiHienThi}}</span>
+                            </div>
+                            {{#unless khongGioiHan}}{{#if gioiHan}}<progress value="{{#if phanTram}}{{phanTram}}{{else}}0{{/if}}" max="100">{{#if phanTram}}{{phanTram}}{{else}}0{{/if}}%</progress>{{/if}}{{/unless}}
+                            <div class="quota-card__limit">Giới hạn: {{gioiHanHienThi}}</div>
+                            <div class="quota-card__limit">Đơn vị: {{donViHienThi}} · Chu kỳ: {{chuKyHienThi}}</div>
+                            {{#if tenChinhSach}}<div class="quota-card__limit">Chính sách: {{tenChinhSach}}{{#if maChinhSach}} ({{maChinhSach}}){{/if}}</div>{{/if}}
+                            {{#if kyBatDau}}<div class="quota-card__limit">Kỳ: {{kyBatDauHienThi}} → {{kyKetThucHienThi}}</div>{{/if}}
+                            {{#if chinhSachId}}<a href="/admin/chinh-sach-han-muc?id={{chinhSachId}}" class="btn btn-sm btn-secondary">Xem chính sách</a>{{/if}}
+                        </article>
+                    {{/each}}
+                </div>
+            {{else}}
+                {{> common/empty-state title="Chưa có dữ liệu hạn mức" message="Không có thông tin hạn mức để hiển thị."}}
+            {{/if}}
+        </section>
+    {{else}}
+        {{#unless traCuuError}}{{> common/empty-state title="Chọn người dùng để tra cứu" message="Chọn một người dùng ở phía trên để xem gói hiện tại và tình trạng sử dụng hạn mức."}}{{/unless}}
+    {{/if}}
+</section>

@@ -1,0 +1,109 @@
+<section class="admin-page admin-service-plans">
+    <header class="admin-page__header">
+        <div>
+            <h1 class="admin-page__title">Gói dịch vụ</h1>
+            <p class="admin-page__description">Quản lý danh sách gói, giá, chu kỳ và trạng thái cung cấp dịch vụ.</p>
+        </div>
+    </header>
+    <details class="admin-section admin-create"{{#if taoGoiForm.hasErrors}} open{{/if}}>
+        <summary class="admin-section__summary">Tạo gói dịch vụ</summary>
+        <div class="admin-section__body">{{> forms/form taoGoiForm}}</div>
+    </details>
+    {{#if goiDangChon}}
+        <section class="admin-section">
+            <div class="admin-section__header">
+                <div>
+                    <h2 class="admin-section__title">Cập nhật {{goiDangChon.ten}}</h2>
+                    <p class="admin-section__description">Mã gói: {{goiDangChon.ma}} · {{goiDangChon.trangThaiHienThi}}</p>
+                </div>
+                <a href="/admin/goi-dich-vu" class="btn btn-secondary">Đóng</a>
+            </div>
+            {{> forms/form capNhatGoiForm}}
+        </section>
+    {{/if}}
+    <section class="admin-section">
+        <form action="/admin/goi-dich-vu" method="GET" class="admin-filter">
+            <div class="admin-filter__search">
+                <label for="goi-tu-khoa">Tìm kiếm</label>
+                <input type="search" id="goi-tu-khoa" name="tuKhoa" value="{{filters.tuKhoa}}" class="form-control" placeholder="Mã hoặc tên gói">
+            </div>
+            <div class="admin-filter__field">
+                <label for="goi-chu-ky">Chu kỳ</label>
+                <select id="goi-chu-ky" name="chuKy" class="form-control form-select">
+                    <option value="">Tất cả chu kỳ</option>
+                    {{#each chuKyOptions}}<option value="{{value}}"{{#if (eq @root.filters.chuKy value)}} selected{{/if}}>{{label}}</option>{{/each}}
+                </select>
+            </div>
+            <div class="admin-filter__field">
+                <label for="goi-thanh-toan">Thanh toán</label>
+                <select id="goi-thanh-toan" name="yeuCauThanhToan" class="form-control form-select">
+                    <option value="">Tất cả</option>
+                    <option value="true"{{#if (eq filters.yeuCauThanhToan "true")}} selected{{/if}}>Có yêu cầu</option>
+                    <option value="false"{{#if (eq filters.yeuCauThanhToan "false")}} selected{{/if}}>Không yêu cầu</option>
+                </select>
+            </div>
+            <div class="admin-filter__field">
+                <label for="goi-active">Trạng thái</label>
+                <select id="goi-active" name="active" class="form-control form-select">
+                    <option value="">Tất cả</option>
+                    <option value="true"{{#if (eq filters.active "true")}} selected{{/if}}>Đang hoạt động</option>
+                    <option value="false"{{#if (eq filters.active "false")}} selected{{/if}}>Ngừng hoạt động</option>
+                </select>
+            </div>
+            <div class="admin-filter__actions">
+                <button type="submit" class="btn btn-secondary">Tìm kiếm</button>
+                <a href="/admin/goi-dich-vu" class="btn btn-link">Xóa lọc</a>
+            </div>
+        </form>
+        {{#if danhSach.length}}
+            <div class="admin-table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Gói dịch vụ</th>
+                            <th>Giá</th>
+                            <th>Chu kỳ</th>
+                            <th>Thanh toán</th>
+                            <th>Trạng thái</th>
+                            <th>Thứ tự</th>
+                            <th>Cập nhật</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each danhSach}}
+                            <tr>
+                                <td>#{{id}}</td>
+                                <td><strong>{{ten}}</strong><span>{{ma}}</span></td>
+                                <td>{{giaHienThi}}</td>
+                                <td>{{chuKyDayDuHienThi}}</td>
+                                <td>{{#if yeuCauThanhToan}}Có{{else}}Không{{/if}}</td>
+                                <td><span class="service-plan-status{{#if active}} service-plan-status--HOAT_DONG{{else}} service-plan-status--DA_HUY{{/if}}">{{trangThaiHienThi}}</span></td>
+                                <td>{{thuTu}}</td>
+                                <td>{{updatedAtHienThi}}</td>
+                                <td>
+                                    <div class="table-actions">
+                                        <a href="/admin/goi-dich-vu?id={{id}}" class="btn btn-sm btn-secondary">Sửa</a>
+                                        <form action="/admin/goi-dich-vu/{{id}}/trang-thai" method="POST">
+                                            {{#if @root.csrfToken}}<input type="hidden" name="_csrf" value="{{@root.csrfToken}}">{{/if}}
+                                            <input type="hidden" name="active" value="{{#if active}}false{{else}}true{{/if}}">
+                                            <button type="submit" class="btn btn-sm btn-secondary">{{#if active}}Ngừng{{else}}Kích hoạt{{/if}}</button>
+                                        </form>
+                                        <form action="/admin/goi-dich-vu/{{id}}/xoa" method="POST">
+                                            {{#if @root.csrfToken}}<input type="hidden" name="_csrf" value="{{@root.csrfToken}}">{{/if}}
+                                            <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+            {{> common/pagination pagination=pagination}}
+        {{else}}
+            {{> common/empty-state title="Không có gói dịch vụ" message="Không tìm thấy gói dịch vụ phù hợp với điều kiện hiện tại."}}
+        {{/if}}
+    </section>
+</section>
