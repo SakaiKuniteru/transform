@@ -27,7 +27,7 @@ function layHoacTaoToken(req) {
 
 function csrfMiddleware(req, res, next) {
     if (!securityConfig.csrf.enabled) { return next(); }
-    try { const token = layHoacTaoToken(req); res.locals.csrfToken = token; if (securityConfig.csrf.safeMethods.includes(req.method)) { return next(); } if (soSanhToken(layTokenTuRequest(req), token)) { return next(); } const error = new Error('CSRF token không hợp lệ hoặc đã hết hạn.'); error.statusCode = 403; error.code = 'CSRF_KHONG_HOP_LE'; error.expose = true; return next(error); } catch (error) { return next(error); }
+    try { const token = layHoacTaoToken(req); res.locals.csrfToken = token; if (securityConfig.csrf.safeMethods.includes(req.method)) { return next(); } if (soSanhToken(layTokenTuRequest(req), token)) { return next(); } if (req.method === 'POST' && ['/dang-nhap', '/dang-ky', '/quen-mat-khau', '/dat-lai-mat-khau', '/xac-thuc-email'].includes(req.path) && req.accepts(['html', 'json']) === 'html') { req.flash?.('warning', 'Biểu mẫu đã hết hạn. Vui lòng nhập lại thông tin trên trang mới.'); return res.redirect(303, req.path); } const error = new Error('CSRF token không hợp lệ hoặc đã hết hạn.'); error.statusCode = 403; error.code = 'CSRF_KHONG_HOP_LE'; error.expose = true; return next(error); } catch (error) { return next(error); }
 }
 
 function doiCsrfToken(req, res = null) {

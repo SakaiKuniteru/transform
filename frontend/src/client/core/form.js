@@ -30,7 +30,9 @@ function initPasswordToggle(button) {
     button.addEventListener('click', () => {
         const dangHien = input.type === 'text';
         input.type = dangHien ? 'password' : 'text';
-        button.textContent = dangHien ? 'Hiện' : 'Ẩn';
+        const icon = button.querySelector('[data-password-toggle-icon]');
+        if (icon) { icon.src = dangHien ? '/assets/images/icons/eye.svg' : '/assets/images/icons/eye-off.svg'; } else { button.textContent = dangHien ? 'Hiện' : 'Ẩn'; }
+        button.title = dangHien ? 'Hiển thị mật khẩu' : 'Ẩn mật khẩu';
         button.setAttribute('aria-pressed', dangHien ? 'false' : 'true');
         button.setAttribute('aria-label', dangHien ? 'Hiển thị mật khẩu' : 'Ẩn mật khẩu');
     });

@@ -38,6 +38,7 @@ function taoFormState(values = {}, error = null) {
 }
 
 function renderAuthPage(req, res, options) {
+    res.set('Cache-Control', 'no-store');
     const form = renderForm(options.form, options.state || {}, { csrfToken: res.locals.csrfToken, ...(options.context || {}) });
     const data = taoViewContext(req, res, { layout: 'auth', page: { title: options.title, noIndex: true }, form, ...(options.data || {}) });
     return res.status(options.statusCode || 200).render(options.view, data);

@@ -88,3 +88,7 @@
         width: auto;
     }
 }
+
+.toast-container { font-family: var(--font-sans); }
+.toast { border-color: var(--color-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); }
+.toast:focus-within { outline-color: var(--color-primary-500); }

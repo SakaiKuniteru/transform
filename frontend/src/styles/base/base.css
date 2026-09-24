@@ -268,3 +268,14 @@ progress::-moz-progress-bar {
         padding: var(--space-6) var(--space-4);
     }
 }
+
+/* Transform visual foundation */
+body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); letter-spacing: -0.025em; }
+::selection { background: var(--color-primary-200); color: var(--color-primary-800); }
+:focus-visible { outline-color: var(--color-primary-500); }
+.loading--fullscreen { background: rgba(251, 252, 250, 0.86); }
+.breadcrumb__item:not(:last-child)::after { content: "›"; font-size: 16px; }
+.empty-state, .error-state { border-radius: var(--radius-xl); }
+.card, .panel { border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-sm); }
+@media (max-width: 640px) { .card, .panel { border-radius: var(--radius-md); } }

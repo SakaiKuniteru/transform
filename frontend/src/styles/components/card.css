@@ -1,0 +1,16 @@
+/* New reusable cards for public tools and user/admin data. */
+.tf-card { min-width: 0; padding: var(--space-5); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-sm); }
+.tf-card--soft { background: var(--color-surface-soft); box-shadow: none; }
+.tf-card--hero { border-color: var(--color-primary-100); background: linear-gradient(135deg, #fff 10%, var(--color-primary-50) 100%); }
+.tf-card__header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-4); }
+.tf-card__title { font-size: var(--text-lg); color: var(--color-text-strong); }
+.tf-card__description { color: var(--color-text-muted); font-size: var(--text-sm); }
+.tf-tool-card { display: flex; align-items: center; gap: var(--space-3); min-width: 0; padding: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); color: var(--color-text); box-shadow: var(--shadow-xs); transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast); }
+.tf-tool-card:hover { transform: translateY(-2px); border-color: var(--color-primary-200); color: var(--color-text-strong); box-shadow: var(--shadow-md); }
+.tf-tool-card__title { color: var(--color-text-strong); font-size: var(--text-base); font-weight: 700; }
+.tf-tool-card__description { color: var(--color-text-muted); font-size: var(--text-sm); }
+.tf-upload-zone { display: grid; place-items: center; gap: var(--space-3); min-height: 260px; padding: var(--space-8); border: 1.5px dashed var(--color-primary-200); border-radius: var(--radius-lg); background: linear-gradient(145deg, #fff, var(--color-primary-50)); text-align: center; }
+.tf-upload-zone:focus-within { border-color: var(--color-primary-500); box-shadow: 0 0 0 4px var(--color-focus); }
+.tf-upload-zone__title { color: var(--color-text-strong); font-size: var(--text-xl); font-weight: 750; }
+.tf-upload-zone__hint { color: var(--color-text-muted); font-size: var(--text-sm); }
+@media (max-width: 640px) { .tf-card { padding: var(--space-4); } .tf-upload-zone { min-height: 220px; padding: var(--space-5); } }

@@ -1,4 +1,4 @@
 {{> common/meta}}
 <title>{{page.title}}</title>
-{{#if assets.favicon}}<link rel="icon" href="{{assets.favicon}}">{{/if}}
+{{#if assets.favicon}}<link rel="icon" href="{{assets.favicon}}">{{else}}<link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg">{{/if}}
 {{#each assets.styles}}<link rel="stylesheet" href="{{this}}">{{/each}}

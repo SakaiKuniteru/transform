@@ -1,0 +1,9 @@
+/* Brand component: use {{> common/brand}} in Handlebars layouts. */
+.tf-brand { display: inline-flex; align-items: center; flex: 0 0 auto; gap: 10px; color: var(--color-text-strong); font-weight: 780; font-size: 19px; letter-spacing: -.035em; line-height: 1; text-decoration: none; }
+.tf-brand:hover { color: var(--color-primary-700); }
+.tf-brand__mark { display: block; width: 31px; height: 31px; flex: 0 0 auto; }
+.tf-brand__name { white-space: nowrap; }
+.tf-brand--compact { font-size: 16px; gap: 8px; }
+.tf-brand--compact .tf-brand__mark { width: 27px; height: 27px; }
+.tf-brand--inverse { color: #fff; }
+.tf-brand--inverse:hover { color: #fff; }

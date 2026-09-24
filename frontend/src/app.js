@@ -32,6 +32,7 @@ app.use(requestContextMiddleware);
 app.use(securityMiddleware);
 app.use(htmlMinifyMiddleware);
 app.use(assetConfig.urlPrefix, express.static(assetConfig.rootDir, { maxAge: assetConfig.maxAge, immutable: assetConfig.immutable, index: assetConfig.index, fallthrough: assetConfig.fallthrough }));
+app.get('/favicon.ico', (req, res) => res.redirect(302, '/assets/images/favicon.svg'));
 app.use(cookieParser());
 app.use(session(sessionConfig));
 app.use(flashMiddleware);

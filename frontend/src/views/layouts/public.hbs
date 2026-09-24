@@ -1,28 +1,27 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-    {{> common/head}}
-</head>
+<head>{{> common/head}}</head>
 <body class="layout-public{{#if page.bodyClass}} {{page.bodyClass}}{{/if}}">
-    <div class="public-layout">
-        <header class="public-header">
-            <a href="/" class="public-header__brand" aria-label="Transform - Trang chủ">Transform</a>
-            <nav class="public-header__nav" aria-label="Điều hướng chính">
+<div class="public-layout">
+    <header class="public-header">
+        <div class="public-header__inner">
+            <a href="/" class="public-header__brand" aria-label="Transform - Trang chủ">{{> common/brand}}</a>
+            <nav class="public-header__links" aria-label="Công cụ"><a href="/cong-cu/pdf-sang-word">Chuyển đổi</a><a href="/cong-cu/jpg-sang-pdf">Hình ảnh</a><a href="/cong-cu/ocr-anh">OCR</a><a href="/cong-cu/dich-van-ban">Dịch</a><a href="/cong-cu/ai-tom-tat">AI</a><a href="/cong-cu/ma-hoa-base64">Base64</a><a href="/#cong-cu">Tất cả công cụ</a></nav>
+            <div class="public-header__nav">
                 {{#if auth.daDangNhap}}
-                    {{#if auth.coTheTruyCapKhuVucNguoiDung}}<a href="/user" class="btn btn-secondary">Khu vực người dùng</a>{{/if}}
+                    {{#if auth.coTheTruyCapKhuVucNguoiDung}}<a href="/user" class="btn btn-secondary">Tệp của tôi</a>{{/if}}
                     {{#if auth.coTheTruyCapKhuVucQuanTri}}<a href="/admin" class="btn btn-primary">Quản trị</a>{{/if}}
                 {{else}}
-                    <a href="/dang-nhap" class="btn btn-secondary">Đăng nhập</a>
-                    <a href="/dang-ky" class="btn btn-primary">Đăng ký</a>
+                    <a href="/dang-nhap" class="public-header__login">Đăng nhập</a><a href="/dang-ky" class="btn btn-primary">Đăng ký</a>
                 {{/if}}
-            </nav>
-        </header>
-        <main class="public-main" id="main-content">
-            {{{body}}}
-        </main>
-    </div>
-    {{> common/toast toasts=toasts}}
-    {{> common/loading id="global-loading" text="Đang xử lý..." fullscreen=true}}
-    {{#each assets.scripts}}<script src="{{src}}"{{#if defer}} defer{{/if}}{{#if async}} async{{/if}}{{#if type}} type="{{type}}"{{/if}}></script>{{/each}}
+            </div>
+        </div>
+    </header>
+    <main class="public-main" id="main-content">{{{body}}}</main>
+    <footer class="public-footer"><div class="public-container public-footer__inner"><div><a href="/" class="public-footer__brand">{{> common/brand}}</a><p>Công cụ xử lý tệp dành cho mọi người.</p></div><div><strong>Công cụ</strong><a href="/cong-cu/pdf-sang-word">PDF sang Word</a><a href="/cong-cu/word-sang-pdf">Word sang PDF</a><a href="/cong-cu/jpg-sang-pdf">Ảnh sang PDF</a></div><div><strong>Transform</strong><a href="/">Trang chủ</a>{{#if auth.daDangNhap}}<a href="/user">Tài khoản</a>{{else}}<a href="/dang-nhap">Đăng nhập</a>{{/if}}</div></div></footer>
+</div>
+{{> common/toast toasts=toasts}}
+{{> common/loading id="global-loading" text="Đang xử lý..." fullscreen=true}}
+{{#each assets.scripts}}<script src="{{src}}"{{#if defer}} defer{{/if}}{{#if async}} async{{/if}}{{#if type}} type="{{type}}"{{/if}}></script>{{/each}}
 </body>
 </html>

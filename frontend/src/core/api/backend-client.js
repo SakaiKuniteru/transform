@@ -28,6 +28,7 @@ function taoRequestConfig(options = {}) {
 async function thucThiRaw(options = {}) {
     let response;
     try { response = await client.request(taoRequestConfig(options)); } catch (error) { throw ApiError.tuAxiosError(error); }
+    if (typeof options.onResponse === 'function') { await options.onResponse(response); }
     if (response.status < 200 || response.status >= 300) { throw ApiError.tuResponse(response); }
     return response;
 }

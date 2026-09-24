@@ -1,32 +1,8 @@
 <section class="public-home">
-    <div class="public-home__hero">
-        <div class="public-home__content">
-            <span class="public-home__eyebrow">Transform Platform</span>
-            <h1 class="public-home__title">Chuyển đổi và xử lý tệp trong một nơi.</h1>
-            <p class="public-home__description">Tải tệp lên, tạo công việc xử lý, theo dõi tiến trình và quản lý kết quả trực tiếp trên Transform.</p>
-            <div class="public-home__actions">
-                {{#if auth.daDangNhap}}
-                    {{#if auth.coTheTruyCapKhuVucNguoiDung}}<a href="/user/chuyen-doi" class="btn btn-primary">Bắt đầu chuyển đổi</a>{{/if}}
-                    {{#if auth.coTheTruyCapKhuVucQuanTri}}<a href="/admin" class="btn btn-secondary">Mở quản trị</a>{{/if}}
-                {{else}}
-                    <a href="/dang-ky" class="btn btn-primary">Tạo tài khoản</a>
-                    <a href="/dang-nhap" class="btn btn-secondary">Đăng nhập</a>
-                {{/if}}
-            </div>
-        </div>
-    </div>
-    <div class="public-home__features">
-        <article class="public-feature">
-            <h2>Quản lý tệp</h2>
-            <p>Lưu và quản lý các tệp đã tải lên trong khu vực tài khoản của bạn.</p>
-        </article>
-        <article class="public-feature">
-            <h2>Chuyển đổi</h2>
-            <p>Tạo các yêu cầu chuyển đổi và xử lý bằng những công cụ mà hệ thống đang hỗ trợ.</p>
-        </article>
-        <article class="public-feature">
-            <h2>Theo dõi công việc</h2>
-            <p>Xem trạng thái, tiến trình, từng bước xử lý và tệp kết quả khi công việc hoàn thành.</p>
-        </article>
-    </div>
+    <div class="public-home__hero"><div class="public-container public-home__hero-inner">
+        <div class="public-home__content"><span class="public-home__eyebrow">✦ Nhanh chóng · Dễ sử dụng · Có thể bắt đầu ngay</span><h1 class="public-home__title">Chuyển đổi tệp dễ dàng với <span>Transform</span></h1><p class="public-home__description">Chuyển đổi tài liệu, PDF và hình ảnh ngay trên trình duyệt. Chọn công cụ, tải tệp lên và theo dõi kết quả mà không cần đăng nhập cho tác vụ được hỗ trợ.</p><div class="public-home__quick">{{#each congCu}}{{#if noiBat}}<a class="public-home__quick-link" href="/cong-cu/{{slug}}">{{ten}} <span aria-hidden="true">↗</span></a>{{/if}}{{/each}}</div><div class="public-home__trust"><span>✓ Không cần tài khoản để bắt đầu</span><span>✓ Theo dõi trạng thái xử lý</span></div></div>
+        <div class="public-home__upload-panel"><label class="public-home__select-label" for="public-home-tool">Chọn công cụ</label><select class="public-home__tool-select" id="public-home-tool" data-public-tool-select>{{#each congCu}}<option value="{{slug}}" data-accept="{{#each nguon}}.{{this}}{{#unless @last}},{{/unless}}{{/each}}">{{ten}}</option>{{/each}}</select>{{> public/upload tool=(lookup congCu 0)}}</div>
+    </div></div>
+    <section class="public-container public-home__tools" id="cong-cu"><div class="public-section-heading"><div><span class="public-kicker">CÔNG CỤ PHỔ BIẾN</span><h2>Chọn công cụ bạn cần</h2><p>Chọn một công cụ rồi tải tệp lên để bắt đầu.</p></div></div><div class="public-catalog-controls"><input type="search" class="form-control" data-public-tool-search placeholder="Tìm công cụ: OCR, AI, Base64, dịch, PDF..." aria-label="Tìm công cụ"><div class="public-catalog-groups" role="group" aria-label="Nhóm công cụ"><button type="button" data-public-tool-group="" aria-pressed="true">Tất cả</button><button type="button" data-public-tool-group="Tài liệu">Tài liệu</button><button type="button" data-public-tool-group="Hình ảnh">Hình ảnh</button><button type="button" data-public-tool-group="OCR">OCR</button><button type="button" data-public-tool-group="Ngôn ngữ">Dịch</button><button type="button" data-public-tool-group="AI">AI</button><button type="button" data-public-tool-group="Mã hóa">Base64</button><button type="button" data-public-tool-group="Nén">Nén</button><button type="button" data-public-tool-group="Dữ liệu">Dữ liệu</button></div></div><div class="public-tool-grid" data-public-catalog>{{#each congCu}}<a class="public-tool-card" data-tool-name="{{ten}} {{moTa}}" data-tool-group="{{nhom}}" href="/cong-cu/{{slug}}"><span class="public-tool-card__icon public-tool-card__icon--{{mau}}"><img src="/assets/images/icons/{{icon}}.svg" alt="" width="28" height="28"></span><span><strong>{{ten}}</strong><small>{{moTa}}</small></span><span class="public-tool-card__arrow" aria-hidden="true">→</span></a>{{/each}}</div></section>
+    <section class="public-container public-how"><span class="public-kicker">CÁCH HOẠT ĐỘNG</span><h2>Chỉ với 3 bước đơn giản</h2><div class="public-how__grid"><article><span class="public-how__number">01</span><h3>Chọn công cụ</h3><p>Chọn định dạng đầu ra phù hợp với tệp của bạn.</p></article><article><span class="public-how__number">02</span><h3>Tải tệp lên</h3><p>Kéo thả hoặc chọn tệp từ thiết bị, xác nhận và bắt đầu.</p></article><article><span class="public-how__number">03</span><h3>Nhận kết quả</h3><p>Theo dõi công việc và tải tệp sau khi xử lý hoàn tất.</p></article></div></section>
 </section>

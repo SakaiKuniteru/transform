@@ -21,8 +21,7 @@ async function lamMoiPhien(req) {
 }
 
 function canLamMoiPhien(req) {
-    if (!sessionService.coTheLamMoi(req)) { return false; }
-    if (!sessionService.daDangNhap(req)) { return true; }
+    if (!sessionService.daDangNhap(req) || !sessionService.coTheLamMoi(req)) { return false; }
     return sessionService.accessTokenSapHetHan(req);
 }
 

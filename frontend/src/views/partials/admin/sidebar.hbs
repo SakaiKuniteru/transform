@@ -1,41 +1,52 @@
 <aside class="admin-sidebar" id="admin-sidebar" data-admin-sidebar>
     <div class="admin-sidebar__header">
         <a href="/admin" class="admin-sidebar__brand">
-            <span class="admin-sidebar__brand-name">Transform</span>
+            <span class="admin-sidebar__brand-name">{{> common/brand compact=true}}</span>
             <span class="admin-sidebar__brand-type">Admin</span>
         </a>
     </div>
     <nav class="admin-sidebar__nav" aria-label="Menu quản trị">
         <a href="/admin" class="admin-sidebar__item{{#if (eq request.path "/admin")}} is-active{{/if}}"{{#if (eq request.path "/admin")}} aria-current="page"{{/if}}>
+            <img class="admin-sidebar__icon" src="/assets/images/icons/home.svg" width="19" height="19" alt="" aria-hidden="true">
             <span class="admin-sidebar__label">Tổng quan</span>
         </a>
         <a href="/admin/nguoi-dung" class="admin-sidebar__item{{#if (includes request.path "/admin/nguoi-dung")}} is-active{{/if}}"{{#if (includes request.path "/admin/nguoi-dung")}} aria-current="page"{{/if}}>
+            <img class="admin-sidebar__icon" src="/assets/images/icons/user.svg" width="19" height="19" alt="" aria-hidden="true">
             <span class="admin-sidebar__label">Người dùng</span>
         </a>
         <a href="/admin/tep" class="admin-sidebar__item{{#if (includes request.path "/admin/tep")}} is-active{{/if}}"{{#if (includes request.path "/admin/tep")}} aria-current="page"{{/if}}>
+            <img class="admin-sidebar__icon" src="/assets/images/icons/file.svg" width="19" height="19" alt="" aria-hidden="true">
             <span class="admin-sidebar__label">Tệp</span>
         </a>
         <a href="/admin/cong-viec" class="admin-sidebar__item{{#if (includes request.path "/admin/cong-viec")}} is-active{{/if}}"{{#if (includes request.path "/admin/cong-viec")}} aria-current="page"{{/if}}>
+            <img class="admin-sidebar__icon" src="/assets/images/icons/clock.svg" width="19" height="19" alt="" aria-hidden="true">
             <span class="admin-sidebar__label">Công việc</span>
         </a>
         <a href="/admin/goi-dich-vu" class="admin-sidebar__item{{#if (includes request.path "/admin/goi-dich-vu")}} is-active{{/if}}"{{#if (includes request.path "/admin/goi-dich-vu")}} aria-current="page"{{/if}}>
+            <img class="admin-sidebar__icon" src="/assets/images/icons/compress.svg" width="19" height="19" alt="" aria-hidden="true">
             <span class="admin-sidebar__label">Gói dịch vụ</span>
         </a>
         <a href="/admin/dang-ky-goi" class="admin-sidebar__item{{#if (includes request.path "/admin/dang-ky-goi")}} is-active{{/if}}"{{#if (includes request.path "/admin/dang-ky-goi")}} aria-current="page"{{/if}}>
+            <img class="admin-sidebar__icon" src="/assets/images/icons/check.svg" width="19" height="19" alt="" aria-hidden="true">
             <span class="admin-sidebar__label">Đăng ký gói</span>
         </a>
         <a href="/admin/chinh-sach-han-muc" class="admin-sidebar__item{{#if (includes request.path "/admin/chinh-sach-han-muc")}} is-active{{/if}}"{{#if (includes request.path "/admin/chinh-sach-han-muc")}} aria-current="page"{{/if}}>
+            <img class="admin-sidebar__icon" src="/assets/images/icons/shield.svg" width="19" height="19" alt="" aria-hidden="true">
             <span class="admin-sidebar__label">Chính sách hạn mức</span>
         </a>
         <a href="/admin/su-dung-han-muc" class="admin-sidebar__item{{#if (includes request.path "/admin/su-dung-han-muc")}} is-active{{/if}}"{{#if (includes request.path "/admin/su-dung-han-muc")}} aria-current="page"{{/if}}>
+            <img class="admin-sidebar__icon" src="/assets/images/icons/lightning.svg" width="19" height="19" alt="" aria-hidden="true">
             <span class="admin-sidebar__label">Sử dụng hạn mức</span>
         </a>
         <a href="/admin/nhat-ky" class="admin-sidebar__item{{#if (includes request.path "/admin/nhat-ky")}} is-active{{/if}}"{{#if (includes request.path "/admin/nhat-ky")}} aria-current="page"{{/if}}>
+            <img class="admin-sidebar__icon" src="/assets/images/icons/search.svg" width="19" height="19" alt="" aria-hidden="true">
             <span class="admin-sidebar__label">Nhật ký hệ thống</span>
         </a>
     </nav>
     <div class="admin-sidebar__footer">
+        <div class="admin-sidebar__note"><strong>Transform Admin</strong><span>Quản lý hệ thống và các dịch vụ của bạn.</span></div>
         <a href="/user" class="admin-sidebar__item">
+            <img class="admin-sidebar__icon" src="/assets/images/icons/arrow-right.svg" width="19" height="19" alt="" aria-hidden="true">
             <span class="admin-sidebar__label">Khu vực người dùng</span>
         </a>
     </div>

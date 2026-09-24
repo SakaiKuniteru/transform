@@ -1,0 +1,13 @@
+<form class="public-upload" method="post" action="/cong-cu/upload?tool={{tool.slug}}" enctype="multipart/form-data" data-public-upload>
+    <div class="public-upload__drop" data-public-dropzone>
+        <img src="/assets/images/icons/upload.svg" alt="" class="public-upload__icon" width="56" height="56">
+        <strong>Kéo và thả tệp vào đây</strong><p>Hoặc chọn tệp từ thiết bị của bạn</p>
+        <input type="file" name="teps" data-public-file-input required accept="{{#each tool.nguon}}.{{this}}{{#unless @last}},{{/unless}}{{/each}}" aria-label="Chọn tệp để chuyển đổi">
+        <button type="button" class="btn btn-primary public-upload__choose" data-public-choose>Chọn tệp</button>
+        <p class="public-upload__filename" data-public-filename aria-live="polite">Chưa chọn tệp</p>
+        <button type="submit" class="btn btn-primary" data-public-submit disabled>Tải lên và tiếp tục <span aria-hidden="true">→</span></button>
+        <p class="public-upload__hint">Hỗ trợ: {{#each tool.nguon}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}. Giới hạn dung lượng theo chính sách hiện tại của hệ thống.</p>
+        <p class="public-upload__error" data-public-error role="alert" hidden></p>
+        <noscript>Vui lòng bật JavaScript để sử dụng công cụ tải tệp an toàn.</noscript>
+    </div>
+</form>

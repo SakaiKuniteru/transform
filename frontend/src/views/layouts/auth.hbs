@@ -6,11 +6,24 @@
 <body class="layout-auth{{#if page.bodyClass}} {{page.bodyClass}}{{/if}}">
     <div class="auth-layout">
         <header class="auth-layout__header">
-            <a href="/" class="auth-layout__brand" aria-label="Transform - Trang chủ">Transform</a>
+            <a href="/" class="auth-layout__brand" aria-label="Transform - Trang chủ">{{> common/brand}}</a>
+            <a class="auth-layout__home" href="/">Khám phá công cụ <span aria-hidden="true">→</span></a>
         </header>
         <main class="auth-layout__main" id="main-content">
-            {{{body}}}
+            <aside class="auth-visual" aria-label="Giới thiệu Transform">
+                <div class="auth-visual__badge">TRANSFORM · CÔNG CỤ TỆP TRỰC TUYẾN</div>
+                <h2 class="auth-visual__title">Biến mọi định dạng thành <span>điều bạn cần.</span></h2>
+                <p class="auth-visual__description">Chuyển đổi, nén và xử lý tài liệu đơn giản, nhanh chóng ngay trên trình duyệt. Các công cụ cơ bản có thể sử dụng mà không cần tài khoản.</p>
+                <div class="auth-visual__benefits">
+                    <div><span class="tf-feature-icon tf-feature-icon--green"><img src="/assets/images/icons/convert.svg" alt="" width="25" height="25"></span><span><strong>Chuyển đổi dễ dàng</strong><small>PDF, Word, ảnh và nhiều định dạng khác.</small></span></div>
+                    <div><span class="tf-feature-icon tf-feature-icon--amber"><img src="/assets/images/icons/lightning.svg" alt="" width="25" height="25"></span><span><strong>Thao tác gọn gàng</strong><small>Tải lên, xử lý và nhận kết quả.</small></span></div>
+                    <div><span class="tf-feature-icon tf-feature-icon--green"><img src="/assets/images/icons/shield.svg" alt="" width="25" height="25"></span><span><strong>Kiểm soát dữ liệu</strong><small>Quản lý tệp và công việc trong tài khoản.</small></span></div>
+                </div>
+                <div class="auth-visual__art" aria-hidden="true"><div class="auth-visual__art-glow"></div><span class="auth-visual__file auth-visual__file--pdf">PDF</span><span class="auth-visual__file auth-visual__file--word">DOCX</span><span class="auth-visual__file auth-visual__file--image"><img src="/assets/images/icons/image.svg" alt="" width="42" height="42"></span><span class="auth-visual__art-arrow">↗</span></div>
+            </aside>
+            <div class="auth-layout__panel">{{{body}}}</div>
         </main>
+        <footer class="auth-layout__footer"><span>© Transform</span><a href="/">Tiếp tục sử dụng công cụ không cần đăng nhập</a></footer>
     </div>
     {{> common/toast toasts=toasts}}
     {{> common/loading id="global-loading" text="Đang xử lý..." fullscreen=true}}

@@ -1,9 +1,7 @@
 <header class="admin-header">
     <div class="admin-header__left">
-        <button type="button" class="admin-header__sidebar-toggle" data-admin-sidebar-toggle aria-controls="admin-sidebar" aria-expanded="false" aria-label="Mở hoặc đóng menu quản trị">☰</button>
-        <a href="/admin" class="admin-header__brand">Transform Admin</a>
+        <button type="button" class="admin-header__sidebar-toggle" data-admin-sidebar-toggle aria-controls="admin-sidebar" aria-expanded="false" aria-label="Mở hoặc đóng menu quản trị"><span aria-hidden="true">☰</span></button>
+        <div class="admin-header__heading"><span>Không gian quản trị</span><strong>Transform Admin</strong></div>
     </div>
-    <div class="admin-header__right">
-        {{> admin/account-menu}}
-    </div>
+    <div class="admin-header__right"><a class="admin-header__public" href="/">Về trang chủ <span aria-hidden="true">↗</span></a>{{> admin/account-menu}}</div>
 </header>

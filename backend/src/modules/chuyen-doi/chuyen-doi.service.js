@@ -276,13 +276,27 @@ async function getHoTro(query = {}) {
     const nguon = query.dinhDangNguon ? chuanHoaDinhDangBatBuoc(query.dinhDangNguon, 'Định dạng nguồn') : null;
     const dich = query.dinhDangDich ? chuanHoaDinhDangBatBuoc(query.dinhDangDich, 'Định dạng đích') : null;
     const nhom = String(query.nhomXuLy || '').trim().toUpperCase() || null;
-    return registry.layDanhSachConverter().filter((converter) => {
+    const danhSach = registry.layDanhSachConverter().filter((converter) => {
         if (loai && !converter.loaiChuyenDoi.includes(loai)) { return false; }
         if (nguon && !converter.dinhDangNguon.includes('*') && !converter.dinhDangNguon.includes(nguon)) { return false; }
         if (dich && !converter.dinhDangDich.includes('*') && !converter.dinhDangDich.includes(dich)) { return false; }
         if (nhom && !converter.nhomXuLy.includes('*') && !converter.nhomXuLy.includes(nhom)) { return false; }
         return true;
-    }).map((converter) => ({ key: converter.key, ten: converter.ten, loaiChuyenDoi: converter.loaiChuyenDoi, nhomXuLy: converter.nhomXuLy, dinhDangNguon: converter.dinhDangNguon, dinhDangDich: converter.dinhDangDich, uuTien: converter.uuTien, chiPhi: converter.chiPhi, engine: converter.engine, phienBanEngine: converter.phienBanEngine, metadata: converter.metadata || {} }));
+    });
+    return Promise.all(danhSach.map(async (converter) => ({
+        key: converter.key,
+        ten: converter.ten,
+        loaiChuyenDoi: converter.loaiChuyenDoi,
+        nhomXuLy: converter.nhomXuLy,
+        dinhDangNguon: converter.dinhDangNguon,
+        dinhDangDich: converter.dinhDangDich,
+        uuTien: converter.uuTien,
+        chiPhi: converter.chiPhi,
+        engine: converter.engine,
+        phienBanEngine: converter.phienBanEngine,
+        metadata: converter.metadata || {},
+        khaDung: await registry.coHoTro(converter, { loaiChuyenDoi: loai, dinhDangNguon: nguon, dinhDangDich: dich, nhomXuLy: nhom }).catch(() => false)
+    })));
 }
 
 async function getChiTiet(id, chuThe) {

@@ -7,6 +7,8 @@ const { taoLoiTheoStatus: taoLoi } = require('../../../utils/loi');
 const storageService = require('../../../infrastructure/storage/storage.service');
 const transformEngine = require('../engine/transform-engine.service');
 const ocrService = require('./ocr.service');
+let ocrAvailablePromise = null;
+async function hoTroOcr() { if (!ocrAvailablePromise) { ocrAvailablePromise = ocrService.kiemTraSanSang().then(() => true).catch(() => false); } return ocrAvailablePromise; }
 
 const DINH_DANG_NGUON_HO_TRO = Object.freeze([
     DINH_DANG.PNG,
@@ -121,6 +123,7 @@ function dangKyTatCa() {
             chiPhi: 3,
             engine: 'tesseract',
             phienBanEngine: null,
+            hoTro: hoTroOcr,
             xuLy: xuLyOcr
         })
     ]);

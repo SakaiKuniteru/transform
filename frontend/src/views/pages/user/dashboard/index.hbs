@@ -1,11 +1,13 @@
 <section class="user-page user-dashboard">
     <header class="user-page__header">
         <div>
-            <h1 class="user-page__title">Tổng quan</h1>
-            <p class="user-page__description">Theo dõi nhanh tệp, công việc và hoạt động gần đây.</p>
+            <span class="tf-page-eyebrow">WORKSPACE CỦA BẠN</span>
+            <h1 class="user-page__title">Xin chào{{#if auth.nguoiDung.hoTen}}, {{auth.nguoiDung.hoTen}}{{/if}}!</h1>
+            <p class="user-page__description">Chuyển đổi tài liệu, theo dõi tệp và công việc của bạn tại một nơi.</p>
         </div>
         <a href="/user/chuyen-doi" class="btn btn-primary">Chuyển đổi tệp</a>
     </header>
+    <section class="tf-quick-tools" aria-label="Công cụ nhanh"><a href="/cong-cu/pdf-sang-word"><img src="/assets/images/icons/convert.svg" alt="" width="27" height="27"><span>PDF sang Word</span><span aria-hidden="true">→</span></a><a href="/cong-cu"><img src="/assets/images/icons/compress.svg" alt="" width="27" height="27"><span>Nén tệp</span><span aria-hidden="true">→</span></a><a href="/cong-cu"><img src="/assets/images/icons/scan.svg" alt="" width="27" height="27"><span>OCR &amp; hình ảnh</span><span aria-hidden="true">→</span></a><a href="/user/tep"><img src="/assets/images/icons/upload.svg" alt="" width="27" height="27"><span>Tải tệp lên</span><span aria-hidden="true">→</span></a></section>
     <div class="dashboard-stats">
         <article class="dashboard-stat">
             <span class="dashboard-stat__label">Tệp của tôi</span>

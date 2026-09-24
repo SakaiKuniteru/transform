@@ -1,10 +1,11 @@
 <section class="auth-page auth-page--verify-email">
     <div class="auth-page__header">
+        <span class="auth-page__eyebrow">CHÀO MỪNG ĐẾN VỚI TRANSFORM</span>
         <h1 class="auth-page__title">Xác thực email</h1>
-        <p class="auth-page__description">Nhập mã gồm 6 chữ số đã được gửi tới email của bạn.</p>
+        <p class="auth-page__description">Kiểm tra email và nhập mã xác thực để tiếp tục.</p>
     </div>
     {{#if otpHetHanLuc}}<div class="auth-page__otp-status" data-otp-expire-at="{{otpHetHanLuc}}" aria-live="polite">Mã xác thực có thời hạn sử dụng.</div>{{/if}}
-    <div class="auth-page__content">
+    <div class="auth-page__content auth-page__content--xac-thuc-email">
         {{> forms/form form}}
     </div>
     <div class="auth-page__resend">

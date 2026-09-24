@@ -84,3 +84,9 @@ a {
 [hidden] {
     display: none !important;
 }
+
+/* Design system: keep native controls accessible without UA surprises. */
+button, input, textarea, select { font: inherit; }
+button { -webkit-tap-highlight-color: transparent; }
+img { height: auto; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }

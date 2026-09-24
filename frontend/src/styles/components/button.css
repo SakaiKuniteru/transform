@@ -92,3 +92,14 @@
     pointer-events: none;
     transform: none;
 }
+
+/* Shared button skin: preserve legacy .btn names and JS hooks. */
+.btn, .modal__action { min-height: 44px; border-radius: var(--radius-md); font-weight: 650; box-shadow: var(--shadow-xs); }
+.btn-primary { border-color: var(--color-primary-700); background: linear-gradient(125deg, var(--color-primary-500), var(--color-primary-800)); color: #fff; }
+.btn-primary:hover { border-color: var(--color-primary-800); background: linear-gradient(125deg, var(--color-primary-600), #043f3b); color: #fff; box-shadow: var(--shadow-sm); }
+.btn-secondary:hover { border-color: var(--color-primary-200); background: var(--color-primary-50); color: var(--color-primary-700); }
+.btn:disabled, .btn[aria-disabled="true"] { cursor: not-allowed; box-shadow: none; opacity: .56; }
+.btn:focus-visible, .modal__action:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+.btn--pill { border-radius: var(--radius-full); }
+.btn--lg { min-height: 52px; padding-inline: 28px; }
+.btn--icon { width: 44px; min-width: 44px; padding: 0; }

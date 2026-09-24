@@ -1,19 +1,17 @@
 'use strict';
 const express = require('express');
-const { taoViewContext } = require('../core/views/view-context');
+const controller = require('../modules/public/cong-cu/cong-cu.controller');
 const router = express.Router();
-
-router.get('/', (req, res) => {
-    const data = taoViewContext(req, res, {
-        layout: 'public',
-        page: {
-            title: 'Transform Platform',
-            description: 'Nền tảng chuyển đổi và xử lý tệp Transform.'
-        }
-    });
-    return res.render('pages/public/home', data);
-});
-
+router.get('/', controller.index);
+router.get('/cong-cu', controller.index);
+router.get('/cong-cu/kha-dung', controller.khaDung);
+router.get('/cong-cu/xac-nhan', controller.xacNhan);
+router.post('/cong-cu/upload', controller.upload);
+router.post('/cong-cu/tao', controller.tao);
+router.get('/cong-cu/cong-viec/:id/trang-thai', controller.trangThai);
+router.get('/cong-cu/cong-viec/:id', controller.chiTiet);
+router.get('/cong-cu/tep/:id/tai-xuong', controller.taiXuong);
+router.get('/cong-cu/:slug', controller.congCu);
 module.exports = {
     router
 };

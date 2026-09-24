@@ -95,3 +95,9 @@
         border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     }
 }
+
+.modal__backdrop { background: rgba(6, 31, 28, .48); backdrop-filter: blur(5px); }
+.modal__dialog { border: 1px solid rgba(255, 255, 255, .6); box-shadow: var(--shadow-lg); }
+.modal__header { background: linear-gradient(135deg, var(--color-primary-50), var(--color-surface)); }
+.modal__close { color: var(--color-gray-600); }
+.modal__close:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }

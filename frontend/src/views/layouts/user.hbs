@@ -5,14 +5,12 @@
 </head>
 <body class="layout-user{{#if page.bodyClass}} {{page.bodyClass}}{{/if}}">
     <div class="user-layout" data-user-layout>
-        {{> user/sidebar}}
-        <div class="user-layout__content">
-            {{> user/header}}
-            <main class="user-main" id="main-content">
-                {{#if breadcrumb}}{{> common/breadcrumb breadcrumb=breadcrumb}}{{/if}}
-                {{{body}}}
-            </main>
-        </div>
+        {{> user/header}}
+        <main class="user-main" id="main-content">
+            {{#if breadcrumb}}{{> common/breadcrumb breadcrumb=breadcrumb}}{{/if}}
+            {{{body}}}
+        </main>
+        <footer class="user-footer"><span>Transform · Biến mọi định dạng thành những khả năng</span><a href="/">Tất cả công cụ</a></footer>
     </div>
     {{> common/toast toasts=toasts}}
     {{> common/loading id="global-loading" text="Đang xử lý..." fullscreen=true}}

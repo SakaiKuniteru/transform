@@ -13,6 +13,9 @@ const CSS_ENTRY = [
     '@import "./tokens/variables.css";',
     '@import "./base/reset.css";',
     '@import "./base/base.css";',
+    '@import "./components/brand.css";',
+    '@import "./components/icon.css";',
+    '@import "./components/card.css";',
     '@import "./components/button.css";',
     '@import "./components/table.css";',
     '@import "./components/modal.css";',
@@ -23,7 +26,8 @@ const CSS_ENTRY = [
     '@import "./layouts/user.css";',
     '@import "./layouts/admin.css";',
     '@import "./user/user.css";',
-    '@import "./admin/admin.css";'
+    '@import "./admin/admin.css";',
+    '@import "./components/workspace.css";'
 ].join('\n');
 
 function taoHash(content) { return crypto.createHash('sha256').update(content).digest('hex').slice(0, 12); }

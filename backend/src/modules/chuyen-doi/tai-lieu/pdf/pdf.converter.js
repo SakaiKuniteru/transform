@@ -10,6 +10,7 @@ const storageService = require('../../../../infrastructure/storage/storage.servi
 const processCleanup = require('../../../../infrastructure/process/process-cleanup');
 const poppler = require('../../../../infrastructure/process/poppler');
 const ghostscript = require('../../../../infrastructure/process/ghostscript');
+const pandoc = require('../../../../infrastructure/process/pandoc');
 const transformEngine = require('../../engine/transform-engine.service');
 const parser = require('./pdf.parser');
 const extractService = require('./pdf.extract');
@@ -22,6 +23,7 @@ const DINH_DANG_RENDER = Object.freeze([DINH_DANG.PNG, DINH_DANG.JPG, DINH_DANG.
 const PHIEN_BAN_PDF_LIB = require('pdf-lib/package.json').version;
 let popplerAvailablePromise = null;
 let ghostscriptAvailablePromise = null;
+let pandocAvailablePromise = null;
 
 function layStorageKey(dauVao) { return dauVao?.storageKey || dauVao?.khoa || dauVao?.khoaLuuTru || dauVao?.storage?.khoa || dauVao?.storage?.storageKey || dauVao?.phienBan?.storageKey || dauVao?.phienBanHienTai?.storageKey || null; }
 
@@ -85,6 +87,37 @@ async function coPoppler() {
 async function coGhostscript() {
     if (!ghostscriptAvailablePromise) { ghostscriptAvailablePromise = ghostscript.kiemTra().then(() => true).catch(() => false); }
     return ghostscriptAvailablePromise;
+}
+
+async function coPandoc() {
+    if (!pandocAvailablePromise) { pandocAvailablePromise = pandoc.kiemTra().then(() => true).catch(() => false); }
+    return pandocAvailablePromise;
+}
+
+async function hoTroPdfSangDocx() { return Boolean(await coPoppler() && await coPandoc()); }
+
+async function xuLyPdfSangDocx(context) {
+    await context.kiemTraHuy();
+    await context.capNhatTienTrinh(5);
+    const buffer = await docBufferDauVao(context.dauVao);
+    const metadataPdf = await parser.layMetadata(buffer);
+    const trichXuat = await extractService.trichXuatVanBan(buffer, { ...context.tuyChon, signal: context.signal });
+    if (!trichXuat.text?.trim()) { throw taoLoi(422, 'PDF này chưa trích xuất được văn bản. Nếu tệp là bản quét, hãy dùng OCR trước.', MA_LOI.CHUYEN_DOI_KHONG_HO_TRO); }
+    await context.kiemTraHuy();
+    await context.capNhatTienTrinh(55);
+    const thuMuc = await processCleanup.taoThuMucTam('pdf-docx-text-');
+    try {
+        const nguon = path.join(thuMuc, 'input.txt');
+        const dich = path.join(thuMuc, 'output.docx');
+        await fs.promises.writeFile(nguon, trichXuat.buffer);
+        await pandoc.chuyenDoi(nguon, dich, { from: 'txt', to: 'docx', signal: context.signal });
+        await context.kiemTraHuy();
+        const ketQua = await fs.promises.readFile(dich);
+        if (!ketQua.length) { throw taoLoi(422, 'Không tạo được tài liệu Word từ nội dung PDF.', MA_LOI.CHUYEN_DOI_KHONG_HO_TRO); }
+        await context.capNhatTienTrinh(90);
+        const dauRa = await taoDauRa(context, { buffer: ketQua, dinhDang: DINH_DANG.DOCX, mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', metadata: { cheDo: 'trich-xuat-van-ban', soTrangNguon: metadataPdf.soTrang } }, 'poppler+pandoc');
+        return { boXuLy: 'TAI_LIEU', congCu: 'poppler+pandoc', phienBanCongCu: null, dauRa, dinhDangDich: DINH_DANG.DOCX, thongKe: { cheDo: 'trich-xuat-van-ban', soTrangNguon: metadataPdf.soTrang, soKyTu: trichXuat.text.length } };
+    } finally { await processCleanup.xoaDuongDanTam(thuMuc); }
 }
 
 async function xuLyPdfSangText(context) {
@@ -194,6 +227,20 @@ function dangKyTatCa() {
             phienBanEngine: null,
             hoTro: coPoppler,
             xuLy: xuLyPdfSangText
+        }),
+        dangKyNeuChuaCo({
+            key: 'poppler-pandoc:pdf-to-docx-text',
+            ten: 'PDF sang Word có thể sửa văn bản (không bảo toàn bố cục)',
+            loaiChuyenDoi: LOAI_CHUYEN_DOI.CHUYEN_DINH_DANG,
+            nhomXuLy: 'TAI_LIEU',
+            dinhDangNguon: DINH_DANG.PDF,
+            dinhDangDich: DINH_DANG.DOCX,
+            uuTien: 100,
+            chiPhi: 2,
+            engine: 'poppler+pandoc',
+            phienBanEngine: null,
+            hoTro: hoTroPdfSangDocx,
+            xuLy: xuLyPdfSangDocx
         }),
         dangKyNeuChuaCo({
             key: 'poppler:pdf-to-image',
